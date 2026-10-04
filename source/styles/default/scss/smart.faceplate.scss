@@ -1,0 +1,341 @@
+/* smart-faceplate
+ *
+ * Two columns and three readouts. The process column carries the setpoint marker on it
+ * rather than beside it, because the gap between the two is the thing an operator is
+ * reading - a separate setpoint bar would make that gap something to be worked out
+ * instead of something to be seen.
+ *
+ * Colour is reserved for the abnormal, per ISA-101. A loop in normal operation is drawn
+ * entirely in neutrals; the alarm limits are hairlines until one is crossed. */
+smart-faceplate {
+  --smart-faceplate-track-width: 26px;
+  --smart-faceplate-track-height: 128px;
+  --smart-faceplate-value-size: 15px;
+  --smart-faceplate-fill: var(--smart-industrial-accent-text, var(--smart-primary));
+  --smart-faceplate-width: 186px;
+  display: inline-block;
+  box-sizing: border-box;
+  /* A definite width, not a minimum. A faceplate is a fixed-size object on a DCS screen -
+     operators learn where a loop's controls are and expect them not to move. It also
+     stops the embedded trend from deciding: smart-strip-chart has an intrinsic width, so a
+     content-sized faceplate is sized by its chart rather than by its columns. */
+  width: var(--smart-faceplate-width);
+}
+
+smart-faceplate .smart-container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--smart-industrial-panel-border, var(--smart-border));
+  border-radius: var(--smart-border-radius);
+  background: var(--smart-industrial-panel-background, var(--smart-surface));
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+smart-faceplate .smart-faceplate-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+smart-faceplate .smart-faceplate-tag {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--smart-text-color);
+}
+
+smart-faceplate .smart-faceplate-description {
+  font-size: 11px;
+  color: var(--smart-text-tertiary-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Quality is not decoration - a reading that is stale or bad has to say so where the
+   reading is, not somewhere else on the screen. */
+smart-faceplate .smart-faceplate-quality {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  padding: 0 4px;
+}
+
+smart-faceplate[quality="bad"] .smart-faceplate-quality {
+  color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+}
+
+/* ── Columns ─────────────────────────────────────────────────────────────── */
+smart-faceplate .smart-faceplate-columns {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+}
+
+smart-faceplate .smart-faceplate-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+smart-faceplate .smart-faceplate-column:focus-visible {
+  outline: 2px solid var(--smart-industrial-focus, var(--smart-primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--smart-industrial-focus-halo, transparent);
+}
+
+smart-faceplate .smart-faceplate-track {
+  position: relative;
+  width: var(--smart-faceplate-track-width);
+  height: var(--smart-faceplate-track-height);
+  border: 1px solid var(--smart-border);
+  border-radius: 2px;
+  background: var(--smart-base-200, var(--smart-background));
+  overflow: hidden;
+}
+
+smart-faceplate .smart-faceplate-fill {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: var(--smart-faceplate-fill);
+}
+
+/* The process column takes the alarm colour only once a limit is crossed. */
+smart-faceplate[alarm-state="hi"] .smart-faceplate-pv .smart-faceplate-fill,
+smart-faceplate[alarm-state="lo"] .smart-faceplate-pv .smart-faceplate-fill {
+  background: var(--smart-industrial-alarm-warning, var(--smart-warning));
+}
+
+smart-faceplate[alarm-state="hiHi"] .smart-faceplate-pv .smart-faceplate-fill,
+smart-faceplate[alarm-state="loLo"] .smart-faceplate-pv .smart-faceplate-fill {
+  background: var(--smart-industrial-alarm-critical, var(--smart-error));
+}
+
+/* A bad or stale reading must not look like a live one: the process column is hatched
+   and the PV readout greyed - struck through when bad, italic when stale - beside the
+   badge. After the alarm colours, which a reading that cannot be trusted does not earn. */
+smart-faceplate[quality="bad"] .smart-faceplate-pv .smart-faceplate-fill,
+smart-faceplate[quality="stale"] .smart-faceplate-pv .smart-faceplate-fill {
+  background: repeating-linear-gradient(135deg, var(--smart-text-secondary-color, #6b7785) 0 3px, transparent 3px 7px);
+}
+
+smart-faceplate[quality="bad"] .smart-faceplate-readout:first-child .smart-faceplate-readout-value,
+smart-faceplate[quality="stale"] .smart-faceplate-readout:first-child .smart-faceplate-readout-value {
+  color: var(--smart-text-secondary-color, var(--smart-text-tertiary-color));
+}
+
+smart-faceplate[quality="bad"] .smart-faceplate-readout:first-child .smart-faceplate-readout-value {
+  text-decoration: line-through;
+}
+
+smart-faceplate[quality="stale"] .smart-faceplate-readout:first-child .smart-faceplate-readout-value {
+  font-style: italic;
+}
+
+smart-faceplate .smart-faceplate-bands {
+  position: absolute;
+  inset: 0;
+}
+
+smart-faceplate .smart-faceplate-limit {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--smart-text-tertiary-color);
+  opacity: 0.7;
+}
+
+smart-faceplate .smart-faceplate-limit[data-limit="hiHi"],
+smart-faceplate .smart-faceplate-limit[data-limit="loLo"] {
+  background: var(--smart-industrial-alarm-critical, var(--smart-error));
+}
+
+/* The setpoint rides on the process column. A triangle pointing in, so it reads as a
+   target on that scale rather than as a second value. */
+smart-faceplate .smart-faceplate-setpoint-marker,
+smart-faceplate .smart-faceplate-setpoint-pending {
+  position: absolute;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 7px solid var(--smart-text-color);
+  transform: translateY(50%);
+}
+
+/* A request that has not come back yet is drawn faintly and in the accent: it is what
+   was asked for, not what the loop is at. */
+smart-faceplate .smart-faceplate-setpoint-pending {
+  border-right-color: var(--smart-industrial-accent-text, var(--smart-primary));
+  opacity: 0.65;
+}
+
+smart-faceplate .smart-faceplate-clamp {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-top: 1px dashed var(--smart-text-tertiary-color);
+  border-bottom: 1px dashed var(--smart-text-tertiary-color);
+  opacity: 0.5;
+}
+
+smart-faceplate .smart-faceplate-column-label {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--smart-text-tertiary-color);
+}
+
+/* ── Readouts ────────────────────────────────────────────────────────────── */
+smart-faceplate .smart-faceplate-readouts {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+smart-faceplate .smart-faceplate-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+smart-faceplate .smart-faceplate-readout-label {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--smart-text-tertiary-color);
+  width: 22px;
+  flex: none;
+}
+
+smart-faceplate .smart-faceplate-readout-value {
+  font-family: Consolas, Monaco, monospace;
+  font-size: var(--smart-faceplate-value-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--smart-text-color);
+}
+
+smart-faceplate .smart-faceplate-readout-value[data-pending] {
+  color: var(--smart-industrial-accent-text, var(--smart-primary));
+}
+
+smart-faceplate .smart-faceplate-readout-unit {
+  font-size: 10px;
+  color: var(--smart-text-secondary-color, var(--smart-text-tertiary-color));
+}
+
+smart-faceplate .smart-faceplate-readout-unit:empty {
+  display: none;
+}
+
+/* ── Modes ───────────────────────────────────────────────────────────────── */
+/* The modes wrap onto a second row rather than spilling out of the card: four of them,
+   or a long word - OUT OF SERVICE, or its translation - do not fit one row of 186 px. */
+smart-faceplate .smart-faceplate-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+smart-faceplate .smart-faceplate-mode {
+  flex: 1 1 0;
+  min-width: min-content;
+  background: transparent;
+  border: 1px solid var(--smart-border);
+  border-radius: 2px;
+  color: var(--smart-text-secondary-color);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: 3px 4px;
+  text-transform: uppercase;
+}
+
+smart-faceplate .smart-faceplate-mode[aria-checked="true"] {
+  background: var(--smart-ui-state-selected, var(--smart-base-300));
+  border-color: var(--smart-industrial-accent-text, var(--smart-primary));
+  color: var(--smart-text-color);
+  font-weight: 600;
+}
+
+smart-faceplate .smart-faceplate-mode[data-pending] {
+  border-style: dashed;
+  opacity: 0.75;
+}
+
+smart-faceplate .smart-faceplate-mode:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+smart-faceplate .smart-faceplate-mode:focus-visible {
+  outline: 2px solid var(--smart-industrial-focus, var(--smart-primary));
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px var(--smart-industrial-focus-halo, transparent);
+}
+
+/* ── Trend ───────────────────────────────────────────────────────────────── */
+smart-faceplate .smart-faceplate-trend {
+  height: 52px;
+  min-height: 0;
+}
+
+smart-faceplate .smart-faceplate-trend[hidden] {
+  display: none;
+}
+
+smart-faceplate .smart-faceplate-trend smart-strip-chart {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Compact ─────────────────────────────────────────────────────────────── */
+smart-faceplate[compact] {
+  --smart-faceplate-track-height: 76px;
+  --smart-faceplate-value-size: 13px;
+  --smart-faceplate-width: 148px;
+}
+
+smart-faceplate[compact] .smart-faceplate-description,
+smart-faceplate[compact] .smart-faceplate-column-label {
+  display: none;
+}
+
+/* .smart-element carries the framework's own background and color at higher specificity
+   than a bare tag selector, so anything that sets those has to be restated here. */
+smart-faceplate.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-faceplate takes by default. */
+smart-faceplate:not(:defined) {
+  min-height: 200px;
+}
+
+/* The setpoint can be asked for from the faceplate itself: a press or a drag on the process
+   value's track, or the arrow keys on the marker, which is a slider then. */
+smart-faceplate .smart-faceplate-track.smart-faceplate-settable {
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+smart-faceplate .smart-faceplate-setpoint-marker[role="slider"]:focus-visible {
+  outline: 2px solid var(--smart-primary);
+  outline-offset: 3px;
+}

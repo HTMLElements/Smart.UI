@@ -62,11 +62,6 @@ export interface SliderProperties {
    */
   labelsVisibility?: LabelsVisibility | string;
   /**
-   * Defines or retrieves the unlockKey, a unique value used to authorize and enable access to the product’s features.
-   * Default value: ""
-   */
-  unlockKey?: string;
-  /**
    * Specifies or retrieves the current locale setting, which determines the language and regional formatting used by the component. This property works in conjunction with the messages property to provide localized content, ensuring that labels, messages, and other text elements are displayed according to the selected locale.
    * Default value: "en"
    */
@@ -136,6 +131,16 @@ export interface SliderProperties {
    */
   precisionDigits?: number;
   /**
+   * Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings.
+   * Default value: good
+   */
+  quality?: SliderQuality | string;
+  /**
+   * Sets or retrieves the coloured bands drawn behind the track, as [{ startValue, endValue, className }]. A band marks a part of the scale as normal or abnormal - the ISA-101 discipline is to leave the normal region neutral and give colour only to the zones that mean something. Bands are positioned as a percentage of the scale rather than in pixels, so they survive a resize on their own, and they honour orientation and inverted. A band outside min..max is clipped to it. Set showRanges to draw them. smart-gauge draws its own radial ranges and ignores this.
+   * Default value: 
+   */
+  ranges?: any;
+  /**
    * Enables or disables the slider's range mode. When set to true, the slider displays two thumbs, allowing users to select a value range between a minimum and maximum. If set to false, only a single thumb is shown for selecting one value.
    * Default value: false
    */
@@ -170,6 +175,11 @@ export interface SliderProperties {
    * Default value: false
    */
   showButtons?: boolean;
+  /**
+   * Sets or retrieves whether the value ranges are drawn. Off by default, so a tank or a slider that declares no bands is unchanged.
+   * Default value: false
+   */
+  showRanges?: boolean;
   /**
    * Controls whether the thumb label is visible or hidden. When enabled, the thumb label will be displayed; when disabled, it will be hidden. This option allows you to show or hide the label that appears above the slider's thumb to indicate its current value.
    * Default value: false
@@ -225,6 +235,11 @@ export interface SliderProperties {
    * Default value: "kg"
    */
   unit?: string;
+  /**
+   * Defines or retrieves the unlockKey, a unique value used to authorize and enable access to the product’s features.
+   * Default value: ""
+   */
+  unlockKey?: string;
   /**
    * Configures how the value is validated against the specified minimum and maximum limits.  - When set to 'strict', all value assignments—whether made by user interaction or programmatically—are automatically validated and coerced to remain within the min and max bounds.  - When set to 'interaction', only values entered or changed by user interaction are validated and coerced to the min and max limits. Programmatic value changes are not automatically adjusted, and if the min or max is updated such that the current value falls outside the new range, the value remains unchanged. In this mode, no change event is triggered when values remain out of bounds following these updates.
    * Default value: strict
@@ -295,6 +310,8 @@ export declare type DragMechanicalAction = 'switchUntilReleased' | 'switchWhenRe
 export declare type ScaleMode = 'numeric' | 'date';
 /**Specifies the layout direction of the widget, determining whether its content is arranged horizontally, vertically, or in another defined orientation. This property affects how child elements are displayed within the widget. */
 export declare type Orientation = 'horizontal' | 'vertical';
+/**Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings. */
+export declare type SliderQuality = 'good' | 'uncertain' | 'bad' | 'stale';
 /**Specifies the alignment or placement of the widget's scale indicators (such as axes, ticks, or labels) relative to the widget, determining where and how the scales appear within the widget's layout. */
 export declare type ScalePosition = 'near' | 'far' | 'both' | 'none';
 /**Defines the style of the slider's scale, such as linear or logarithmic, which determines how values are distributed along the slider track. */

@@ -1,0 +1,121 @@
+/* smart-intensity-graph */
+smart-intensity-graph {
+  --smart-intensity-height: 360px;
+  --smart-intensity-plot-background: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+  --smart-intensity-grid-color: var(--smart-border);
+  --smart-intensity-axis-color: var(--smart-text-tertiary-color, var(--smart-border));
+  /* The cursor colour is read by the canvas from this; unset, the element falls back to
+     the industrial palette so the marks match the theme. */
+  display: block;
+  width: 100%;
+  height: var(--smart-intensity-height);
+
+  .smart-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    gap: 4px;
+  }
+
+  .smart-intensity-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .smart-intensity-header:empty {
+    display: none;
+  }
+
+  .smart-intensity-title {
+    font-weight: 600;
+  }
+
+  .smart-intensity-status {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  /* The plot takes whatever the chrome leaves. min-height: 0 is what stops a flex item
+     from refusing to shrink below its content height and pushing the legend off. */
+  .smart-intensity-plot {
+    position: relative;
+    /* 80px when the chart has no height of its own to share out, so the plot never collapses */
+    flex: 1 1 80px;
+    min-height: 0;
+    background: var(--smart-intensity-plot-background);
+    border: 1px solid var(--smart-border);
+    border-radius: var(--smart-border-radius, 2px);
+    overflow: hidden;
+    cursor: crosshair;
+    touch-action: none;
+    outline: none;
+  }
+
+  .smart-intensity-plot:focus-visible {
+    box-shadow: 0 0 0 2px var(--smart-primary);
+  }
+
+  /* Out of the flow: the canvas is sized to the plot, so the plot must not be sized by the
+     canvas. In flow, its pixel height fed back into the plot's, and a chart whose own height
+     was not fixed grew on every resize (a waveform graph reached 7,800px). */
+  .smart-intensity-canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .smart-intensity-cursors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  .smart-intensity-cursor-row {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 3px 8px;
+  }
+
+  .smart-intensity-cursor-row-active .smart-intensity-cursor-name {
+    color: var(--smart-text-color);
+    font-weight: 600;
+  }
+
+  .smart-intensity-cursor-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background: var(--smart-intensity-swatch-color);
+    flex: none;
+  }
+
+  .smart-intensity-cursor-delta {
+    font-weight: 600;
+    color: var(--smart-text-color);
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-intensity-graph.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}

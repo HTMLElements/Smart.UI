@@ -1,0 +1,128 @@
+/* smart-bit-field */
+smart-bit-field {
+  --smart-bit-size: 30px;
+  --smart-bit-off-color: var(--smart-border);
+  --smart-bit-on-color: var(--smart-industrial-ok, var(--smart-success));
+  --smart-bit-gap: 3px;
+  --smart-bit-group-gap: 12px;
+  display: inline-block;
+  /* Without this the bits row below has nothing to be 100% of: an inline-block sizes to
+     its content, so a uint64 register pushed the page out to 2300px, which is exactly
+     what the overflow-x on the row is there to prevent. */
+  max-width: 100%;
+
+  .smart-container {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 100%;
+  }
+
+  /* A 64-bit register is wider than most panels: its groups wrap onto further rows, each
+     nibble kept whole, so the low bits are on screen rather than past its edge. */
+  .smart-bit-field-bits {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: var(--smart-bit-group-gap);
+    row-gap: 6px;
+    /* One group wider than the panel still scrolls itself rather than forcing the page
+       to, which keeps the word readout beneath it in place. (The scroll shadows went with
+       the single row: on a row that wraps, their covers drew white bars at its ends.) */
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .smart-bit-group {
+    display: flex;
+    gap: var(--smart-bit-gap);
+  }
+
+  .smart-bit {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--smart-bit-size);
+    padding: 3px 2px;
+    font-family: inherit;
+    background: transparent;
+    border: 1px solid var(--smart-bit-off-color);
+    border-radius: 2px;
+    color: var(--smart-text-tertiary-color);
+    cursor: default;
+  }
+
+  .smart-bit-state {
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+
+  /* The index and the name are reference material, not the reading - they stay quiet so
+     the row of ones and zeros is what the eye lands on. */
+  .smart-bit-index {
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  .smart-bit-name {
+    font-size: 9px;
+    line-height: 1;
+    max-width: 52px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .smart-bit.on {
+    background: var(--smart-bit-on-color);
+    border-color: var(--smart-bit-on-color);
+    color: var(--smart-primary-color, #fff);
+  }
+
+  /* A reserved or read-only bit still shows its state - it is part of the register - but
+     must not look like something an operator can change. */
+  .smart-bit.read-only {
+    border-style: dashed;
+    background-image: repeating-linear-gradient(135deg, transparent 0 4px, rgba(128, 128, 128, 0.12) 4px 6px);
+  }
+
+  .smart-bit-field-bits.interactive .smart-bit:not(.read-only) {
+    cursor: pointer;
+  }
+
+  .smart-bit:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 1px;
+  }
+
+  .smart-bit-field-word {
+    display: flex;
+    gap: 14px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--smart-text-color);
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element sets background and color at higher specificity than a bare tag selector. */
+smart-bit-field.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-bit-field takes by default. */
+smart-bit-field:not(:defined) {
+  min-width: 270px;
+  min-height: 48px;
+}

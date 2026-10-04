@@ -1,0 +1,13 @@
+/*!
+ * 
+ * /* Smart UI v18.0.0 (2024-February)
+ * Copyright (c) 2011-2023 jQWidgets.
+ * License: https://htmlelements.com/license/ * /
+ *
+ *
+ */
+
+/*! Smart UI v27.1.0 (2026-10-02) | (c) 2011-2026 jQWidgets Ltd. All rights reserved.
+ * Commercial software, not open source: licensed under the Smart UI EULA (EULA.pdf in the package;
+ * https://www.htmlelements.com/license/). Text and data mining reserved under Art. 4(3)
+ * Directive (EU) 2019/790: not to be used to train, fine-tune or index for AI models. @license */

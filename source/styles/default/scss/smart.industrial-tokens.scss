@@ -1,0 +1,48 @@
+/* Smart.UI Industrial - defaults for the ISA-101 tokens the components read.
+
+   smart.industrial.css and smart.industrial-dark.css define every one of these on
+   body[theme="industrial"] and body[theme="industrial-dark"], which outranks :root, so a
+   page on either theme never sees the values below. A page on the default theme, or on any
+   other suite theme, does: without them the components fell back to the suite's --smart-success
+   and --smart-warning, which are fills chosen for a light surface and sit at about 2:1 as text
+   on it or under white text.
+
+   The defaults are derived from the suite palette rather than fixed, by mixing each fill
+   with the theme's text colour: on a light theme that darkens a pastel green into a text
+   tone, on a dark theme it lightens it, so the direction is right on both. A browser without
+   color-mix() drops the declaration and the components inherit the text colour. */
+:root {
+  /* Severity as text: the fill pulled 45 % towards the text colour clears 4.5:1 on white. */
+  --smart-industrial-ok-text: color-mix(in srgb, var(--smart-success) 55%, var(--smart-text-color));
+  --smart-industrial-alarm-critical-text: color-mix(in srgb, var(--smart-error) 70%, var(--smart-text-color));
+  --smart-industrial-alarm-warning-text: color-mix(in srgb, var(--smart-warning) 50%, var(--smart-text-color));
+  --smart-industrial-alarm-advisory-text: color-mix(in srgb, var(--smart-warning) 45%, var(--smart-text-color));
+  --smart-industrial-accent-text: color-mix(in srgb, var(--smart-primary) 80%, var(--smart-text-color));
+  --smart-industrial-unknown-text: color-mix(in srgb, var(--smart-text-color) 70%, var(--smart-background));
+
+  /* Severity as a fill that carries white text: the pastel greens and ambers pulled far
+     enough towards the text colour for white to clear 4.5:1 on them. */
+  --smart-industrial-ok: color-mix(in srgb, var(--smart-success) 60%, var(--smart-text-color));
+  --smart-industrial-ok-color: var(--smart-success-color, #ffffff);
+  --smart-industrial-alarm-warning: color-mix(in srgb, var(--smart-warning) 85%, var(--smart-text-color));
+  --smart-industrial-alarm-warning-color: var(--smart-text-color);
+  --smart-industrial-alarm-advisory: var(--smart-warning);
+  --smart-industrial-alarm-advisory-color: var(--smart-text-color);
+  --smart-industrial-alarm-critical: var(--smart-error);
+  --smart-industrial-alarm-critical-color: var(--smart-error-color, #ffffff);
+  --smart-industrial-unknown: color-mix(in srgb, var(--smart-text-color) 64%, var(--smart-background));
+  --smart-industrial-unknown-color: var(--smart-background);
+  /* Text on the accent fill (the manual mode, a selected segment): the primary's own pairing. */
+  --smart-industrial-accent-color: var(--smart-primary-color, #ffffff);
+
+  /* Equipment and process states, the same way. */
+  --smart-industrial-running: var(--smart-industrial-ok);
+  --smart-industrial-stopped: var(--smart-industrial-unknown);
+  --smart-industrial-manual: var(--smart-primary);
+  --smart-industrial-maintenance: color-mix(in srgb, var(--smart-primary) 50%, var(--smart-error));
+
+  /* Focus: the primary colour, with a halo in the background colour so the ring holds on a
+     control of either tone. */
+  --smart-industrial-focus: var(--smart-primary);
+  --smart-industrial-focus-halo: var(--smart-background);
+}

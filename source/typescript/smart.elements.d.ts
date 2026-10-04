@@ -1509,6 +1509,563 @@ declare global {
 
 /**Specifies or retrieves the position of the arrow indicator within the header. Accepts values such as 'left', 'right', or 'none'. When set to 'none', the arrow will not be displayed in the header. */
 export declare type AccordionItemArrow = 'left' | 'right' | 'none';
+export interface AlarmBannerProperties {
+  /**
+   * Sets or retrieves the caption of the acknowledge button. It is empty by default, so the caption comes from the acknowledge message ("Ack" in English) and follows the locale. A value set here takes precedence over the message.
+   * Default value: ""
+   */
+  acknowledgeLabel?: string;
+  /**
+   * Sets or retrieves the alarms. Each entry is an object with: id - the identifier of the alarm, returned in the events; tag - the instrument or point tag; message - the alarm text; priority - a number, or a number written as text, as in ISA-18.2: 0 and 1 critical, 2 warning, 3 and above advisory; severity - critical, warning or advisory (any case), which overrides the priority mapping and, for a record without a priority, sets its place in the order; timestamp - a Date, epoch milliseconds or a value Date can parse, shown as the time, or the date and time when it is not today; acknowledged - whether an operator has acknowledged the alarm; active - false once the condition has cleared (absent means active), so an unacknowledged alarm with active false is shown as returned to normal; shelvedUntil, suppressed, outOfService - an alarm shelved into the future, suppressed or out of service is not shown. Flags written as the text "false", "0", "no" or "off" are false. Assign a new array to update the component, or call redraw after modifying the array in place; an array that is deep-equal to the current one does not trigger a redraw.
+   * Default value: 
+   */
+  alarms?: any;
+  /**
+   * Enables or disables the component. A disabled banner disables its acknowledge buttons, which leaves them out of the tab order, and raises no acknowledge event.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves the text shown when there are no alarms to display. It is empty by default, so the text comes from the empty message ("No active alarms" in English) and follows the locale. A value set here takes precedence over the message.
+   * Default value: ""
+   */
+  emptyMessage?: string;
+  /**
+   * Sets or retrieves the number of alarms shown at once. One row is usual for an operator screen; a larger stack suits a wall display that covers several areas.
+   * Default value: 1
+   */
+  maxVisible?: number;
+  /**
+   * Sets or retrieves whether an acknowledge button is shown on unacknowledged alarms. The default is true. Boolean attributes are presence-based, so show-acknowledge="false" in markup enables the button; set the property from script to disable it.
+   * Default value: true
+   */
+  showAcknowledge?: boolean;
+  /**
+   * Sets or retrieves whether the alarm timestamp is rendered. Same attribute caveat as showAcknowledge: set the property from script to turn it off.
+   * Default value: true
+   */
+  showTimestamps?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the priority words, the acknowledge control, the returned-to-normal marker, the empty state and the accessible names (8 keys: critical, warning, advisory, acknowledge, empty, bannerLabel, acknowledgeAlarm, returned). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ AlarmBanner shows the alarms an operator should deal with next. From the alarm list it selects the alarms to display: active unacknowledged alarms first, then alarms that returned to normal before they were acknowledged, then acknowledged ones; within each, by priority, then severity, then the oldest. Shelved, suppressed and out-of-service alarms, and alarms that returned to normal and were acknowledged, are not shown (ISA-18.2). Priority 0 and 1 are critical, 2 warning, 3 and above advisory - the reading ${namespace.toLowerCase()}-hmi-shell and jqx-alarm-grid use too - and an active unacknowledged critical alarm blinks until it is acknowledged. The component raises the acknowledge event and does not modify the alarm list itself.
+*/
+export interface AlarmBanner extends BaseElement, AlarmBannerProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when an operator acknowledges an alarm, either from its acknowledge button or through acknowledgeAll. One press raises one event: the repeats of a held Enter or Space are ignored, and the same alarm acknowledged again within 600 ms (a double click) is not raised twice.
+	* @param event. The custom event. Custom data event was created with: ev.detail(alarm)
+   *  alarm - The alarm being acknowledged.
+   */
+  onAcknowledge?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when an alarm row is clicked anywhere other than its acknowledge button, typically used to open the alarm's detail.
+	* @param event. The custom event. Custom data event was created with: ev.detail(alarm)
+   *  alarm - The alarm that was clicked.
+   */
+  onAlarmClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Raises the acknowledge event once for every unacknowledged alarm the banner would show, including alarms that returned to normal unacknowledged; shelved, suppressed and out-of-service alarms are left alone. Nothing is raised while the banner is disabled. The component does not change the alarms; the application applies the acknowledgements and returns an updated list.
+   */
+  acknowledgeAll(): void;
+  /**
+   * Redraws the banner. Only needed after the alarms array has been modified in place instead of replaced.
+   */
+  redraw(): void;
+  /**
+   * Returns the alarms the banner is currently showing, in the order shown: active unacknowledged, returned to normal unacknowledged, acknowledged; then priority, severity and age.
+   * @returns {any}
+   */
+  visibleAlarms(): any;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-alarm-banner"): AlarmBanner;
+        querySelector(selectors: "smart-alarm-banner"): AlarmBanner | null;
+        querySelectorAll(selectors: "smart-alarm-banner"): NodeListOf<AlarmBanner>;
+        getElementsByTagName(qualifiedName: "smart-alarm-banner"): HTMLCollectionOf<AlarmBanner>;
+        getElementsByName(elementName: "smart-alarm-banner"): NodeListOf<AlarmBanner>;
+    }
+}
+
+export interface AlarmGridProperties {
+  /**
+   * Sets or retrieves the alarm records as [{ id, tag, area, message, priority, active, acknowledged, shelvedUntil, suppressed, outOfService, timestamp }]. Only id is required. The alarm state is derived from the record, so the application updates active and acknowledged and the summary derives the state. timestamp and shelvedUntil may be epoch milliseconds, a Date or ISO 8601 text; priority may be a number or a number written as text. Flags written as the text "false", "0", "no" or "off" are false. A shelved alarm returns by itself when shelvedUntil passes - the grid sets a timer for the nearest expiry, cleared when it leaves the page. Entries that are not objects are ignored. Assign a new array to update the component; an array modified in place is deep-equal to the current one and does not trigger a redraw. When the update keeps the same alarms in the same order, the rows are patched in place, so the keyboard stays where it was; otherwise the table is rebuilt and the keyboard returns to the same alarm.
+   * Default value: 
+   */
+  alarms?: any;
+  /**
+   * Sets or retrieves the order rows are presented in.
+   * Default value: priority-then-time
+   */
+  defaultSort?: AlarmGridDefaultSort | string;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves which alarms are shown, as { state, priority, area, tag }. state is one state name or an array of names; priority is the largest priority number to include, so 2 shows priorities 1 and 2; area is matched exactly; tag is matched as a case-insensitive substring. Filters change the rows but not counts(), which still returns the totals for the whole alarm list.
+   * Default value: [object Object]
+   */
+  filters?: AlarmGridFilters;
+  /**
+   * Sets or retrieves the default duration in milliseconds for which shelve shelves an alarm. A shelved alarm returns by itself when its shelvedUntil passes, without an update from the application.
+   * Default value: 1800000
+   */
+  shelveDuration?: number;
+  /**
+   * Sets or retrieves whether the counts strip is shown above the rows: the number of alarms in each state for the whole list, not the filtered view - unacknowledged always, and the returned-to-normal, acknowledged, shelved, suppressed and out-of-service counts when there are any. With no alarms it shows the empty message. The same numbers are returned by counts().
+   * Default value: true
+   */
+  showCounts?: boolean;
+  /**
+   * Sets or retrieves whether the derived state has its own column. The property is read when the default columns are built, so set it before the component is initialized.
+   * Default value: true
+   */
+  showStateColumn?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the ISA-18.2 state words (also used by the counts strip), the column headers, the new-alarm announcement, the empty list and the accessible name (17 keys: unacknowledged, acknowledged, rtnUnacknowledged, shelved, suppressed, outOfService, ..). The countsSummary key is reserved: the component does not show it. A change of locale also updates the inherited table text, such as the pager. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Sets or retrieves how the alarm time is written.
+   * Default value: time
+   */
+  timestampFormat?: AlarmGridTimestampFormat | string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ AlarmGrid is an ISA-18.2 alarm summary. It extends Table, so sorting, filtering, virtualization, column resizing and reordering, state persistence and export are inherited. Each alarm is placed in one of seven states from its condition and the operator actions, including the returned-to-normal-unacknowledged state for alarms that cleared before they were acknowledged. The priority cell carries a marker that tells priorities apart by shape as well as colour - a square for 1 (and 0), a triangle for 2, a diamond for 3, a ring for 4 and above - drawn in its priority colour only while the alarm is abnormal (ISA-101); unacknowledged rows take the text colour of their priority. Below 820 px the default columns take compact widths and the state wraps, so the message keeps its width. A new outstanding alarm is announced to assistive technology - assertively for priority 1 - with the number of new ones. Acknowledging an alarm raises an event; the alarm record is updated by the application.
+*/
+export interface AlarmGrid extends BaseElement, AlarmGridProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when <em>acknowledge</em> or <em>acknowledgeAll</em> is called. The grid has no acknowledge control of its own, so the application provides the button that calls them. The record is not changed: handle this event and write the acknowledgement back through the alarms property once the control system has confirmed it.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, alarm)
+   *  id - The alarm's id.
+   *  alarm - The alarm record.
+   */
+  onAcknowledge?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when an alarm is taken out of or put back into service.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, outOfService)
+   *  id - The alarm's id.
+   *  outOfService - The requested state.
+   */
+  onOutOfService?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when an alarm is shelved.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, shelvedUntil, duration)
+   *  id - The alarm's id.
+   *  shelvedUntil - When the shelf expires, as a timestamp.
+   *  duration - How long the shelf is, in milliseconds.
+   */
+  onShelve?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered together with the event of <em>acknowledge</em>, <em>shelve</em>, <em>unshelve</em>, <em>suppress</em> and <em>outOfService</em>, so that an application can log these actions in one handler. <em>acknowledgeAll</em> raises only <em>acknowledge</em> events.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, action, state, alarm)
+   *  id - The alarm's id.
+   *  action - Which action was taken.
+   *  state - The alarm's state at the time of the action.
+   *  alarm - The alarm whose state changed.
+   */
+  onStateChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when an alarm is suppressed by design.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, suppressed)
+   *  id - The alarm's id.
+   *  suppressed - The requested state.
+   */
+  onSuppress?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when an alarm is taken back off the shelf.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id)
+   *  id - The alarm's id.
+   */
+  onUnshelve?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Reports that an alarm was acknowledged. Raises the event and does not change the record; the application writes the acknowledgement to the control system.
+   * @param {string | number} id. The alarm's id.
+   */
+  acknowledge(id: string | number): void;
+  /**
+   * Reports every outstanding alarm as acknowledged, with one event per alarm. Only the two unacknowledged states are outstanding; shelved, suppressed and out-of-service alarms are not affected.
+   */
+  acknowledgeAll(): void;
+  /**
+   * Returns the alarm record with the given id. Look up alarms by id rather than by row index, because the grid is sorted and filtered and a row index changes when either changes.
+   * @param {string | number} id. The alarm's id.
+   * @returns {any}
+   */
+  alarmById(id: string | number): any;
+  /**
+   * Returns the alarm records whose rows are selected (with selection on). Use it rather than getSelection(), which returns the table's own row keys, not the alarm ids: pass each record's id to acknowledge() or shelve().
+   * @returns {any}
+   */
+  selectedAlarms(): any;
+  /**
+   * Returns the number of alarms in each state, before filtering, plus <em>outstanding</em> and <em>total</em>. The counts describe the whole alarm list, not the current view.
+   * @returns {any}
+   */
+  counts(): any;
+  /**
+   * Reports that an alarm should be taken out of service or returned to service. Out of service is a maintenance decision and takes precedence over every other state.
+   * @param {string | number} id. The alarm's id.
+   * @param {boolean} outOfService?. Defaults to true.
+   */
+  outOfService(id: string | number, outOfService?: boolean): void;
+  /**
+   * Reports that an alarm should be shelved until a given time. Shelving is an operator decision with an expiry; suppression is a design decision without one.
+   * @param {string | number} id. The alarm's id.
+   * @param {number} duration?. How long, in milliseconds. Defaults to shelveDuration.
+   */
+  shelve(id: string | number, duration?: number): void;
+  /**
+   * Reports that an alarm should be suppressed by design, for a plant state in which it is not meaningful.
+   * @param {string | number} id. The alarm's id.
+   * @param {boolean} suppressed?. Defaults to true.
+   */
+  suppress(id: string | number, suppressed?: boolean): void;
+  /**
+   * Reports that a shelved alarm should be returned before its shelf expires.
+   * @param {string | number} id. The alarm's id.
+   */
+  unshelve(id: string | number): void;
+}
+
+/**Sets or retrieves which alarms are shown, as <em>{ state, priority, area, tag }</em>. <em>state</em> is one state name or an array of names; <em>priority</em> is the largest priority number to include, so 2 shows priorities 1 and 2; <em>area</em> is matched exactly; <em>tag</em> is matched as a case-insensitive substring. Filters change the rows but not <em>counts()</em>, which still returns the totals for the whole alarm list. */
+export interface AlarmGridFilters {
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-alarm-grid"): AlarmGrid;
+        querySelector(selectors: "smart-alarm-grid"): AlarmGrid | null;
+        querySelectorAll(selectors: "smart-alarm-grid"): NodeListOf<AlarmGrid>;
+        getElementsByTagName(qualifiedName: "smart-alarm-grid"): HTMLCollectionOf<AlarmGrid>;
+        getElementsByName(elementName: "smart-alarm-grid"): NodeListOf<AlarmGrid>;
+    }
+}
+
+/**Sets or retrieves the order rows are presented in. */
+export declare type AlarmGridDefaultSort = 'priority-then-time' | 'time' | 'tag' | 'none';
+/**Sets or retrieves how the alarm time is written. */
+export declare type AlarmGridTimestampFormat = 'time' | 'datetime' | 'iso' | 'relative';
+export interface AnnunciatorProperties {
+  /**
+   * Sets or retrieves how many tiles are laid out per row.
+   * Default value: 4
+   */
+  columns?: number;
+  /**
+   * Enables or disables the component. A disabled panel disables its tiles, which leaves them out of the tab order, and raises no acknowledge, reset or tileClick event.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the tile states (including unknown), the acknowledge and reset hints shown as the tooltip of a tile a press acts on, and the accessible names (9 keys: normal, alarm, ack, ringback, unknown, panelLabel, acknowledgeHint, resetHint, tileLabel). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Sets or retrieves the minimum height of a tile in pixels.
+   * Default value: 64
+   */
+  tileHeight?: number;
+  /**
+   * Sets or retrieves the monitored conditions. Each entry is an object with: id - the identifier of the tile, returned in the events; label - the tile legend; detail - an optional second line, typically the tag; state - one of normal, alarm, ack or ringback, in any case. A tile without a state is normal; any other word is shown as an unknown state (dashed and hatched, read out as 'Unknown state') rather than as a normal tile, cannot be acknowledged, and makes the panel's state attribute 'unknown' unless a tile is in alarm. Assign a new array to update the component, or call redraw after modifying the array in place; an array that is deep-equal to the current one does not trigger a redraw. The keyboard stays on the same tile across an update.
+   * Default value: 
+   */
+  tiles?: any;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ Annunciator displays a wall of tiles, one per monitored condition, following the ISA-18.1 alarm sequence: normal, alarm (unacknowledged, blinking fast), acknowledged (steady) and ringback (cleared but not reset, blinking slowly). Pressing a tile raises an event to acknowledge the alarm or reset the ringback; the application returns the updated tile list.
+*/
+export interface Annunciator extends BaseElement, AnnunciatorProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when an operator presses a tile that is in the alarm state, or through acknowledgeAll. One press raises one event: the repeats of a held Enter or Space are ignored, and the same tile pressed again within 600 ms (a double click) is not acknowledged twice.
+	* @param event. The custom event. Custom data event was created with: ev.detail(tile)
+   *  tile - The tile being acknowledged.
+   */
+  onAcknowledge?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when an operator presses a tile that is in the ringback state, the condition has cleared and the operator is resetting it. As with acknowledge, one press raises one event.
+	* @param event. The custom event. Custom data event was created with: ev.detail(tile)
+   *  tile - The tile being reset.
+   */
+  onReset?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a tile is pressed, in any state. It follows the acknowledge or reset event when one of those applies.
+	* @param event. The custom event. Custom data event was created with: ev.detail(tile)
+   *  tile - The tile that was pressed.
+   */
+  onTileClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Raises the acknowledge event once for every tile in the alarm state. Nothing is raised while the panel is disabled. The component does not change the tiles.
+   */
+  acknowledgeAll(): void;
+  /**
+   * Redraws the panel. Only needed after the tiles array has been modified in place instead of replaced.
+   */
+  redraw(): void;
+  /**
+   * Returns how many tiles are in each state, as { normal, alarm, ack, ringback, unknown }. A state word the panel does not know is counted as unknown.
+   * @returns {any}
+   */
+  stateCounts(): any;
+  /**
+   * Returns the state of a tile as the panel reads it: normal, alarm, ack or ringback in any case, normal when the tile has no state, and unknown for any other word.
+   * @param {any} tile. A tile record.
+   * @returns {string}
+   */
+  stateOf(tile: any): string;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-annunciator"): Annunciator;
+        querySelector(selectors: "smart-annunciator"): Annunciator | null;
+        querySelectorAll(selectors: "smart-annunciator"): NodeListOf<Annunciator>;
+        getElementsByTagName(qualifiedName: "smart-annunciator"): HTMLCollectionOf<Annunciator>;
+        getElementsByName(elementName: "smart-annunciator"): NodeListOf<Annunciator>;
+    }
+}
+
+export interface AnomalyHeatmapProperties {
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * Sets or retrieves the rows as [{ id, label }] or as plain ids. The id is the value a sample carries in its series field. Assign a new array to update the component.
+   * Default value: 
+   */
+  series?: any;
+  /**
+   * Sets or retrieves the samples as [{ series, timestamp, score }], where score is between 0 and 1. A cell shows the highest score of the samples in its interval; a sample without a series or a score is dropped. Assigning the property replaces the samples; push adds to them.
+   * Default value: 
+   */
+  data?: any;
+  /**
+   * Sets or retrieves the width of the time axis, in milliseconds. A day by default.
+   * Default value: 86400000
+   */
+  timeSpan?: number;
+  /**
+   * Sets or retrieves one column's width in time, in milliseconds. Fifteen minutes by default. The column count is timeSpan divided by bucket.
+   * Default value: 900000
+   */
+  bucket?: number;
+  /**
+   * Sets or retrieves the right edge of the time axis as a timestamp; the columns cover the time span up to it. null follows the data: the axis ends at the end of the interval that contains the newest sample, or at the current time when there are no samples, aligned to an interval boundary.
+   * Default value: null
+   */
+  end?: number;
+  /**
+   * Sets or retrieves how far ahead of this computer's clock, in milliseconds, a pushed sample may be stamped. A sample stamped later than that and more than one interval after the newest sample held is ignored: push returns false and a warning is written to the console once per series. Without it, one sample from a device whose clock is a year out - or seconds read as milliseconds - moved the axis to that time and dropped every real sample off it. A feed that runs ahead of the clock one interval at a time, such as a simulation or a replay, is still followed. null takes every timestamp as given. Samples assigned through data are taken as given.
+   * Default value: 300000
+   */
+  maxClockSkew?: number;
+  /**
+   * Sets or retrieves the start of each band as { advisory, warning, critical }. A score below the advisory threshold is drawn in a neutral colour whose intensity follows the score; from each threshold up, a cell takes the alarm colour of its band.
+   * Default value: [object Object]
+   */
+  thresholds?: AnomalyHeatmapThresholds;
+  /**
+   * Sets or retrieves the selected cell, as { series, timestamp }, or null. Focusing or clicking a cell selects it.
+   * Default value: null
+   */
+  selected?: any;
+  /**
+   * Determines whether each cell prints its score. Off by default: at the default cell size the number does not fit, and the colour and the label carry it.
+   * Default value: false
+   */
+  showValues?: boolean;
+  /**
+   * Determines whether the legend of bands is shown under the grid.
+   * Default value: true
+   */
+  showLegend?: boolean;
+  /**
+   * Determines whether the time labels are shown along the top.
+   * Default value: true
+   */
+  showTimeAxis?: boolean;
+  /**
+   * Sets or retrieves the decimals scores are shown with.
+   * Default value: 2
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves a name for the heatmap, spoken as part of the grid's label.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or gets the language-specific strings the component shows, keyed by locale then by message. Used with the locale property.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Sets or gets the locale, which selects a block of messages. The time labels and the scores are written in this locale.
+   * Default value: "en"
+   */
+  locale?: string;
+}
+/**
+ AnomalyHeatmap displays anomaly scores as a heatmap with one row per tag or asset and one column per time interval. Each cell shows the highest score reported in the interval; cells below the first threshold use a neutral scale and cells above the advisory, warning and critical thresholds use the alarm colours. The component supports keyboard navigation and selection, and raises events when a cell is selected or activated so the application can open the related trend. In a narrow container the grid opens scrolled to the newest interval and stays there as data arrives, until the operator scrolls back; in right-to-left the grid is mirrored, newest on the left, and the arrow keys follow it. Times are written in the element's locale on the 24-hour clock.
+*/
+export interface AnomalyHeatmap extends BaseElement, AnomalyHeatmapProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a cell is selected, by focus or by a click.
+	* @param event. The custom event. Custom data event was created with: ev.detail(series, timestamp, score, severity)
+   *  series - The series id.
+   *  timestamp - The start of the cell's interval.
+   *  score - The cell's score, or NaN when it has none.
+   *  severity - The cell's band: normal, advisory, warning or critical.
+   */
+  onSelectionChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a cell is activated, clicked, or Enter or Space pressed on it. A host opens the trend behind the cell here, or asks the operator whether the model was right.
+	* @param event. The custom event. Custom data event was created with: ev.detail(series, timestamp, score, severity)
+   *  series - The series id.
+   *  timestamp - The start of the cell's interval.
+   *  score - The cell's score, or NaN when it has none.
+   *  severity - The cell's band: normal, advisory, warning or critical.
+   */
+  onCellClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Adds one sample and redraws the cell it lands in; the grid is rebuilt only when the axis moves on to a new interval, so a unit of fifty series over a day takes a sample in a few milliseconds. A sample without a timestamp is stamped with the current time. Returns false when the sample has no series or no score, or is stamped too far ahead of the clock (see <em>maxClockSkew</em>).
+   * @param {any} sample. { series, timestamp, score }
+   * @returns {boolean}
+   */
+  push(sample: any): boolean;
+  /**
+   * Returns the worst score in the bucket that holds a time, for a series, or NaN when nothing landed there.
+   * @param {string} series. The series id.
+   * @param {number} time. A timestamp.
+   * @returns {number}
+   */
+  scoreAt(series: string, time: number): number;
+  /**
+   * Returns the band a score falls in: advisory, warning, critical, or normal below the first threshold.
+   * @param {number} score. A score, 0 to 1.
+   * @returns {string}
+   */
+  severityOf(score: number): string;
+  /**
+   * Returns the cells at or above a severity, highest score first, as <em>[{ series, timestamp, score, severity }]</em>.
+   * @param {string} severity?. advisory, warning or critical. advisory when omitted.
+   * @returns {any}
+   */
+  hotspots(severity?: string): any;
+  /**
+   * Rebuilds the component from its properties.
+   */
+  redraw(): void;
+}
+
+/**Sets or retrieves the start of each band as <em>{ advisory, warning, critical }</em>. A score below the advisory threshold is drawn in a neutral colour whose intensity follows the score; from each threshold up, a cell takes the alarm colour of its band. */
+export interface AnomalyHeatmapThresholds {
+  /**
+   * 
+   * Default value: undefined
+   */
+  advisory?: any;
+  /**
+   * 
+   * Default value: undefined
+   */
+  warning?: any;
+  /**
+   * 
+   * Default value: undefined
+   */
+  critical?: any;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-anomaly-heatmap"): AnomalyHeatmap;
+        querySelector(selectors: "smart-anomaly-heatmap"): AnomalyHeatmap | null;
+        querySelectorAll(selectors: "smart-anomaly-heatmap"): NodeListOf<AnomalyHeatmap>;
+        getElementsByTagName(qualifiedName: "smart-anomaly-heatmap"): HTMLCollectionOf<AnomalyHeatmap>;
+        getElementsByName(elementName: "smart-anomaly-heatmap"): NodeListOf<AnomalyHeatmap>;
+    }
+}
+
 export interface ArrayProperties {
   /**
    * Specifies or retrieves the current animation mode. When this property is set to 'none', all animation effects are disabled; no transitions or animated elements will occur. Use this property to enable, disable, or customize animation behaviors within the application.
@@ -1851,6 +2408,357 @@ declare global {
 export declare type ArrayArrayIndexingMode = 'LabVIEW' | 'JavaScript';
 /**Configures or retrieves the data type and the specific widget components assigned to each element within the Array. This determines how the array’s values are stored and how individual items are rendered and interacted with in the user interface. */
 export declare type ArrayType = 'none' | 'boolean' | 'numeric' | 'string' | 'custom';
+export interface AssetCardProperties {
+  /**
+   * Sets or retrieves the name of the asset. It is the heading of the card and its accessible name.
+   * Default value: ""
+   */
+  name?: string;
+  /**
+   * Sets or retrieves the asset's identifier, as the plant's maintenance system knows it.
+   * Default value: ""
+   */
+  assetId?: string;
+  /**
+   * Sets or retrieves the maker and model.
+   * Default value: ""
+   */
+  model?: string;
+  /**
+   * Sets or retrieves where the asset stands.
+   * Default value: ""
+   */
+  location?: string;
+  /**
+   * Sets or retrieves the machine's state. Only fault, maintenance and offline are marked; running and stopped are text.
+   * Default value: running
+   */
+  state?: AssetCardState | string;
+  /**
+   * Sets or retrieves the run hours, from the PLC's counter.
+   * Default value: 0
+   */
+  runHours?: number;
+  /**
+   * Sets or retrieves the number of starts, from the PLC's counter. Null hides it.
+   * Default value: null
+   */
+  starts?: number;
+  /**
+   * Sets or retrieves the hours between services. 0 for an asset without an hours-based interval, which the card says rather than drawing an empty bar.
+   * Default value: 0
+   */
+  serviceInterval?: number;
+  /**
+   * Sets or retrieves the run hours at the last service. The next is due at this plus the interval. When runHours is below it - a counter reset or replaced, or a service entered wrong - the card says the counter needs checking instead of showing a full interval.
+   * Default value: 0
+   */
+  lastServiceHours?: number;
+  /**
+   * Sets or retrieves when the last service was done, as an ISO date.
+   * Default value: ""
+   */
+  lastServiceDate?: string;
+  /**
+   * Sets or retrieves who did the last service.
+   * Default value: ""
+   */
+  lastServiceBy?: string;
+  /**
+   * Sets or retrieves how much of the interval is left, as a fraction, when the service is marked due soon.
+   * Default value: 0.1
+   */
+  dueSoon?: number;
+  /**
+   * Sets or retrieves the condition readings as [{ label, value, unit, status, limit, direction }]. status is normal, warning or alarm; a reading out of band says so in words, with its limit. A warning names its side: direction 'high' or 'low' when given, otherwise high when a numeric value is above its limit and low when below it, and 'warning' when neither can be told.
+   * Default value: 
+   */
+  condition?: any;
+  /**
+   * Sets or retrieves the work orders as [{ id, title, status, priority, due }]. Done orders are not listed. Assign a new array to update the component.
+   * Default value: 
+   */
+  workOrders?: any;
+  /**
+   * Sets or retrieves whether the card shows only the name, the state and the service: for a wall of assets.
+   * Default value: false
+   */
+  compact?: boolean;
+  /**
+   * Sets or retrieves whether the card only shows. Request work and Record service are removed; work orders can still be opened.
+   * Default value: false
+   */
+  readOnly?: boolean;
+  /**
+   * Sets or retrieves whether the application is sending a request or recording a service. Send and Record wait.
+   * Default value: false
+   */
+  busy?: boolean;
+  /**
+   * Sets or retrieves whether the card is disabled. A disabled card disables its buttons and fields, which takes them out of the tab order, and raises no event - not from the keyboard either (Ctrl+Enter in an open request form sends nothing).
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether the card can be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ AssetCard is one machine as maintenance sees it: how long it has run, when it is next due for service, how it is doing and what is open against it. Its first job is to answer "is it due" in hours - the service bar fills as the interval is used and says in words how much is left or by how much it is overdue. Colour is for what is abnormal: a service due soon or overdue, a condition reading out of band, a machine in fault. Request work and Record service raise events; the application puts them where the plant keeps its maintenance.
+*/
+export interface AssetCard extends BaseElement, AssetCardProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the operator sends a request for work on the asset.
+	* @param event. The custom event. Custom data event was created with: ev.detail(assetId, text, priority)
+   *  assetId - The asset's identifier.
+   *  text - What needs doing.
+   *  priority - high, normal or low.
+   */
+  onWorkOrderRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a service is recorded, after the confirmation. The card does not restart the interval itself: the application records it and sets lastServiceHours.
+	* @param event. The custom event. Custom data event was created with: ev.detail(assetId, runHours)
+   *  assetId - The asset's identifier.
+   *  runHours - The run hours the service was done at.
+   */
+  onServiceRecord?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a work order is opened from the card, for the application to show it.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, assetId)
+   *  id - The id of the work order.
+   *  assetId - The asset's identifier.
+   */
+  onWorkOrderOpen?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-asset-card"): AssetCard;
+        querySelector(selectors: "smart-asset-card"): AssetCard | null;
+        querySelectorAll(selectors: "smart-asset-card"): NodeListOf<AssetCard>;
+        getElementsByTagName(qualifiedName: "smart-asset-card"): HTMLCollectionOf<AssetCard>;
+        getElementsByName(elementName: "smart-asset-card"): NodeListOf<AssetCard>;
+    }
+}
+
+/**Sets or retrieves the machine's state. Only fault, maintenance and offline are marked; running and stopped are text. */
+export declare type AssetCardState = 'running' | 'stopped' | 'fault' | 'maintenance' | 'offline';
+export interface AuditTrailProperties {
+  /**
+   * Sets or retrieves the entries, as { seq, id, at, system, user, userName, action, record, field, oldValue, newValue, reason, signature, previousHash, hash }, in sequence. For a running feed use addEntry(), which verifies only the entry it adds.
+   * Default value: 
+   */
+  entries?: any;
+  /**
+   * Sets or retrieves the columns shown, in order, from seq, at, user, action, record, field, oldValue, newValue, reason, signature and system. Empty shows all but system.
+   * Default value: 
+   */
+  columns?: any;
+  /**
+   * Sets or retrieves the order by sequence: newest first, or oldest first. The Time header toggles it.
+   * Default value: desc
+   */
+  sortDirection?: AuditTrailSortDirection | string;
+  /**
+   * Sets or retrieves the filter as { text, user, action, from, to }. text is searched across the entry, user and action are matched exactly, and from and to are ISO strings or epoch milliseconds. The toolbar edits the filter and raises the filterChange event.
+   * Default value: [object Object]
+   */
+  filter?: AuditTrailFilter;
+  /**
+   * Determines whether the search, filters, integrity badge and export buttons are shown.
+   * Default value: true
+   */
+  showToolbar?: boolean;
+  /**
+   * Determines whether the hash chain is verified and its verdict shown.
+   * Default value: true
+   */
+  showIntegrity?: boolean;
+  /**
+   * Sets or retrieves the previousHash the first entry must carry, when the chain did not start at ''.
+   * Default value: ""
+   */
+  genesis?: string;
+  /**
+   * Sets or retrieves the hash of an entry known to have been written - an anchor kept outside the trail, for example by the server. A hash chain verifies from its first entry to its last, so a copy with its newest entries removed is a shorter chain that is still intact; with an anchor the verdict fails when the chain does not contain this hash. Entries added after the anchor was taken do not fail it. Empty does not check.
+   * Default value: ""
+   */
+  expectedHead?: string;
+  /**
+   * Sets or retrieves how many entries the trail is known to have held - an anchor kept outside the trail. The verdict fails when fewer entries are given, so removing the newest entries is detected. More entries are fine. 0 does not check.
+   * Default value: 0
+   */
+  expectedCount?: number;
+  /**
+   * Determines whether entries that carry no hash at all are a failure. On (the default), a list without hashes - never chained, or with its hashes stripped - is shown as 'No hash chain - N entries cannot be verified' and integrity() returns { ok: false, reason: 'unchained' }. Off, it is shown as information and integrity() returns null, for an application whose log was never chained.
+   * Default value: true
+   */
+  requireChain?: boolean;
+  /**
+   * Sets or retrieves the maximum number of rows rendered. The footer shows how many entries are not rendered; they can be reached by narrowing the filter or by exporting.
+   * Default value: 500
+   */
+  maxRows?: number;
+  /**
+   * Determines whether the time column shows milliseconds.
+   * Default value: false
+   */
+  showMilliseconds?: boolean;
+  /**
+   * Determines whether a 'Mark reviewed' button is shown. The button raises the reviewRequest event with the entries shown; the application records the review, with a signature if required.
+   * Default value: false
+   */
+  showReview?: boolean;
+  /**
+   * Sets or retrieves the id of the selected entry, or ''.
+   * Default value: ""
+   */
+  selected?: string;
+  /**
+   * Sets or retrieves the base name of a downloaded export.
+   * Default value: "audit-trail"
+   */
+  fileName?: string;
+  /**
+   * Sets or retrieves the table's caption and the accessible name. Empty shows 'Audit trail'.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the target size of the toolbar controls.
+   * Default value: normal
+   */
+  density?: AuditTrailDensity | string;
+  /**
+   * Enables or disables the component. A disabled viewer disables its search, filters, export and sort buttons and takes its rows out of the tab order; nothing it shows changes and it raises no event.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the column names, the action names, the verdicts, the toolbar. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ AuditTrail displays audit trail entries for review, as required by 21 CFR Part 11 §11.10(e). Each entry shows the user, the timestamp with its UTC offset, the action, and for a change both the previous and the new value. The entries can be searched, filtered by user, action and time range, and exported as CSV or JSON including their hashes. When the entries carry a hash chain, the component verifies it and reports the result. The component is read-only: it does not create, edit, delete or reorder entries.
+*/
+export interface AuditTrail extends BaseElement, AuditTrailProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when an entry is selected by click, Enter or select().
+	* @param event. The custom event. Custom data event was created with: ev.detail(entry)
+   *  entry - The entry.
+   */
+  onEntrySelect?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the toolbar changes the filter.
+	* @param event. The custom event. Custom data event was created with: ev.detail(filter)
+   *  filter - { text, user, action, from, to } as applied.
+   */
+  onFilterChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the chain verdict changes, an intact trail replaced by a copy that breaks, or the reverse.
+	* @param event. The custom event. Custom data event was created with: ev.detail(integrity, state)
+   *  integrity - { ok, count, brokenAt, reason }, or null.
+   *  state - 'intact', 'broken' or 'none'.
+   */
+  onIntegrityChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when an export is downloaded. An export is itself an action that can be recorded in the audit trail.
+	* @param event. The custom event. Custom data event was created with: ev.detail(format, count, fileName)
+   *  format - 'csv' or 'json'.
+   *  count - How many entries were exported.
+   *  fileName - The file name offered.
+   */
+  onExport?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered by the 'Mark reviewed' button. The application records the review.
+	* @param event. The custom event. Custom data event was created with: ev.detail(entries, count, filter)
+   *  entries - The entries shown.
+   *  count - How many.
+   *  filter - The filter in force.
+   */
+  onReviewRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Adds an entry, for example from a Trail subscription that keeps the viewer up to date.
+   * @param {any} entry. The entry.
+   */
+  addEntry(entry: any): void;
+  /**
+   * Returns the entries the filter lets through, in display order.
+   * @returns {any}
+   */
+  visible(): any;
+  /**
+   * Returns how many entries are held, filtered or not.
+   * @returns {number}
+   */
+  count(): number;
+  /**
+   * Returns the chain verification as { ok, count, brokenAt, reason }, or null when integrity is not shown, when there are no entries and no anchor, or when no entry carries a hash and requireChain is off. reason is 'link', 'hash', 'sequence' or 'missing' at the first entry that fails, 'unchained' when no entry carries a hash, 'count' when fewer entries than expectedCount are given, or 'head' when the chain does not contain expectedHead. The verdict is kept between refreshes: filtering and sorting do not re-verify, and addEntry() verifies only the entry it adds.
+   * @returns {any}
+   */
+  integrity(): any;
+  /**
+   * Returns the complete trail as text, with every entry and every hash, regardless of the current filter. In CSV, a text value that a spreadsheet would run as a formula (starting with =, +, -, @, a tab or a carriage return) is prefixed with an apostrophe; numbers are written as they are. The JSON export is the exact copy that verifies.
+   * @param {string} format. 'csv' or 'json'.
+   * @param {any} options?. { filtered: true } for what is on screen instead.
+   * @returns {string}
+   */
+  export(format: string, options?: any): string;
+  /**
+   * Downloads the export as a file and raises the export event.
+   * @param {string} format. 'csv' or 'json'.
+   * @param {any} options?. { filtered: true } for what is on screen instead.
+   */
+  download(format: string, options?: any): void;
+  /**
+   * Selects an entry by id and raises the entrySelect event. Pass an empty string to clear the selection.
+   * @param {string} id. The entry id.
+   */
+  select(id: string): void;
+  /**
+   * Rebuilds the viewer from its properties.
+   */
+  redraw(): void;
+}
+
+/**Sets or retrieves the filter as <em>{ text, user, action, from, to }</em>. <em>text</em> is searched across the entry, <em>user</em> and <em>action</em> are matched exactly, and <em>from</em> and <em>to</em> are ISO strings or epoch milliseconds. The toolbar edits the filter and raises the filterChange event. */
+export interface AuditTrailFilter {
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-audit-trail"): AuditTrail;
+        querySelector(selectors: "smart-audit-trail"): AuditTrail | null;
+        querySelectorAll(selectors: "smart-audit-trail"): NodeListOf<AuditTrail>;
+        getElementsByTagName(qualifiedName: "smart-audit-trail"): HTMLCollectionOf<AuditTrail>;
+        getElementsByName(elementName: "smart-audit-trail"): NodeListOf<AuditTrail>;
+    }
+}
+
+/**Sets or retrieves the order by sequence: newest first, or oldest first. The Time header toggles it. */
+export declare type AuditTrailSortDirection = 'asc' | 'desc';
+/**Sets or retrieves the target size of the toolbar controls. */
+export declare type AuditTrailDensity = 'normal' | 'touch';
 export interface BarcodeProperties {
   /**
    * Defines the background color that appears behind the barcode element. This setting determines the color fill for the area surrounding and underneath the barcode, helping to improve contrast and overall barcode visibility. Accepts color values in standard CSS formats (e.g., hex, RGB, or color names).
@@ -1990,6 +2898,411 @@ export declare type BarcodeLabelPosition = 'top' | 'bottom';
 export declare type BarcodeRenderAs = 'svg' | 'canvas';
 /**Specifies the format or symbology of the barcode to be generated (e.g., Code128, QR Code, EAN-13, UPC-A). This determines how the data will be encoded and displayed within the barcode. */
 export declare type BarcodeType = 'pharmacode' | 'codabar' | 'code128a' | 'code128b' | 'code128c' | 'msi' | 'msi10' | 'msi11' | 'msi1010' | 'msi1110' | 'ean13' | 'ean8' | 'code39' | 'code93';
+export interface BarGraphProperties {
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the accessible name and the peak marker (2 keys: barGraphLabel, peak). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Sets or retrieves whether the meter can be operated as a control. The meter is read-only by default and is not in the tab order, so that a meter which cannot be operated is not an empty tab stop. The property is named for the enabled state because boolean attributes are presence-based, and a property that defaulted to true could not be turned off from markup. A read-only meter has the meter role; an interactive one is a slider. A click on an interactive meter sets the value there, clamped and snapped to interval when coerce is set, and moves the display.
+   * Default value: false
+   */
+  interactive?: boolean;
+  /**
+   * Sets or retrieves the rate at which a held peak falls after its hold time expires, in scale units per second. 0 drops the peak straight back to the signal; a small value makes it fall gradually, like an analogue meter, which keeps a burst of transients readable. The fall is steady, measured from the peak as it was caught, however often the value updates.
+   * Default value: 0
+   */
+  peakDecay?: number;
+  /**
+   * Sets or retrieves whether the highest value reached is marked and held. Works the same set in markup or as a property, and after the meter is moved to another parent.
+   * Default value: false
+   */
+  peakHold?: boolean;
+  /**
+   * Sets or gets the time in milliseconds a peak is held before it starts to fall.
+   * Default value: 1500
+   */
+  peakHoldTime?: number;
+  /**
+   * Sets or gets the gap between segments in pixels.
+   * Default value: 2
+   */
+  segmentGap?: number;
+  /**
+   * Sets or retrieves the number of segments the bar is divided into. A segment lights when the value passes its lower edge, so half of the scale lights exactly half of the segments. Values below 1 draw one segment and values above 500 draw 500.
+   * Default value: 20
+   */
+  segments?: number;
+  /**
+   * Sets or retrieves whether the value is written beside the bar.
+   * Default value: false
+   */
+  showValue?: boolean;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ BarGraph is a segmented level meter, such as the column of lit blocks on an audio console or a vibration monitor. It extends Tank, so min, max, value, interval, coerce, logarithmicScale, precisionDigits and inverted work as they do on Tank. The alarm ranges colour the segments while showRanges is set, the unit is written with the value while showUnit is set, orientation lays the bar vertically (the default) or horizontally, and rightToLeft reverses the Left and Right arrow keys. Tank's scientificNotation and mechanicalAction are inherited, but the bar graph does not apply them. The component adds the segmented display and peak hold, which keeps short transients visible. A lit segment in the normal range takes the process colour (--${namespace.toLowerCase()}-bar-segment-on); green, amber and red come only from ranges marked ok, warning or critical. An aria-label written by the author names the meter.
+*/
+export interface BarGraph extends BaseElement, BarGraphProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the value changes through a click or the keyboard. Only raised when <em>interactive</em> is set, a read-only meter reports nothing.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value)
+   *  value - The new value.
+   */
+  onChange: ((this: any, ev: Event) => any) | null;
+  /**
+   * Redraws the bar.
+   */
+  redraw(): void;
+  /**
+   * Clears the held peak, for example to reset the meters after an event.
+   */
+  resetPeak(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-bar-graph"): BarGraph;
+        querySelector(selectors: "smart-bar-graph"): BarGraph | null;
+        querySelectorAll(selectors: "smart-bar-graph"): NodeListOf<BarGraph>;
+        getElementsByTagName(qualifiedName: "smart-bar-graph"): HTMLCollectionOf<BarGraph>;
+        getElementsByName(elementName: "smart-bar-graph"): NodeListOf<BarGraph>;
+    }
+}
+
+export interface BitFieldProperties {
+  /**
+   * Sets or retrieves the display order of the bits. It affects the display only; bits are always numbered from the least significant bit, so bit 3 is the same bit in both orders.
+   * Default value: msbFirst
+   */
+  bitOrder?: BitFieldBitOrder | string;
+  /**
+   * Sets or retrieves the register map, as [{ index, label, description, readOnly, color }]. index counts from the least significant bit. A bit marked readOnly refuses to change, a register map is a contract, and a UI that lets an operator flip a reserved bit is lying about the hardware. An entry that is not an object is skipped.
+   * Default value: 
+   */
+  bits?: any;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the number of bits grouped together visually. Groups are counted from the least significant end, so nibble boundaries line up with the hexadecimal digits underneath. 0 removes the grouping.
+   * Default value: 4
+   */
+  groupSize?: number;
+  /**
+   * Sets or retrieves whether the bits can be toggled by click or keyboard. The property is named for the enabled state because boolean attributes are presence-based, and a property that defaulted to true could not be turned off from markup. When false the bits are not buttons and not in the tab order.
+   * Default value: false
+   */
+  interactive?: boolean;
+  /**
+   * Sets or retrieves how the word value is written beneath the bits.
+   * Default value: hex
+   */
+  radixDisplay?: BitFieldRadixDisplay | string;
+  /**
+   * Sets or retrieves whether each bit shows its number. Boolean attributes are presence-based, so set the property from script to turn it off.
+   * Default value: true
+   */
+  showIndices?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the bit and field names, the set, clear, reserved and read-only words (7 keys: fieldLabel, bitLabel, namedBitLabel, set, clear, reserved, ..). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * Sets or retrieves the word. Accepts a number, a BigInt, a boolean, or a string with an optional sign and 0x, 0b or 0o prefix (-0x1 is minus one; 1e3 is 1000); a negative value is treated as two's complement. The value is read back as a decimal string - signed for a signed word length, so an int16 at all ones reads -1 - because a 64-bit value cannot be represented exactly as a number. A value wider than the word length is masked, and one that cannot be read becomes 0: whatever was assigned, the property reads back in this form.
+   * Default value: 0
+   */
+  value?: any;
+  /**
+   * Sets or retrieves the register width and signedness. Signedness shows only in the decimal readout: the same bit pattern is 65535 as a uint16 and -1 as an int16.
+   * Default value: uint16
+   */
+  wordLength?: BitFieldWordLength | string;
+}
+/**
+ BitField displays a fixed-width register as individual bits with names, keeping the word value and the bits in sync. It supports named and reserved bits, MSB-first or LSB-first order, and word widths up to 64 bits. Values are held as BigInt, so 64-bit registers are represented exactly. A register wider than its panel wraps whole groups onto further rows. Only an interactive register's bits are buttons; a read-only one shows them as images named with their state, with no tab stop.
+*/
+export interface BitField extends BaseElement, BitFieldProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the word changes through the component, a click, the keyboard, setBit or mask. Assigning the value property directly does not raise it.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value, oldValue, bit)
+   *  value - The new word, as a decimal string.
+   *  oldValue - The previous word.
+   *  bit - Which bit changed, or null when a mask changed several at once.
+   */
+  onChange: ((this: any, ev: Event) => any) | null;
+  /**
+   * Returns the value of one bit. The index counts from the least significant bit regardless of the bitOrder property.
+   * @param {number} index. Bit position from the least significant bit.
+   * @returns {boolean}
+   */
+  bit(index: number): boolean;
+  /**
+   * Sets or clears every bit that is set in the mask, as a "clear faults" command does. A bit marked readOnly in the register map is not changed, and bits beyond the word length are ignored.
+   * @param {number | string | bigint} mask. The bits to act on.
+   * @param {boolean} on?. Set them (the default) or clear them.
+   */
+  mask(mask: number | string | bigint, on?: boolean): void;
+  /**
+   * Redraws the register.
+   */
+  redraw(): void;
+  /**
+   * Sets, clears or toggles one bit. A bit marked readOnly in the register map is not changed.
+   * @param {number} index. Bit position from the least significant bit.
+   * @param {boolean} on?. Force a state instead of toggling.
+   */
+  setBit(index: number, on?: boolean): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-bit-field"): BitField;
+        querySelector(selectors: "smart-bit-field"): BitField | null;
+        querySelectorAll(selectors: "smart-bit-field"): NodeListOf<BitField>;
+        getElementsByTagName(qualifiedName: "smart-bit-field"): HTMLCollectionOf<BitField>;
+        getElementsByName(elementName: "smart-bit-field"): NodeListOf<BitField>;
+    }
+}
+
+/**Sets or retrieves the display order of the bits. It affects the display only; bits are always numbered from the least significant bit, so bit 3 is the same bit in both orders. */
+export declare type BitFieldBitOrder = 'msbFirst' | 'lsbFirst';
+/**Sets or retrieves how the word value is written beneath the bits. */
+export declare type BitFieldRadixDisplay = 'hex' | 'dec' | 'bin' | 'oct' | 'none';
+/**Sets or retrieves the register width and signedness. Signedness shows only in the decimal readout: the same bit pattern is 65535 as a uint16 and -1 as an int16. */
+export declare type BitFieldWordLength = 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'uint32' | 'int64' | 'uint64';
+export interface BodePlotProperties {
+  /**
+   * Enables or disables the element.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves the responses. Each is an object with id, label, color, lineWidth, visible and either frequencies, magnitude and phase (measured points, magnitude in dB or linear per magnitudeUnit, phase in degrees) or transferFunction ({ numerator, denominator } as polynomial coefficients in s, highest power first).
+   * Default value: 
+   */
+  plots?: any;
+  /**
+   * Sets or retrieves the start of the frequency axis. With frequencyMax, fixes the axis and the range a transfer function is evaluated over; null follows the measured points.
+   * Default value: null
+   */
+  frequencyMin?: number;
+  /**
+   * Sets or retrieves the end of the frequency axis.
+   * Default value: null
+   */
+  frequencyMax?: number;
+  /**
+   * Sets or retrieves the unit of the frequency axis. A transfer function is evaluated at s = jω with ω in rad/s either way.
+   * Default value: Hz
+   */
+  frequencyUnit?: BodePlotFrequencyUnit | string;
+  /**
+   * Sets or retrieves how measured magnitude is given. Linear values are converted to dB; the plot always shows dB.
+   * Default value: dB
+   */
+  magnitudeUnit?: BodePlotMagnitudeUnit | string;
+  /**
+   * Sets or retrieves the bottom of the magnitude band in dB. Null follows the data.
+   * Default value: null
+   */
+  magnitudeMin?: number;
+  /**
+   * Sets or retrieves the top of the magnitude band in dB. Null follows the data.
+   * Default value: null
+   */
+  magnitudeMax?: number;
+  /**
+   * Sets or retrieves the bottom of the phase band in degrees. Null follows the data.
+   * Default value: null
+   */
+  phaseMin?: number;
+  /**
+   * Sets or retrieves the top of the phase band in degrees. Null follows the data.
+   * Default value: null
+   */
+  phaseMax?: number;
+  /**
+   * Marks the gain and phase margins of the first visible response on both bands and writes them out under the plot. A margin at or below zero is marked as failing. The phase margin is measured to the nearest -180° + k·360° line, so it lies between -180° and 180° and is negative for an unstable loop. With several crossings the smallest phase margin and the gain margin closest to 0 dB are shown; margins() lists every crossing.
+   * Default value: false
+   */
+  showMargins?: boolean;
+  /**
+   * Shows the phase band under the magnitude band.
+   * Default value: true
+   */
+  showPhase?: boolean;
+  /**
+   * Shows the grid lines at the decades and the ticks.
+   * Default value: true
+   */
+  showGrid?: boolean;
+  /**
+   * Shows the legend, where a response is hidden and shown.
+   * Default value: true
+   */
+  showLegend?: boolean;
+  /**
+   * Sets or retrieves the frequency of the cursor, which reads every response. Null hides it. The cursor is placed by clicking the plot, moved with the arrow keys (Shift for larger steps, Home and End for the ends) and cleared with Escape.
+   * Default value: null
+   */
+  cursor?: number;
+  /**
+   * Enables placing and moving the cursor with the pointer and the keyboard.
+   * Default value: true
+   */
+  interactive?: boolean;
+  /**
+   * Sets or retrieves the title shown above the plot and used in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the number of significant digits in frequencies.
+   * Default value: 4
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves the line width of the responses, in pixels. A response can carry its own.
+   * Default value: 1.6
+   */
+  lineWidth?: number;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the element - the axis names, margin and cursor texts. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the element.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the element cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ BodePlot displays magnitude and phase against a logarithmic frequency axis, one band above the other. A response is given as measured points or as a transfer function in s that the component evaluates across the frequency range, so a model and a measurement sit on the same axes. The gain and phase margins are read off an open-loop response, marked on both bands and written out. A transfer function's phase is followed continuously from its low-frequency asymptote (-90° for each integrator), so a double integrator with a lag reads from about -180° downwards; measured phase is unwrapped along the frequency axis from its first point, and points may be given in either frequency order. A cursor reads every response at one frequency.
+*/
+export interface BodePlot extends BaseElement, BodePlotProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the cursor is placed or moved by the operator.
+	* @param event. The custom event. Custom data event was created with: ev.detail(frequency)
+   *  frequency - The cursor frequency.
+   */
+  onCursorChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a response is hidden or shown from the legend.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, visible)
+   *  id - The response.
+   *  visible - Whether it is now shown.
+   */
+  onPlotVisibilityChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns a response at a frequency as { magnitude, phase } in dB and degrees, interpolated on the log axis, or NaN outside the record.
+   * @param {string} id. The response.
+   * @param {number} frequency. The frequency.
+   * @returns {any}
+   */
+  valueAt(id: string, frequency: number): any;
+  /**
+   * Returns the stability margins of a response as { gainMargin, gainMarginFrequency, phaseMargin, phaseMarginFrequency, gainMargins, phaseMargins }, NaN where there is no crossing. The phase margin at a gain crossover is measured to the nearest -180° + k·360° line (between -180° and 180°, negative when the loop is unstable there); the gain margin is read at every frequency where the phase crosses -180° + k·360°. With several crossings, phaseMargin is the smallest phase margin and gainMargin the one closest to 0 dB; gainMargins and phaseMargins list every crossing as { margin, frequency } in ascending frequency.
+   * @param {string} id?. The response; the first visible one when omitted.
+   * @returns {any}
+   */
+  margins(id?: string): any;
+  /**
+   * Evaluates a transfer function at a frequency and returns { magnitude, phase } in dB and degrees. The phase is the continuous phase of the response, anchored at its low-frequency asymptote (-90° for each integrator, +90° for each differentiator, -180° more for a negative gain), not an angle folded into -180°..180°.
+   * @param {any} transferFunction. { numerator, denominator } as coefficients in s, highest power first.
+   * @param {number} frequency. In the element's frequency unit.
+   * @returns {any}
+   */
+  evaluate(transferFunction: any, frequency: number): any;
+  /**
+   * Shows or hides a response.
+   * @param {string} id. The response.
+   * @param {boolean} visible?. Shown when true, hidden when false; toggled when omitted.
+   */
+  togglePlot(id: string, visible?: boolean): void;
+  /**
+   * Returns a sentence describing what the plot shows, as used in its accessible name, with the margins when they are shown.
+   * @returns {string}
+   */
+  describe(): string;
+  /**
+   * Redraws the element from its current properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-bode-plot"): BodePlot;
+        querySelector(selectors: "smart-bode-plot"): BodePlot | null;
+        querySelectorAll(selectors: "smart-bode-plot"): NodeListOf<BodePlot>;
+        getElementsByTagName(qualifiedName: "smart-bode-plot"): HTMLCollectionOf<BodePlot>;
+        getElementsByName(elementName: "smart-bode-plot"): NodeListOf<BodePlot>;
+    }
+}
+
+/**Sets or retrieves the unit of the frequency axis. A transfer function is evaluated at s = jω with ω in rad/s either way. */
+export declare type BodePlotFrequencyUnit = 'Hz' | 'rad/s';
+/**Sets or retrieves how measured magnitude is given. Linear values are converted to dB; the plot always shows dB. */
+export declare type BodePlotMagnitudeUnit = 'dB' | 'linear';
 export interface BreadcrumbProperties {
   /**
    * Controls the visibility and functionality of the "Add new item" (+) button. When enabled, users can click the button to create and add new items. When disabled, the button is hidden or inactive, preventing the addition of new items.
@@ -3525,6 +4838,152 @@ declare global {
 
 /**Specifies how the content is visually presented to the user by selecting the appropriate display mode (e.g., fullscreen, minimal-ui, standalone, or browser). This controls the appearance and user interface elements shown when the application or page is loaded. */
 export declare type CarouselDisplayMode = 'default' | 'multiple' | '3d';
+export interface CauseEffectMatrixProperties {
+  /**
+   * Enables or disables the component. A disabled matrix takes its cells out of the tab order and raises no cellClick, causeClick, effectClick or selectionChange event.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the rows: { id, tag, label, active, bypassed, activeSince }. An active cause tints its row; a bypassed one is marked and does not count towards an expected trip. active and bypassed written as the text "false", "0", "no" or "off" are false. activeSince (a Date, epoch milliseconds or ISO text) is when the cause became active, used for timed trips; without it the component counts from when it first saw the cause active. Entries that are not objects are ignored. Assign a new array to update the component; the keyboard stays on the same cell across an update.
+   * Default value: 
+   */
+  causes?: any;
+  /**
+   * Sets or gets the columns: { id, tag, label, tripped }. A tripped effect tints its column. tripped written as the text "false", "0", "no" or "off" is false.
+   * Default value: 
+   */
+  effects?: any;
+  /**
+   * Sets or gets the links: { cause, effect, mark, delay, note }. mark is X, T, P, A or any short text the marks property explains; delay is the seconds of a timed trip: a tripping link with a delay is expected only once its cause has been active that long, and until then the effect is shown as 'timed trip due in N s' (a dashed outline), not as a discrepancy; the component redraws itself when the trip falls due. note is read with the cell.
+   * Default value: 
+   */
+  matrix?: any;
+  /**
+   * Sets or gets the meaning of the marks: { X: { label, trips } }, where trips says whether the mark means the effect is expected when the cause is active. Null is the standard set: X trip, T timed trip, P permissive, A alarm only. An object replaces the standard set; a mark it does not list, or an entry without trips: false, counts as a trip.
+   * Default value: null
+   */
+  marks?: any;
+  /**
+   * Sets or gets the selected cell as { cause, effect }, or null.
+   * Default value: null
+   */
+  selected?: any;
+  /**
+   * Sets or gets the name of the system, part of the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or gets whether the marks in use and the three states are explained under the chart.
+   * Default value: true
+   */
+  showLegend?: boolean;
+  /**
+   * Sets or gets whether the rows of active causes and the columns of tripped effects are tinted.
+   * Default value: true
+   */
+  highlightActive?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the accessible names of the chart, its headers and cells, the mark names, the state words and the legend. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ CauseEffectMatrix displays the cause and effect chart of a safety instrumented system as a live matrix. Causes are rows, effects are columns, and each cell shows the mark that links them: X for a trip, T for a timed trip, P for a permissive and A for an alarm only. Active causes and tripped effects are highlighted, bypassed causes are marked, and the component reports a discrepancy when an effect is tripped without an active cause or expected to trip but is not. The causes, effects, links and states are supplied by the application from the safety controller; the component does not apply any logic or bypass itself.
+*/
+export interface CauseEffectMatrix extends BaseElement, CauseEffectMatrixProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a different cell is selected by a click or by keyboard focus. Setting the selected property does not raise it.
+	* @param event. The custom event. Custom data event was created with: ev.detail(cause, effect, mark, link)
+   *  cause - The cause's id.
+   *  effect - The effect's id.
+   *  mark - The link's mark, or null where there is no link.
+   *  link - The link as it was given, or null.
+   */
+  onSelectionChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a cell is clicked, or Enter or Space is pressed on it.
+	* @param event. The custom event. Custom data event was created with: ev.detail(cause, effect, mark, link)
+   *  cause - The cause's id.
+   *  effect - The effect's id.
+   *  mark - The link's mark, or null where there is no link.
+   *  link - The link as it was given, or null.
+   */
+  onCellClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a cause's header is clicked.
+	* @param event. The custom event. Custom data event was created with: ev.detail(cause, links)
+   *  cause - The cause's id.
+   *  links - Its links, each with its effect id.
+   */
+  onCauseClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when an effect's header is clicked.
+	* @param event. The custom event. Custom data event was created with: ev.detail(effect, causes, expected)
+   *  effect - The effect's id.
+   *  causes - The links to it, each with its cause id.
+   *  expected - Whether the chart expects it to be tripped now.
+   */
+  onEffectClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns the links of a cause, as given, each with its effect id.
+   * @param {string} causeId. The cause's id.
+   * @returns {any}
+   */
+  linksFor(causeId: string): any;
+  /**
+   * Returns the links to an effect, as given, each with its cause id.
+   * @param {string} effectId. The effect's id.
+   * @returns {any}
+   */
+  causesOf(effectId: string): any;
+  /**
+   * Returns whether an effect is expected to be tripped now: an active, unbypassed cause links to it with a mark that trips, and, for a link with a delay, the cause has been active for at least that delay.
+   * @param {string} effectId. The effect's id.
+   * @returns {boolean}
+   */
+  expected(effectId: string): boolean;
+  /**
+   * Returns the effects whose state does not match the chart, as <em>[{ effect, expected, tripped }]</em>: expected to trip but not tripped, or tripped with no active cause. An effect whose timed trip is still counting down is not a discrepancy.
+   * @returns {any}
+   */
+  discrepancies(): any;
+  /**
+   * Redraws the component from its current properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-cause-effect-matrix"): CauseEffectMatrix;
+        querySelector(selectors: "smart-cause-effect-matrix"): CauseEffectMatrix | null;
+        querySelectorAll(selectors: "smart-cause-effect-matrix"): NodeListOf<CauseEffectMatrix>;
+        getElementsByTagName(qualifiedName: "smart-cause-effect-matrix"): HTMLCollectionOf<CauseEffectMatrix>;
+        getElementsByName(elementName: "smart-cause-effect-matrix"): NodeListOf<CauseEffectMatrix>;
+    }
+}
+
 export interface ChartProperties {
   /**
    * Specifies or retrieves the current animation mode. When the property is set to 'none', all animations are disabled and no animation effects will be applied. For other supported values, the property enables the corresponding animation behavior.
@@ -7435,6 +8894,295 @@ export declare type SelectionDisplayMode = 'plain' | 'placeholder' | 'tokens';
 export declare type ListSelectionMode = 'none' | 'oneOrManyExtended' | 'zeroOrMany' | 'oneOrMany' | 'zeroAndOne' | 'zeroOrOne' | 'one' | 'checkBox' | 'radioButton';
 /**Controls whether the vertical scroll bar is displayed within the content area, allowing users to scroll vertically when the content extends beyond the visible region. */
 export declare type VerticalScrollBarVisibility = 'auto' | 'disabled' | 'hidden' | 'visible';
+export interface ComparisonChartProperties {
+  /**
+   * Sets or retrieves the items, as [{ field, label, value, unit, color }]. field is the key push() and Connect.stream() fill; label is what the bar is called; unit and color override the chart's for one item. An item without a value is listed as unknown rather than drawn as zero. Assign a new array to update the component.
+   * Default value: 
+   */
+  items?: any;
+  /**
+   * Sets or retrieves how the items are drawn: as bars, or as a donut of shares of one whole with the total in the hole. A value below zero has no share of a whole, so while any value is negative the items are drawn as bars, no shares are given in the table, and the total line says so.
+   * Default value: bars
+   */
+  kind?: ComparisonChartKind | string;
+  /**
+   * Sets or retrieves which way the bars run. Horizontal reads long names without tilting them; vertical suits a few items and a Pareto chart's running share.
+   * Default value: horizontal
+   */
+  orientation?: ComparisonChartOrientation | string;
+  /**
+   * Sets or retrieves the order of the bars: as listed, largest first or smallest first. An item without a value goes last either way.
+   * Default value: none
+   */
+  sort?: ComparisonChartSort | string;
+  /**
+   * Sets or retrieves whether the chart is a Pareto chart: largest first, with the running share of the total - a line over upright bars, a figure beside sideways ones - so the few items that make up most of the whole stand out. With a value below zero there is no running share, and the line or figure is left out.
+   * Default value: false
+   */
+  pareto?: boolean;
+  /**
+   * Sets or retrieves the bottom of the scale. A value below it is not clipped: the scale extends down to a round number under the smallest value, and a negative bar runs from zero the other way.
+   * Default value: 0
+   */
+  min?: number;
+  /**
+   * Sets or retrieves the top of the scale. Empty takes a round number above the largest value and the limit.
+   * Default value: null
+   */
+  max?: number;
+  /**
+   * Sets or retrieves a value the bars are held against - a budget, a target - drawn as a dashed line. A bar past it takes the warning colour and its row in the table says so. Empty for none.
+   * Default value: null
+   */
+  limit?: number;
+  /**
+   * Sets or retrieves the name written at the limit line. Empty writes the limit's value.
+   * Default value: ""
+   */
+  limitLabel?: string;
+  /**
+   * Sets or retrieves the unit written after every value and the total.
+   * Default value: ""
+   */
+  unit?: string;
+  /**
+   * Sets or retrieves the digits after the point. Empty chooses once for the whole chart, so the readouts do not jitter between updates: none when every value is whole or the largest is 100 or more, one otherwise.
+   * Default value: null
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves whether each bar's value is written at its end.
+   * Default value: true
+   */
+  showValues?: boolean;
+  /**
+   * Sets or retrieves how many slices a donut draws before it folds the smallest items into one "other" slice.
+   * Default value: 6
+   */
+  maxSlices?: number;
+  /**
+   * Sets or retrieves the heading of the chart. It is also the caption of the table a screen reader reads.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves whether the chart is disabled.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether the chart can be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ ComparisonChart puts like values side by side - energy per line, output per shift, downtime per cause, the share of each product in a day - and answers which is the biggest, and by how much. Bars by default, horizontal so the names read without tilting a head, or vertical; sorted when asked, or as a Pareto chart with the running share. A limit draws a line and marks the bars past it, and nothing else is coloured. A donut shows shares of one whole with the total in the hole, folding the smallest items into one "other" slice. Values arrive through push(record), which is what Connect.stream() calls, so each bar can follow its own tag. Every figure is also in a table a screen reader reads.
+*/
+export interface ComparisonChart extends BaseElement, ComparisonChartProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * Takes a record of values by field and shows them: <em>chart.push({ line2: 421 })</em>. It is what Connect.stream() calls with one record per interval, so each bar can follow its own tag. Fields the chart has no item for are ignored; an item the record does not name keeps its value.
+   * @param {any} record. { field: value, ... }
+   */
+  push(record: any): void;
+  /**
+   * Empties every value and keeps the items.
+   */
+  clear(): void;
+  /**
+   * Returns what the chart shows as one sentence: how many items, the highest and its value, the total and how many are past the limit. It is the accessible name of the chart.
+   * @returns {string}
+   */
+  describe(): string;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-comparison-chart"): ComparisonChart;
+        querySelector(selectors: "smart-comparison-chart"): ComparisonChart | null;
+        querySelectorAll(selectors: "smart-comparison-chart"): NodeListOf<ComparisonChart>;
+        getElementsByTagName(qualifiedName: "smart-comparison-chart"): HTMLCollectionOf<ComparisonChart>;
+        getElementsByName(elementName: "smart-comparison-chart"): NodeListOf<ComparisonChart>;
+    }
+}
+
+/**Sets or retrieves how the items are drawn: as bars, or as a donut of shares of one whole with the total in the hole. A value below zero has no share of a whole, so while any value is negative the items are drawn as bars, no shares are given in the table, and the total line says so. */
+export declare type ComparisonChartKind = 'bars' | 'donut';
+/**Sets or retrieves which way the bars run. Horizontal reads long names without tilting them; vertical suits a few items and a Pareto chart's running share. */
+export declare type ComparisonChartOrientation = 'horizontal' | 'vertical';
+/**Sets or retrieves the order of the bars: as listed, largest first or smallest first. An item without a value goes last either way. */
+export declare type ComparisonChartSort = 'none' | 'descending' | 'ascending';
+export interface ControlChartProperties {
+  /**
+   * Sets or retrieves which chart is drawn. The shape of data follows from it: an array of subgroups (arrays of readings) for xbar-r and xbar-s, an array of individual readings for i-mr, and an array of counts for the attribute charts, defectives per sample for p and np, defects per unit for c and u.
+   * Default value: i-mr
+   */
+  type?: ControlChartType | string;
+  /**
+   * Sets or retrieves the measurements, in the format expected by type. Assign a new array to update the component; an array modified in place is deep-equal to the current one and does not trigger a redraw. A missing reading (null, an empty string) and, on an X-bar chart, a subgroup with fewer than two readings are left off the chart; the sample numbers on the axis and in the violation list stay those of data.
+   * Default value: 
+   */
+  data?: any;
+  /**
+   * Sets or retrieves the sample size for the p, np and u charts, as one number or as an array with one entry per sample when the size varies. With unequal sample sizes the limits of a p chart differ from sample to sample and are drawn as steps.
+   * Default value: null
+   */
+  sampleSize?: any;
+  /**
+   * Sets or retrieves the number of initial points used to establish the control limits. 0 uses every point. In practice, limits are established from a baseline phase and then held, because a chart that recomputes its limits on every new point cannot signal a shift.
+   * Default value: 0
+   */
+  baselineCount?: number;
+  /**
+   * Sets or retrieves held limits for the primary chart as { center, ucl, lcl, sigma }, which replace the computed limits. Set by freezeLimits, or by an application that established limits in a qualification run and monitors against them. The secondary chart keeps its computed limits.
+   * Default value: null
+   */
+  limits?: any;
+  /**
+   * Sets or retrieves the run rules to test: nelson (eight rules), westernElectric (four rules), both, none, or an array of rule names as listed by Smart.Industrial.spc.ruleNames. Rules are identified by name because the numbering differs between sources. On an attribute chart with unequal samples there is no single sigma, so only the limit test is applied, point by point against the limits of that point.
+   * Default value: nelson
+   */
+  ruleSet?: any;
+  /**
+   * Determines whether the matching R, S or moving range chart is drawn below the primary chart. Its own points beyond its own limits count as violations too: variation out of control is as much a signal as a shifted mean.
+   * Default value: true
+   */
+  showSecondary?: boolean;
+  /**
+   * Determines whether the one, two and three sigma zones on either side of the centre line are shaded, so that the zone of a point can be read from the chart.
+   * Default value: true
+   */
+  showZones?: boolean;
+  /**
+   * Sets or retrieves the specification limits as { lsl, usl, target }. They are drawn on the primary chart in their own line style, labelled USL and LSL, and used for the capability readout. They are not used for the control limits or the run rules: control limits describe what the process does, and specification limits describe what the customer requires.
+   * Default value: null
+   */
+  specLimits?: any;
+  /**
+   * Determines whether Cp, Cpk, Pp, Ppk and the expected defect rate are shown under the chart. Requires specLimits and a variables chart; capability indices are not defined for attribute charts and are not shown for them.
+   * Default value: true
+   */
+  showCapability?: boolean;
+  /**
+   * Determines whether the header, chart type, centre line, limits, subgroup size, baseline or held state, and the in-control status, is shown.
+   * Default value: true
+   */
+  showStats?: boolean;
+  /**
+   * Determines whether the points that violate a rule are listed as text under the chart, each with the rules it violates. The list is what a screen reader and a report receive; the marks on the canvas show the same information graphically.
+   * Default value: true
+   */
+  showViolations?: boolean;
+  /**
+   * Sets or retrieves the name of the characteristic being charted, shown in the header and in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the engineering unit, shown beside the centre line value.
+   * Default value: ""
+   */
+  unit?: string;
+  /**
+   * Sets or retrieves how many decimal places the limits, ticks and annotations are printed with.
+   * Default value: 2
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves the radius of a point marker in pixels. An offending point is drawn larger, in the limit colour, with a ring.
+   * Default value: 3.5
+   */
+  markerSize?: number;
+  /**
+   * Sets or retrieves the width of the trace in pixels.
+   * Default value: 1.5
+   */
+  lineWidth?: number;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the chart type names, the limit labels, the status words and the rule names. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component. With no theme of its own the component takes the nearest themed ancestor's palette for its series and limit colours.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ ControlChart is a Shewhart control chart for statistical process control. It supports the X-bar/R, X-bar/S and I-MR variable charts and the p, np, c and u attribute charts, each with its range, standard deviation or moving range chart, and applies the Nelson or Western Electric run rules to every point. Points that violate a rule are marked on the chart, listed as text and raised as an event. Control limits are computed from a baseline or set directly, and specification limits are drawn separately and used for the Cp and Cpk readout. All statistics are computed by Smart.Industrial.spc.
+*/
+export interface ControlChart extends BaseElement, ControlChartProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the set of offending points changes, after new data, new limits or a different rule set, and not on every redraw. It fires with a count of zero when the chart returns to control.
+	* @param event. The custom event. Custom data event was created with: ev.detail(violations, count)
+   *  violations - The offending points as [{ index, point, rules, chart }], where index is the position in data, point the position on the chart, and chart is 'secondary' for a point on the range, S or moving range chart.
+   *  count - How many points are out of control.
+   */
+  onViolation?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns the computed primary chart as <em>{ type, points, center, ucl, lcl, sigma, n, secondary, held }</em>, as returned by Smart.Industrial.spc, with held limits applied. <em>ucl</em> and <em>lcl</em> are arrays when the sample size varies.
+   * @returns {any}
+   */
+  chart(): any;
+  /**
+   * Returns which points on the primary chart break which rules, as [{ index, point, rules }]: <em>index</em> is the position in <em>data</em> of the sample or subgroup that broke the rule, <em>point</em> its position on the chart. They differ when the chart leaves a missing reading or an incomplete subgroup out. A point that breaks nothing is not in the list.
+   * @returns {any}
+   */
+  violations(): any;
+  /**
+   * Returns the points on the secondary chart, the range, standard deviation or moving range, that lie beyond its own limits, as [{ index, point, rules }]. <em>index</em> is the position in <em>data</em>; a moving range belongs to the later of its two readings.
+   * @returns {any}
+   */
+  secondaryViolations(): any;
+  /**
+   * Returns the process capability against the specification limits as <em>{ n, mean, sigmaWithin, sigmaOverall, cp, cpk, pp, ppk, ppm }</em>, or null without specification limits or for an attribute chart. Sigma within is the estimate the chart is built on: S-bar / c4 for <em>xbar-s</em>, R-bar / d2 for <em>xbar-r</em> and the average moving range / d2 for <em>i-mr</em>.
+   * @returns {any}
+   */
+  capability(): any;
+  /**
+   * Holds the limits currently shown by the chart, so that data arriving after this point is judged against them instead of changing them. Sets the limits property and returns it.
+   * @returns {any}
+   */
+  freezeLimits(): any;
+  /**
+   * Rebuilds the header, capability readout and violation list, and redraws both plots.
+   */
+  redraw(): void;
+  /**
+   * Redraws the plots on the next animation frame, so that many changes between two frames cost one draw.
+   */
+  invalidate(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-control-chart"): ControlChart;
+        querySelector(selectors: "smart-control-chart"): ControlChart | null;
+        querySelectorAll(selectors: "smart-control-chart"): NodeListOf<ControlChart>;
+        getElementsByTagName(qualifiedName: "smart-control-chart"): HTMLCollectionOf<ControlChart>;
+        getElementsByName(elementName: "smart-control-chart"): NodeListOf<ControlChart>;
+    }
+}
+
+/**Sets or retrieves which chart is drawn. The shape of data follows from it: an array of subgroups (arrays of readings) for xbar-r and xbar-s, an array of individual readings for i-mr, and an array of counts for the attribute charts, defectives per sample for p and np, defects per unit for c and u. */
+export declare type ControlChartType = 'xbar-r' | 'xbar-s' | 'i-mr' | 'p' | 'np' | 'c' | 'u';
 export interface CountryInputProperties {
   /**
    * Specifies whether the element is active and interactive (enabled) or inactive and non-interactive (disabled). When disabled, the element cannot be focused, clicked, or edited by the user.
@@ -8904,6 +10652,414 @@ export declare type DateTimePickerEditMode = 'default' | 'full' | 'partial';
 export declare type DateTimePickerSpinButtonsPosition = 'left' | 'right';
 /**Specifies the validation method that enforces minimum and maximum value constraints. This determines how the input value is checked to ensure it falls within the defined minimum and maximum range. */
 export declare type Validation = 'strict' | 'interaction';
+export interface DeviceControlProperties {
+  /**
+   * Enables or disables the component. A disabled faceplate takes no focus and raises nothing: its buttons are disabled and requestCommand, requestMode and requestReset do nothing.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the device tag, the first word of the accessible name and of every event.
+   * Default value: ""
+   */
+  tag?: string;
+  /**
+   * Sets or gets the description shown beside the tag.
+   * Default value: ""
+   */
+  description?: string;
+  /**
+   * Sets or gets the device type: motor, pump or generic devices are started and stopped, a valve is opened and closed.
+   * Default value: motor
+   */
+  kind?: DeviceControlKind | string;
+  /**
+   * Sets or gets the device feedback as reported by the plant: running, stopped, starting, stopping, open, closed, opening, closing, fault or unknown. Feedback that matches the pending request completes the request. A fault is announced to assistive technology.
+   * Default value: unknown
+   */
+  state?: DeviceControlState | string;
+  /**
+   * Sets or gets the last command reported by the plant (start, stop, open or close), shown as the filled command button. A command reported by the plant replaces a pending request from the screen.
+   * Default value: ""
+   */
+  commanded?: string;
+  /**
+   * Sets or gets who commands the device: auto (the sequence), manual (the operator), local (a field switch; the screen can request stop or close only) or outOfService. Set by the application in response to the modeRequest event.
+   * Default value: auto
+   */
+  mode?: DeviceControlMode | string;
+  /**
+   * Sets or gets the modes the operator may ask for, shown as buttons. An entry that is not a string is skipped.
+   * Default value: auto,manual
+   */
+  availableModes?: any;
+  /**
+   * Sets or gets the quality of the feedback: good, uncertain, bad or stale. Anything but good is shown as a badge and read out. Start and open are refused while the quality is bad or stale. Bad or stale feedback is drawn as not live: the lamp hollow and dashed, the state word grey and italic.
+   * Default value: good
+   */
+  quality?: DeviceControlQuality | string;
+  /**
+   * Sets or gets whether an interlock holds the device: start and open are refused while it does, and the reason is shown.
+   * Default value: false
+   */
+  interlocked?: boolean;
+  /**
+   * Sets or gets the interlock's reason, in plain language.
+   * Default value: ""
+   */
+  interlockReason?: string;
+  /**
+   * Sets or gets the start permissives as [{ label, met }]. Start and open are refused while one is not met, naming it. A permissive is met only when met is true, a non-zero number, or one of the strings 'true', '1', 'yes', 'on' or 'met'; 'false', 0, 'off', null and anything else are not met. An entry that is not an object is skipped.
+   * Default value: 
+   */
+  permissives?: any;
+  /**
+   * Sets or gets the application's finding that the feedback disagrees with the command, started, still stopped, shown as an alarm on the faceplate.
+   * Default value: false
+   */
+  discrepancy?: boolean;
+  /**
+   * Sets or gets the fault's text, shown and announced with the fault state.
+   * Default value: ""
+   */
+  faultText?: string;
+  /**
+   * Sets or gets the device's run hours, shown as a counter when given.
+   * Default value: null
+   */
+  runHours?: number;
+  /**
+   * Sets or gets the number of starts, shown as a counter when given.
+   * Default value: null
+   */
+  startCount?: number;
+  /**
+   * Sets or gets whether the screen may command the device at all. Off by default: a command requested from a faceplate the application has not enabled is refused with a reason.
+   * Default value: false
+   */
+  interactive?: boolean;
+  /**
+   * Sets or gets how long a request is shown as on its way before it is dropped and writeTimeout fires, in milliseconds. A pending request keeps its deadline when the element is moved to another parent.
+   * Default value: 5000
+   */
+  pendingTimeout?: number;
+  /**
+   * Sets or gets whether the permissives are listed on the faceplate.
+   * Default value: true
+   */
+  showPermissives?: boolean;
+  /**
+   * Sets or gets the compact form, for a strip of devices along an overview. It hides the description, the commanded text, the permissives and the counters, and keeps the tag, the quality badge, the mode chip, the lamp, the state, the notice, the commands (with Reset while faulted) and the mode buttons.
+   * Default value: false
+   */
+  compact?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the state and mode words, the command names, the notices for a pending, refused, timed-out or blocked request, the interlock, the discrepancy, the permissives, the quality words and the counters. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ DeviceControl is a faceplate for a discrete device such as a motor, a pump or an on/off valve. It shows the device feedback state next to the commanded state, the operating mode (auto, manual, local or out of service), the interlock, the start permissives, the run hours and the start count. Commands are requests: requestCommand raises the commandRequest event and shows the command as pending until the application updates the state, refuses the request, or pendingTimeout elapses. An interactive faceplate can request stop or close in any mode. Start and open also require manual mode, live feedback (quality not bad or stale), no active interlock and all permissives met. A command that does not meet these conditions raises the blocked event with the reason.
+*/
+export interface DeviceControl extends BaseElement, DeviceControlProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a command is requested. The application writes the command to the plant and reports the feedback through the state property; until then the faceplate shows the command as pending.
+	* @param event. The custom event. Custom data event was created with: ev.detail(tag, command)
+   *  tag - The device tag.
+   *  command - start, stop, open or close.
+   */
+  onCommandRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a mode is requested. The application answers by setting mode.
+	* @param event. The custom event. Custom data event was created with: ev.detail(tag, mode)
+   *  tag - The device tag.
+   *  mode - The requested mode.
+   */
+  onModeRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a fault reset is requested.
+	* @param event. The custom event. Custom data event was created with: ev.detail(tag)
+   *  tag - The device tag.
+   */
+  onResetRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a start, stop, open or close command could not be requested: the screen is not interactive, or, for start and open, the device is not in manual or is under local control, the feedback is bad or stale, an interlock holds it, or a permissive is not met.
+	* @param event. The custom event. Custom data event was created with: ev.detail(tag, command, reason)
+   *  tag - The device tag.
+   *  command - The command.
+   *  reason - Why, in plain language.
+   */
+  onBlocked?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a pending request got no feedback within pendingTimeout and was dropped.
+	* @param event. The custom event. Custom data event was created with: ev.detail(tag, command)
+   *  tag - The device tag.
+   *  command - The command that was pending.
+   */
+  onWriteTimeout?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the feedback state changes.
+	* @param event. The custom event. Custom data event was created with: ev.detail(tag, state, oldState)
+   *  tag - The device tag.
+   *  state - The new state.
+   *  oldState - The previous state.
+   */
+  onStateChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Requests a command: start or stop, open or close. Raises the commandRequest event and shows the command as pending, or raises the blocked event with the reason when the command cannot be requested. A command the device kind does not take, such as open on a pump, is ignored without an event. The same command requested again within one second, or a start or open that is already pending, is dropped. A command the feedback already reports, such as start on a running pump, raises commandRequest without being shown as pending. Does nothing while the faceplate is disabled.
+   * @param {string} command. The command.
+   */
+  requestCommand(command: string): void;
+  /**
+   * Requests a change of mode by raising the modeRequest event. The application responds by setting the mode property. Does nothing when the faceplate is not interactive or is disabled, when the mode is not in availableModes, or when it is already the current mode.
+   * @param {string} mode. One of the availableModes.
+   */
+  requestMode(mode: string): void;
+  /**
+   * Requests a fault reset by raising the resetRequest event, while the state is fault. Does nothing when the faceplate is not interactive or is disabled.
+   */
+  requestReset(): void;
+  /**
+   * Called by the application when it does not carry out the pending request. The request is no longer shown as pending and the reason is shown instead.
+   * @param {string} reason. Why, in plain language.
+   */
+  refuse(reason: string): void;
+  /**
+   * Returns the command shown as pending, or null.
+   * @returns {string}
+   */
+  pendingCommand(): string;
+  /**
+   * Returns whether a command could be requested now. Stop and close need an interactive, enabled faceplate, in any mode. Start and open also need manual mode, live feedback (quality not bad or stale), no interlock and every permissive met. Returns false for a command the device kind does not take.
+   * @param {string} command. The command.
+   * @returns {boolean}
+   */
+  canRequest(command: string): boolean;
+  /**
+   * Redraws the component from its current properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-device-control"): DeviceControl;
+        querySelector(selectors: "smart-device-control"): DeviceControl | null;
+        querySelectorAll(selectors: "smart-device-control"): NodeListOf<DeviceControl>;
+        getElementsByTagName(qualifiedName: "smart-device-control"): HTMLCollectionOf<DeviceControl>;
+        getElementsByName(elementName: "smart-device-control"): NodeListOf<DeviceControl>;
+    }
+}
+
+/**Sets or gets the device type: motor, pump or generic devices are started and stopped, a valve is opened and closed. */
+export declare type DeviceControlKind = 'motor' | 'pump' | 'valve' | 'generic';
+/**Sets or gets the device feedback as reported by the plant: running, stopped, starting, stopping, open, closed, opening, closing, fault or unknown. Feedback that matches the pending request completes the request. A fault is announced to assistive technology. */
+export declare type DeviceControlState = 'running' | 'stopped' | 'starting' | 'stopping' | 'open' | 'closed' | 'opening' | 'closing' | 'fault' | 'unknown';
+/**Sets or gets who commands the device: auto (the sequence), manual (the operator), local (a field switch; the screen can request stop or close only) or outOfService. Set by the application in response to the modeRequest event. */
+export declare type DeviceControlMode = 'auto' | 'manual' | 'local' | 'outOfService';
+/**Sets or gets the quality of the feedback: good, uncertain, bad or stale. Anything but good is shown as a badge and read out. Start and open are refused while the quality is bad or stale. Bad or stale feedback is drawn as not live: the lamp hollow and dashed, the state word grey and italic. */
+export declare type DeviceControlQuality = 'good' | 'uncertain' | 'bad' | 'stale';
+export interface DigitalWaveformProperties {
+  /**
+   * Enables or disables the element.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves the lines. Each is an object with id, label, color, visible and either samples (0/1 or booleans on a fixed interval, with t0 and dt) or edges (an array of [time, level] pairs, with end for the end of the record). A sample holds its level for dt, so a sampled record runs from t0 to t0 + samples.length × dt and the last sample is drawn and read. A level may also be 'x' (unknown, drawn as a band across both levels) or 'z' (high impedance, drawn between them).
+   * Default value: 
+   */
+  signals?: any;
+  /**
+   * Sets or retrieves the buses. Each is an object with id, label, lines (the ids of its signals, most significant first), format (hex, bin or dec), color and visible. A bus is drawn as a row of stable words with a transition wherever the word changes. Any number of lines is exact: a bus of more than 53 lines is read as a BigInt. The word reads X while any line is unknown and Z while any line is high impedance.
+   * Default value: 
+   */
+  buses?: any;
+  /**
+   * Sets or retrieves the name of the time axis.
+   * Default value: ""
+   */
+  xLabel?: string;
+  /**
+   * Sets or retrieves the unit of the time axis, written in engineering notation.
+   * Default value: "s"
+   */
+  xUnit?: string;
+  /**
+   * Sets or retrieves the start of the time axis. With xMax, fixes the axis; null follows the data.
+   * Default value: null
+   */
+  xMin?: number;
+  /**
+   * Sets or retrieves the end of the time axis. With xMin, fixes the axis; null follows the data.
+   * Default value: null
+   */
+  xMax?: number;
+  /**
+   * Sets or retrieves the cursors. Each is an object with id, label, x, color and visible. The cursor legend reads every line and bus at each cursor and the time between the first two.
+   * Default value: 
+   */
+  cursors?: any;
+  /**
+   * Sets or retrieves the height of a row in pixels. The plot is as tall as its rows.
+   * Default value: 26
+   */
+  rowHeight?: number;
+  /**
+   * Sets or retrieves the width of the names column in pixels.
+   * Default value: 110
+   */
+  labelWidth?: number;
+  /**
+   * Shows the time grid and the row separators.
+   * Default value: true
+   */
+  showGrid?: boolean;
+  /**
+   * Shows the cursor legend under the plot.
+   * Default value: true
+   */
+  showCursorLegend?: boolean;
+  /**
+   * Shows the lines of a bus under its row. When false, a bus is one row and its lines are left out.
+   * Default value: true
+   */
+  showLines?: boolean;
+  /**
+   * Enables panning by dragging, zooming with the wheel, box zoom with Shift and drag, and placing and dragging cursors.
+   * Default value: true
+   */
+  interactive?: boolean;
+  /**
+   * Sets or retrieves the title shown above the plot and used in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the number of significant digits in times.
+   * Default value: 4
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the element - the level names, cursor and status texts. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the element.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the element cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ DigitalWaveform displays digital lines against time, one row per line, with lines grouped into buses whose words are written in hex, binary or decimal: the view of a logic analyser. A line is given as samples on a fixed interval or as a list of edges. The view pans and zooms, cursors read every line and every bus at two instants and the time between them, and where more transitions land on a pixel column than it can show, the column is drawn as a block. The plot is as tall as its rows.
+*/
+export interface DigitalWaveform extends BaseElement, DigitalWaveformProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a cursor is moved by the operator, with the pointer or the keyboard.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, x)
+   *  id - The cursor.
+   *  x - Its time.
+   */
+  onCursorChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the view changes: a zoom, a pan, a box zoom or a fit.
+	* @param event. The custom event. Custom data event was created with: ev.detail(xMin, xMax, fitted)
+   *  xMin - The start of the view.
+   *  xMax - The end of the view.
+   *  fitted - True when the view shows the whole record.
+   */
+  onZoom?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a row is clicked without dragging.
+	* @param event. The custom event. Custom data event was created with: ev.detail(time, id, kind)
+   *  time - The time under the pointer.
+   *  id - The line or bus clicked, or null below the rows.
+   *  kind - line or bus.
+   */
+  onRowClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns a line's level at a time: 1, 0, 'x' (unknown), 'z' (high impedance), or NaN outside the record.
+   * @param {string} id. The signal.
+   * @param {number} time. The time.
+   * @returns {any}
+   */
+  valueAt(id: string, time: number): any;
+  /**
+   * Returns a bus's word at a time, most significant line first: a number, or a BigInt for a bus of more than 53 lines, which a number cannot hold exactly; 'x' when any line is unknown, 'z' when any line is high impedance, or NaN where any line is outside its record.
+   * @param {string} id. The bus.
+   * @param {number} time. The time.
+   * @returns {any}
+   */
+  busValueAt(id: string, time: number): any;
+  /**
+   * Shows the whole record again.
+   */
+  fit(): void;
+  /**
+   * Shows a range of time.
+   * @param {number} from. The start.
+   * @param {number} to. The end.
+   */
+  zoomTo(from: number, to: number): void;
+  /**
+   * Zooms about the centre of the view.
+   * @param {number} factor. Above 1 zooms in, below 1 zooms out.
+   */
+  zoom(factor: number): void;
+  /**
+   * Returns a sentence describing what the graph shows, as used in its accessible name.
+   * @returns {string}
+   */
+  describe(): string;
+  /**
+   * Redraws the element from its current properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-digital-waveform"): DigitalWaveform;
+        querySelector(selectors: "smart-digital-waveform"): DigitalWaveform | null;
+        querySelectorAll(selectors: "smart-digital-waveform"): NodeListOf<DigitalWaveform>;
+        getElementsByTagName(qualifiedName: "smart-digital-waveform"): HTMLCollectionOf<DigitalWaveform>;
+        getElementsByName(elementName: "smart-digital-waveform"): NodeListOf<DigitalWaveform>;
+    }
+}
+
 export interface DockingLayoutProperties {
   /**
    * Sets or retrieves the current animation mode. When this property is set to 'none', all animations are disabled and will not play. For other supported values, animations are enabled and behave according to the specified mode. Use this property to control whether or how animations are rendered within the component.
@@ -9273,6 +11429,124 @@ declare global {
 <br/>  <br/>    advanced – Allows the dragging and dropping of an entire <code>TabsWindow</code>—containing all its tab items—or an individual tab. This mode adopts a Visual Studio-style visual feedback system: as an item is dragged, an overlay appears showing various possible drop locations, represented as icons. The user must drop the item directly onto one of these icons within the feedback overlay to position it in the desired location.<br/>  
 <br/><br/><br/>The highlighter or feedback overlay automatically appears as soon as a drag operation is initiated, visually guiding the user to all valid drop targets and enhancing the drag-and-drop experience. */
 export declare type DockingLayoutSnapMode = 'simple' | 'advanced';
+export interface DowntimeLogProperties {
+  /**
+   * Sets or retrieves the stops as [{ id, machine, machineName, from, to, seconds, short, reason, comment, classifiedBy }], the shape a Scada Studio station returns from /api/downtime. to is null while the machine is still stopped. Assign a new array to update the component.
+   * Default value: 
+   */
+  stops?: any;
+  /**
+   * Sets or retrieves the plant's reasons as [{ code, label, group }]. The picker shows them as large tiles, by group, in the order given.
+   * Default value: 
+   */
+  reasons?: any;
+  /**
+   * Sets or retrieves the heading of the log. It is also the accessible name of the group.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves which stops are listed: the ones waiting for a reason, or all of them.
+   * Default value: unclassified
+   */
+  view?: DowntimeLogView | string;
+  /**
+   * Sets or retrieves whether the stops shorter than their machine's threshold are listed and counted.
+   * Default value: false
+   */
+  showShort?: boolean;
+  /**
+   * Sets or retrieves the column the stops are ordered by. The column headers set it: a second press turns the order round.
+   * Default value: from
+   */
+  sortBy?: DowntimeLogSortBy | string;
+  /**
+   * Sets or retrieves which way: newest, longest or last first, or the other way.
+   * Default value: desc
+   */
+  sortOrder?: DowntimeLogSortOrder | string;
+  /**
+   * Sets or retrieves how many stops are drawn at once; the rest are a "Show more" away.
+   * Default value: 100
+   */
+  pageSize?: number;
+  /**
+   * Sets or retrieves whether the log only shows the stops and their reasons, with who gave them. Every button is removed.
+   * Default value: false
+   */
+  readOnly?: boolean;
+  /**
+   * Sets or retrieves the id of the stop the application is recording a reason for. Its Save button waits.
+   * Default value: ""
+   */
+  busy?: string;
+  /**
+   * Sets or retrieves the reason the station refused a reason. It is shown as an alert above the list and announced; the stop stays waiting for a reason. This property was called error, which is also the name of every element's logging method, so an invalid value given to any other property threw "that.error is not a function" instead of being reported. Assigning error still sets errorMessage; reading error returns the logging method, as on every other element.
+   * Default value: ""
+   */
+  errorMessage?: string;
+  /**
+   * Sets or retrieves whether the log is disabled.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether the log can be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ DowntimeLog lists every stop of a line and asks the person who was there why it stopped. The station knows when a machine stopped - its running signal went false - and only the operator knows why; the reasons come from a list the plant chose, grouped as planned and unplanned, so OEE losses have causes that add up. The stops still waiting for a reason come first and the header counts them; a stop still going counts up; stops shorter than a machine's threshold are listed only when asked for, because asking a reason for every hiccup teaches operators to pick Other. The component writes nothing: a reason raises stopClassify, and the application records it on the station with who gave it.
+*/
+export interface DowntimeLog extends BaseElement, DowntimeLogProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the operator gives a stop its reason. The list is not changed: the application records the reason on the station, which notes who gave it, and hands back the stops.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, reason, comment)
+   *  id - The id of the stop.
+   *  reason - The code of the reason.
+   *  comment - What the operator added, or an empty string.
+   */
+  onStopClassify?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered by Export CSV, with the file's text. The component then downloads it; an application that stores the file its own way calls preventDefault().
+	* @param event. The custom event. Custom data event was created with: ev.detail(csv)
+   *  csv - The CSV.
+   */
+  onExportRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the stops are ordered by a column header.
+	* @param event. The custom event. Custom data event was created with: ev.detail(sortBy, sortOrder)
+   *  sortBy - The column.
+   *  sortOrder - asc or desc.
+   */
+  onSortChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns the stops shown as CSV: machine, stopped, restarted, seconds, reason, comment and who gave it. A cell a spreadsheet would read as a formula is written as text.
+   * @returns {string}
+   */
+  exportCsv(): string;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-downtime-log"): DowntimeLog;
+        querySelector(selectors: "smart-downtime-log"): DowntimeLog | null;
+        querySelectorAll(selectors: "smart-downtime-log"): NodeListOf<DowntimeLog>;
+        getElementsByTagName(qualifiedName: "smart-downtime-log"): HTMLCollectionOf<DowntimeLog>;
+        getElementsByName(elementName: "smart-downtime-log"): NodeListOf<DowntimeLog>;
+    }
+}
+
+/**Sets or retrieves which stops are listed: the ones waiting for a reason, or all of them. */
+export declare type DowntimeLogView = 'unclassified' | 'all';
+/**Sets or retrieves the column the stops are ordered by. The column headers set it: a second press turns the order round. */
+export declare type DowntimeLogSortBy = 'from' | 'machine' | 'length' | 'reason';
+/**Sets or retrieves which way: newest, longest or last first, or the other way. */
+export declare type DowntimeLogSortOrder = 'asc' | 'desc';
 export interface DropDownButtonProperties {
   /**
    * Specifies the animation mode for the component. When set to 'none', all animations are disabled. You can retrieve the current animation mode by getting this property, or change it by setting a new value. Use this property to control whether and how animations are applied to the component’s visual updates.
@@ -11273,6 +13547,451 @@ declare global {
 
 /**Specifies if the element is displayed automatically upon initialization, or if it requires an explicit call to the render method before it appears in the user interface. */
 export declare type ElementRenderMode = 'auto' | 'manual';
+export interface ESignatureProperties {
+  /**
+   * Sets or retrieves the record being signed, as { id, title, fields: [{ label, value }] } or any object. The record is shown in the panel and the whole object is hashed into the signature. The panel takes a copy and its hash together, so what is signed is what was shown: a record assigned while the application is verifying a submitted signature does not change that signature (its recordId and recordHash stay those of the record submitted) and is shown once the request is answered.
+   * Default value: null
+   */
+  record?: any;
+  /**
+   * Sets or retrieves the meaning of the signature. Empty asks the signer to choose.
+   * Default value: ""
+   */
+  meaning?: string;
+  /**
+   * Sets or retrieves the meanings offered, as ids or { id, label }. Empty offers approved, reviewed, authored, responsible, verified and witnessed.
+   * Default value: 
+   */
+  meanings?: any;
+  /**
+   * Determines whether the meaning is shown as fixed text instead of a selection, for a step whose meaning is always the same, such as a release that is always an approval.
+   * Default value: false
+   */
+  lockMeaning?: boolean;
+  /**
+   * Determines whether a reason must be given before the request is raised.
+   * Default value: false
+   */
+  requireReason?: boolean;
+  /**
+   * Sets or retrieves preset reasons, shown as a list. Empty gives a free text field.
+   * Default value: 
+   */
+  reasons?: any;
+  /**
+   * Sets or retrieves the signed-in user, when the application knows one. Pre-fills the user ID and, with continuousSession, is the user whose repeat signings need the password only.
+   * Default value: ""
+   */
+  sessionUserId?: string;
+  /**
+   * Sets or retrieves the printed name of the session user, used in the continuous-session hint and as the signer's name when the signer is the session user and the application's accept() gives no name.
+   * Default value: ""
+   */
+  sessionUserName?: string;
+  /**
+   * Determines whether a repeat signing by the session user within sessionTimeout of the last asks for the password only. The first signing always uses both components.
+   * Default value: false
+   */
+  continuousSession?: boolean;
+  /**
+   * Sets or retrieves how long after a signing the next one by the same user counts as the same session, in milliseconds.
+   * Default value: 900000
+   */
+  sessionTimeout?: number;
+  /**
+   * Sets or retrieves the number of rejections after which the panel is locked. 0 disables the lock. reset() unlocks the panel.
+   * Default value: 3
+   */
+  maxAttempts?: number;
+  /**
+   * Sets or retrieves how long the manifestation stays after a signing before the panel closes, in milliseconds. 0 keeps it open until Close.
+   * Default value: 2500
+   */
+  autoClose?: number;
+  /**
+   * Determines whether the panel is shown. sign() opens it; cancel(), Escape and the close button close it. After a signing the manifestation stays for autoClose milliseconds, or until Close is pressed when autoClose is 0.
+   * Default value: false
+   */
+  opened?: boolean;
+  /**
+   * Determines whether the open panel is a modal dialog: aria-modal is true, Tab and Shift+Tab stay inside the panel, and when it closes - by Cancel, Escape, Close or after autoClose - the keyboard returns to the element that had it when the panel opened. Set to false for a panel that is part of the page.
+   * Default value: true
+   */
+  modal?: boolean;
+  /**
+   * Sets or retrieves the panel's title. Empty shows 'Electronic signature'.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the target size. touch makes the fields and buttons 48px high.
+   * Default value: normal
+   */
+  density?: ESignatureDensity | string;
+  /**
+   * Enables or disables the component. A disabled panel disables every control in it - the fields, Sign, Cancel, Close and the close button - which takes them out of the tab order, and Escape does nothing.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the titles, field labels, validation messages, the meanings and their 'by' forms. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ ESignature provides the electronic signature dialog described in 21 CFR Part 11. It shows the record being signed and its hash, the meaning of the signature (approved, reviewed, authored, responsible, verified or witnessed), a user ID and password field, and an optional reason. The component does not verify credentials: it raises the signRequest event and waits for the application to call accept() or reject(). The resulting signature contains the SHA-256 hash of the record, and Smart.Industrial.Audit.verifySignature() checks later that the record still produces that hash. The hash has no key: it shows that a record changed after signing or that a signature was moved to another record, but anyone who can rewrite both the record and the stored signature can recompute it. Protection against deliberate alteration rests with the application's access control and audit trail. Failed attempts are counted and the dialog locks after maxAttempts. With continuousSession enabled, a repeat signing by the same user within sessionTimeout asks for the password only.
+*/
+export interface ESignature extends BaseElement, ESignatureProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the signer submits. The application verifies the credentials and calls accept() or reject(). The password is in this event and nowhere else. <em>record</em> is the copy that was shown and <em>recordHash</em> its hash - the signature accept() builds carries the same.
+	* @param event. The custom event. Custom data event was created with: ev.detail(userId, password, meaning, reason, record, recordHash, continuous, at)
+   *  userId - The user ID entered, or the session user's.
+   *  password - The password entered.
+   *  meaning - The meaning chosen.
+   *  reason - The reason given, or ''.
+   *  record - The record being signed.
+   *  recordHash - SHA-256 of the record, computed when the panel opened or the record property last changed.
+   *  continuous - Whether this was a password-only signing.
+   *  at - When it was submitted, ISO 8601 with offset.
+   */
+  onSignRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the application accepts.
+	* @param event. The custom event. Custom data event was created with: ev.detail(signature)
+   *  signature - { id, userId, userName, meaning, meaningLabel, reason, at, recordId, recordHash }.
+   */
+  onSigned?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the application rejects.
+	* @param event. The custom event. Custom data event was created with: ev.detail(reason, attempt, remaining)
+   *  reason - The reason given, or ''.
+   *  attempt - How many refusals so far.
+   *  remaining - Attempts left before the lock, or -1 when maxAttempts is 0.
+   */
+  onRejected?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the refusals reach maxAttempts. The application enforces the same on the server.
+	* @param event. The custom event. Custom data event was created with: ev.detail(userId, attempts)
+   *  userId - The user ID in the field at the time.
+   *  attempts - The refusals counted.
+   */
+  onLockout?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the panel opens.
+	* @param event. The custom event.    */
+  onOpen?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the panel is closed without signing.
+	* @param event. The custom event.    */
+  onCancel: ((this: any, ev: Event) => any) | null;
+  /**
+   * Opens the panel for a record and returns a promise of the signature. The promise resolves when the application calls accept(), and rejects with <em>{ reason: 'cancel' | 'lockout' | 'superseded' }</em> otherwise.
+   * @param {any} record?. Replaces the record property when given.
+   * @param {any} options?. { meaning, reason } for this ceremony.
+   * @returns {any}
+   */
+  sign(record?: any, options?: any): any;
+  /**
+   * Called by the application after it has verified the credentials. Builds the signature as <em>{ id, userId, userName, meaning, meaningLabel, reason, at, recordId, recordHash }</em>, where recordId and recordHash are those of the record that was submitted, shows the manifestation, raises the signed event and resolves the promise. Returns the signature, or null when no signing was pending.
+   * @param {any} verification?. { userName, userId, at, id } - the printed name, and the application's values where they are to replace the panel's.
+   * @returns {any}
+   */
+  accept(verification?: any): any;
+  /**
+   * Called by the application when the credentials could not be verified or the signer is not authorised. Counts the attempt, shows the rejection and locks the panel after maxAttempts.
+   * @param {string} reason?. Shown to the signer after 'Signature refused:'.
+   */
+  reject(reason?: string): void;
+  /**
+   * Closes the panel without signing, raises the cancel event and rejects the promise. Does nothing while the panel is closed.
+   */
+  cancel(): void;
+  /**
+   * Clears the failed attempt count and the lock. Intended to be called by the application, not by the signer.
+   */
+  reset(): void;
+  /**
+   * Clears the last signing, so that the next signing asks for both signature components again.
+   */
+  resetSession(): void;
+  /**
+   * Returns the failed attempts since the last successful signing or reset().
+   * @returns {number}
+   */
+  attempts(): number;
+  /**
+   * Returns whether the panel is locked.
+   * @returns {boolean}
+   */
+  isLocked(): boolean;
+  /**
+   * Returns whether the next signing needs the password only.
+   * @returns {boolean}
+   */
+  isContinuous(): boolean;
+  /**
+   * Rebuilds the panel from its properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-esignature"): ESignature;
+        querySelector(selectors: "smart-esignature"): ESignature | null;
+        querySelectorAll(selectors: "smart-esignature"): NodeListOf<ESignature>;
+        getElementsByTagName(qualifiedName: "smart-esignature"): HTMLCollectionOf<ESignature>;
+        getElementsByName(elementName: "smart-esignature"): NodeListOf<ESignature>;
+    }
+}
+
+/**Sets or retrieves the target size. touch makes the fields and buttons 48px high. */
+export declare type ESignatureDensity = 'normal' | 'touch';
+export interface FaceplateProperties {
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Sets or gets whether the component can be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * Sets or gets the loop tag, shown first and used as the accessible name.
+   * Default value: ""
+   */
+  tag?: string;
+  /**
+   * Sets or gets the description of the loop, shown next to the tag.
+   * Default value: ""
+   */
+  description?: string;
+  /**
+   * Sets or gets the engineering unit of the process value and the setpoint.
+   * Default value: ""
+   */
+  unit?: string;
+  /**
+   * Sets or gets the process value reported by the plant. The faceplate never sets this value itself. A null or non-numeric value is drawn as absent rather than as zero.
+   * Default value: null
+   */
+  processValue?: any;
+  /**
+   * Sets or gets the setpoint. Use requestSetpoint to request a change and set the property when the controller confirms the new value.
+   * Default value: null
+   */
+  setpoint?: any;
+  /**
+   * Sets or gets the controller output as a percentage of the output range.
+   * Default value: null
+   */
+  output?: any;
+  /**
+   * Sets or gets the minimum of the process range.
+   * Default value: 0
+   */
+  min?: number;
+  /**
+   * Sets or gets the maximum of the process range.
+   * Default value: 100
+   */
+  max?: number;
+  /**
+   * Sets or gets the minimum of the output range.
+   * Default value: 0
+   */
+  outputMin?: number;
+  /**
+   * Sets or gets the maximum of the output range.
+   * Default value: 100
+   */
+  outputMax?: number;
+  /**
+   * Sets or gets the number of decimal places shown in the readouts.
+   * Default value: 1
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or gets the controller mode. Use requestMode to request a change and set the property when the controller confirms the new mode. The output column can be operated in manual mode only.
+   * Default value: auto
+   */
+  mode?: FaceplateMode | string;
+  /**
+   * Sets or gets the modes offered by the loop. A mode that is not in the list cannot be requested.
+   * Default value: auto,manual
+   */
+  availableModes?: any;
+  /**
+   * Sets or gets the four process alarm limits as an object with hiHi, hi, lo and loLo members. They are drawn as lines on the process value column, and the column takes the alarm colour when a limit is crossed. Assign a new object to update the component; object properties are compared by value.
+   * Default value: null
+   */
+  alarmLimits?: any;
+  /**
+   * Sets or gets the part of the output range the operator may drive into, as an object with low and high members. A request outside it is clamped before it is reported.
+   * Default value: null
+   */
+  outputLimits?: any;
+  /**
+   * Sets or gets the quality of the reading. A quality other than good is shown as a badge and included in the spoken value, so a stale value is not presented as a current one. Bad and stale readings are also drawn as not live: the process column hatched and the PV readout grey, struck through when bad and italic when stale. Requests stay possible - with a bad process value the operator may still need to drive the output in manual.
+   * Default value: good
+   */
+  quality?: FaceplateQuality | string;
+  /**
+   * Determines whether requests can be made. Off by default: a read-only faceplate does not take keyboard focus, so a screen with many faceplates does not collect tab stops that do nothing.
+   * Default value: false
+   */
+  interactive?: boolean;
+  /**
+   * Sets or gets the amount by which an arrow key moves the setpoint. Page Up and Page Down move ten steps; Home and End move to the ends of the range.
+   * Default value: 1
+   */
+  setpointStep?: number;
+  /**
+   * Sets or gets the amount by which an arrow key moves the output.
+   * Default value: 1
+   */
+  outputStep?: number;
+  /**
+   * Determines whether a small embedded trend of the process value against the setpoint is shown. The trend is a strip chart.
+   * Default value: false
+   */
+  showTrend?: boolean;
+  /**
+   * Sets or gets the number of samples kept by the embedded trend.
+   * Default value: 120
+   */
+  trendLength?: number;
+  /**
+   * Determines whether the trend, the description and the column captions are hidden, for a strip of loops along the bottom of an overview screen.
+   * Default value: false
+   */
+  compact?: boolean;
+  /**
+   * Sets or gets the time in milliseconds a request may remain pending before it is dropped and the writeTimeout event is raised. Set it long enough for a round trip to the control system and short enough that the operator is not left waiting for a request that will not be answered. A request keeps its deadline when the faceplate is moved to another parent.
+   * Default value: 5000
+   */
+  pendingTimeout?: number;
+  /**
+   * Sets or gets an object specifying the strings used in the component that can be localized. Assigning the property replaces the object, so include the existing languages when adding one.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Sets or gets the language. Used together with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+}
+/**
+ Faceplate is a control loop faceplate that shows the process value, the setpoint and the controller output of a loop together with its mode. The component does not write values: requestSetpoint, requestOutput and requestMode raise events, the application sends the write to the control system, and the faceplate updates when the new value is reported. Until then the requested value is shown as pending next to the confirmed value, and if no update arrives within pendingTimeout the request is dropped and the writeTimeout event is raised. On the process-value track a drag shows where the setpoint would go and asks for it when it is let go over the track; a tap asks for nothing, and a drag that is cancelled, released away from the track, or interrupted by a change to cascade or out of service, or by the faceplate being removed, asks for nothing.
+*/
+export interface Faceplate extends BaseElement, FaceplateProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a new setpoint is requested. The faceplate does not change the setpoint; set the setpoint property when the control system confirms the value.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value, tag)
+   *  value - The requested setpoint, clamped to min and max.
+   *  tag - The loop tag.
+   */
+  onSetpointChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a new controller output is requested.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value, tag)
+   *  value - The requested output, clamped to outputMin and outputMax.
+   *  tag - The loop tag.
+   */
+  onOutputChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a change of mode is requested.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value, tag)
+   *  value - The requested mode.
+   *  tag - The loop tag.
+   */
+  onModeChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the process value crosses into or out of an alarm limit.
+	* @param event. The custom event. Custom data event was created with: ev.detail(state, oldState)
+   *  state - The alarm limit the process value now sits beyond: hiHi, hi, lo, loLo, or normal.
+   *  oldState - The state before.
+   */
+  onAlarmStateChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a request has been pending for <em>pendingTimeout</em> without the application writing the value back. The request is dropped and is no longer shown as pending.
+	* @param event. The custom event. Custom data event was created with: ev.detail(property, value)
+   *  property - Which request went unanswered: setpoint, output or mode.
+   *  value - The value that was requested.
+   */
+  onWriteTimeout?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Requests a new setpoint. Raises the setpointChange event and returns without changing the setpoint. The value is clamped to min and max before it is reported. Does nothing unless the faceplate is interactive and enabled. The mode rules apply: nothing is raised in cascade or out of service. Asking for the setpoint already in force raises nothing, and asking again for a value already pending raises nothing until it is answered or times out.
+   * @param {number} value. The requested setpoint.
+   */
+  requestSetpoint(value: number): void;
+  /**
+   * Requests a new controller output. Raises the outputChange event and returns. The value is clamped to outputLimits, then to outputMin and outputMax, before it is reported. Does nothing unless the faceplate is interactive and enabled. The mode rules apply: the output is requested only in manual. Asking for the output already in force, or again for a value already pending, raises nothing.
+   * @param {number} value. The requested output.
+   */
+  requestOutput(value: number): void;
+  /**
+   * Requests a change of mode. Raises the modeChange event and returns. A mode that is not in availableModes is ignored. Does nothing unless the faceplate is interactive and enabled. Asking for the mode already in force, or again for a mode already pending, raises nothing.
+   * @param {string} mode. The requested mode.
+   */
+  requestMode(mode: string): void;
+  /**
+   * Returns the alarm limit the current process value has crossed: hiHi, hi, lo, loLo or normal.
+   * @returns {string}
+   */
+  alarmState(): string;
+  /**
+   * Also available as a static method of the class. Returns the alarm limit a reading has crossed, given a limits object. It has no side effects, so a banner or a tile wall can classify a reading without creating a faceplate. The most severe limit is returned: a reading above hi-hi is also above hi, and hi-hi is reported.
+   * @param {number} value. The reading.
+   * @param {any} limits. An object with hiHi, hi, lo and loLo members. Any absent limit is skipped.
+   * @returns {string}
+   */
+  limitStateOf(value: number, limits: any): string;
+  /**
+   * Redraws the faceplate. Called automatically when a property changes.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-faceplate"): Faceplate;
+        querySelector(selectors: "smart-faceplate"): Faceplate | null;
+        querySelectorAll(selectors: "smart-faceplate"): NodeListOf<Faceplate>;
+        getElementsByTagName(qualifiedName: "smart-faceplate"): HTMLCollectionOf<Faceplate>;
+        getElementsByName(elementName: "smart-faceplate"): NodeListOf<Faceplate>;
+    }
+}
+
+/**Sets or gets the controller mode. Use requestMode to request a change and set the property when the controller confirms the new mode. The output column can be operated in manual mode only. */
+export declare type FaceplateMode = 'auto' | 'manual' | 'cascade' | 'outOfService';
+/**Sets or gets the quality of the reading. A quality other than good is shown as a badge and included in the spoken value, so a stale value is not presented as a current one. Bad and stale readings are also drawn as not live: the process column hatched and the PV readout grey, struck through when bad and italic when stale. Requests stay possible - with a bad process value the operator may still need to drive the output in manual. */
+export declare type FaceplateQuality = 'good' | 'uncertain' | 'bad' | 'stale';
 export interface FileUploadProperties {
   /**
    * Defines the file types that are allowed for upload by specifying accepted MIME types or file extensions. This property maps directly to the HTML accept attribute on the hidden file input element, which determines which files users can select in the file dialog. These files are then uploaded to the server endpoint specified in the uploadUrl property. Setting this property ensures that only files matching the specified types can be chosen and submitted.
@@ -15250,6 +17969,11 @@ export interface GaugeProperties {
    */
   labelsVisibility?: LabelsVisibility | string;
   /**
+   * Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings.
+   * Default value: good
+   */
+  quality?: GaugeQuality | string;
+  /**
    * Provides a way to retrieve or assign the unlockKey property, which is a unique code required to activate or gain access to the product's full features. Use this property to securely manage the product's access control.
    * Default value: ""
    */
@@ -15466,6 +18190,8 @@ export declare type GaugeAnalogDisplayType = 'needle' | 'fill' | 'line';
 export declare type GaugeDigitalDisplayPosition = 'bottom' | 'center' | 'right' | 'top';
 /**Specifies whether the labels within the element are displayed or hidden. When set to true, the labels inside the element are visible; when set to false, the labels are not shown. This property allows you to control the display of label text within the element. */
 export declare type LabelsVisibility = 'all' | 'endPoints' | 'none';
+/**Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings. */
+export declare type GaugeQuality = 'good' | 'uncertain' | 'bad' | 'stale';
 /**Specifies the event or condition that triggers the update of the element’s value, such as on user input, when focus is lost, or after a specific action occurs. This setting controls how and when changes to the element's value are recognized and processed in the application. */
 export declare type DragMechanicalAction = 'switchUntilReleased' | 'switchWhenReleased' | 'switchWhileDragging';
 /**Specifies whether the element is configured to handle numerical values or date values, enabling appropriate functionality and validation for each data type. */
@@ -20045,6 +22771,178 @@ declare global {
 
 /**Defines or retrieves the position of the close button displayed on items within the group panel. This property allows you to specify where the close button appears (e.g., left, right, or another designated location) for each group panel item, or to access its current position programmatically. */
 export declare type GroupPanelCloseButtonPosition = 'left' | 'right';
+export interface HmiShellProperties {
+  /**
+   * Sets or retrieves the plant or site name, the header's first line.
+   * Default value: ""
+   */
+  plant?: string;
+  /**
+   * Sets or retrieves the area, the first step of the breadcrumb under the plant name.
+   * Default value: ""
+   */
+  area?: string;
+  /**
+   * Sets or retrieves the name of the screen, shown as the last step of the breadcrumb and included in the accessible name of the shell.
+   * Default value: ""
+   */
+  screen?: string;
+  /**
+   * Sets or retrieves who is logged on. Shown as a button in the header that raises userClick, for a application's log-off or e-signature dialog. Empty hides it.
+   * Default value: ""
+   */
+  user?: string;
+  /**
+   * Sets or retrieves the role of the user, shown next to the name. The property is not named role because role is the ARIA attribute of the component.
+   * Default value: ""
+   */
+  userRole?: string;
+  /**
+   * Determines whether the 24-hour clock is shown in the header.
+   * Default value: true
+   */
+  showClock?: boolean;
+  /**
+   * Sets or retrieves the data connection state, using the state words reported by a Smart.Industrial.Connect session, plus unknown for a screen without a session. The state is shown as a word with an indicator dot and exposed as a live status; a lost connection is announced assertively.
+   * Default value: unknown
+   */
+  connection?: HmiShellConnection | string;
+  /**
+   * Sets or retrieves extra text beside the connection word, the gateway's name, a latency.
+   * Default value: ""
+   */
+  connectionDetail?: string;
+  /**
+   * Sets or retrieves the displays as [{ id, label, level, active, alarms, disabled }]. level is the ISA-101 display level (1 to 4) and indents the item. alarms is a number or { critical, warning, advisory }; the badge shows the highest non-zero priority with its count, and the priority word is included in the accessible name of the item. A plain number is treated as critical. Pressing an item raises the navigate event; the application changes the screen.
+   * Default value: 
+   */
+  navigation?: any;
+  /**
+   * Sets or retrieves the alarms the footer summarises, in the shape AlarmBanner takes: [{ id, tag, message, priority, severity, timestamp, acknowledged, active, shelvedUntil, suppressed, outOfService }], read as ISA-18.2 reads an alarm list. Priority 0 and 1 are critical, 2 warning, 3 and above advisory - a number written as text counts as the number, and a severity (critical, warning, advisory) given on a record wins over its priority. The footer counts the active alarms by priority; counts as unacknowledged both active unacknowledged alarms and alarms that returned to normal before anybody acknowledged them; names the most urgent unacknowledged alarm (by priority, then the newest); and takes its colour from the worst alarm that is active or still unacknowledged. Shelved, suppressed and out-of-service alarms are not active and never named as needing attention; they are counted separately ('2 shelved'). A record without active is active. It acknowledges nothing.
+   * Default value: 
+   */
+  alarms?: any;
+  /**
+   * Determines whether the alarm strip is shown.
+   * Default value: true
+   */
+  showFooter?: boolean;
+  /**
+   * Determines whether the navigation bar is shown.
+   * Default value: true
+   */
+  showNavigation?: boolean;
+  /**
+   * Determines whether the header offers a switch between lightTheme and darkTheme.
+   * Default value: false
+   */
+  showThemeToggle?: boolean;
+  /**
+   * Sets or retrieves the theme the toggle switches to from a dark one.
+   * Default value: "industrial"
+   */
+  lightTheme?: string;
+  /**
+   * Sets or retrieves the theme the toggle switches to from a light one.
+   * Default value: "industrial-dark"
+   */
+  darkTheme?: string;
+  /**
+   * Sets or retrieves the target density. touch makes every target in the shell at least 44 px and the header taller, for panel PCs and gloved operation; normal is the desktop density. The value is reflected to an attribute used by the stylesheet.
+   * Default value: normal
+   */
+  density?: HmiShellDensity | string;
+  /**
+   * Determines whether a change of connection state is read through the live region.
+   * Default value: true
+   */
+  announceChanges?: boolean;
+  /**
+   * Enables or disables the component. A disabled shell disables its navigation items, user button, theme toggle and alarm strip, which takes them out of the tab order, and raises no navigate, userClick, alarmsClick or themeChange event. The screen in main is the application's and is not disabled.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the landmark names, the connection words, the alarm summary (including shelvedCount, suppressedCount and outOfServiceCount) and the badge names. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component. When set through setTheme or the toggle, the theme is applied to every themed element inside the shell; elements without a theme inherit it through the CSS variables.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ HmiShell is the display frame for operator screens described in ISA-101. It provides a header with the plant, area and display name, the logged-on user, a clock and the data connection state; a navigation bar across the display hierarchy with the alarm count for each display; a main area for the screen content; and a footer with the alarm summary and the unacknowledged alarm that most needs attention. Content is placed in the main area - including content appended after the shell has started, so a screen can be swapped by removing one child and appending another - and elements with slot="header" or slot="footer" are placed in the header or footer. The clock and the navigation keep working when the shell is moved to another parent. The shell raises the navigate, alarmsClick, userClick and themeChange events, switches the theme for all elements inside it and supports a touch density.
+*/
+export interface HmiShell extends BaseElement, HmiShellProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a display is selected in the navigation bar. The application changes the screen. A held Enter raises it once.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, item, index)
+   *  id - The display's id.
+   *  item - The navigation item as the application supplied it.
+   *  index - Its position in the list.
+   */
+  onNavigate?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the alarm strip is pressed - with the mouse, or with Enter or Space, since the strip is a button in the tab order - so that the application can open the alarm list. A control placed in the footer slot by the application does not raise this event.
+	* @param event. The custom event. Custom data event was created with: ev.detail(alarms)
+   *  alarms - A copy of the alarm list.
+   */
+  onAlarmsClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the user button is pressed, for a application's log-off or e-signature dialog.
+	* @param event. The custom event. Custom data event was created with: ev.detail(user, role)
+   *  user - Who is logged on.
+   *  role - Their role.
+   */
+  onUserClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the theme is switched through the toggle or setTheme, after every element inside the shell has been switched with it.
+	* @param event. The custom event. Custom data event was created with: ev.detail(theme, previousTheme)
+   *  theme - The theme now in force.
+   *  previousTheme - The theme before.
+   */
+  onThemeChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Sets the theme on the shell and on every element inside it that has a theme, so the whole screen switches at once, and raises the themeChange event.
+   * @param {string} theme. The theme name.
+   */
+  setTheme(theme: string): void;
+  /**
+   * Returns whether the current theme is the dark theme: the darkTheme, or any theme whose name ends in -dark.
+   * @returns {boolean}
+   */
+  isDark(): boolean;
+  /**
+   * Rebuilds the header, navigation and footer.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-hmi-shell"): HmiShell;
+        querySelector(selectors: "smart-hmi-shell"): HmiShell | null;
+        querySelectorAll(selectors: "smart-hmi-shell"): NodeListOf<HmiShell>;
+        getElementsByTagName(qualifiedName: "smart-hmi-shell"): HTMLCollectionOf<HmiShell>;
+        getElementsByName(elementName: "smart-hmi-shell"): NodeListOf<HmiShell>;
+    }
+}
+
+/**Sets or retrieves the data connection state, using the state words reported by a Smart.Industrial.Connect session, plus unknown for a screen without a session. The state is shown as a word with an indicator dot and exposed as a live status; a lost connection is announced assertively. */
+export declare type HmiShellConnection = 'connected' | 'connecting' | 'reconnecting' | 'error' | 'closed' | 'unknown';
+/**Sets or retrieves the target density. touch makes every target in the shell at least 44 px and the header taller, for panel PCs and gloved operation; normal is the desktop density. The value is reflected to an attribute used by the stylesheet. */
+export declare type HmiShellDensity = 'normal' | 'touch';
 export interface InputProperties {
   /**
    * Specifies the amount of time, in milliseconds, to wait before displaying the dropdown list of matching suggestions after the user interacts with the autocomplete input. This delay helps control how quickly the dropdown appears, improving user experience by preventing it from opening too rapidly as users type.
@@ -20297,6 +23195,538 @@ declare global {
 export declare type DropDownOpenPosition = 'auto' | 'top' | 'bottom';
 /**Specifies the autocomplete query mode, which defines how search suggestions are generated. This property controls the matching algorithm used during autocomplete operations, such as whether suggestions are based on prefix, infix, or exact matches within the input text. Adjusting this property allows you to tailor the autocomplete behavior to best suit your application's search experience. */
 export declare type InputQueryMode = 'contains' | 'containsIgnoreCase' | 'doesNotContain' | 'doesNotContainIgnoreCase' | 'equals' | 'equalsIgnoreCase' | 'startsWith' | 'startsWithIgnoreCase' | 'endsWith' | 'endsWithIgnoreCase';
+export interface IntensityGraphProperties {
+  /**
+   * Enables or disables the element.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves the matrix in graph mode: an array of rows, each an array or typed array of z values. data[row][column]; rows run along y from the bottom, columns along x. A cell that holds no number - null, undefined, an empty string, NaN - is transparent, and the cursors and cellAt read it as missing (z NaN), never as 0.
+   * Default value: 
+   */
+  data?: any;
+  /**
+   * Sets or retrieves the mode: graph shows the matrix as assigned; chart scrolls the columns that arrive through push, keeping the newest historyLength of them.
+   * Default value: graph
+   */
+  mode?: IntensityGraphMode | string;
+  /**
+   * Sets or retrieves the number of columns kept in chart mode.
+   * Default value: 500
+   */
+  historyLength?: number;
+  /**
+   * Sets or retrieves the x of the first column in graph mode. Null counts columns from 0.
+   * Default value: null
+   */
+  xMin?: number;
+  /**
+   * Sets or retrieves the x at the end of the last column in graph mode. Null counts columns from 0.
+   * Default value: null
+   */
+  xMax?: number;
+  /**
+   * Sets or retrieves the y of the first row. Null counts rows from 0.
+   * Default value: null
+   */
+  yMin?: number;
+  /**
+   * Sets or retrieves the y at the end of the last row. Null counts rows from 0.
+   * Default value: null
+   */
+  yMax?: number;
+  /**
+   * Sets or retrieves the z at the bottom of the colour ramp. Null follows the data. In chart mode the range follows the columns on screen, so it moves when the history scrolls. A value below a fixed zMin takes the bottom colour, or underRangeColor when that is set.
+   * Default value: null
+   */
+  zMin?: number;
+  /**
+   * Sets or retrieves the z at the top of the colour ramp. Null follows the data. A value above a fixed zMax takes the top colour, or overRangeColor when that is set.
+   * Default value: null
+   */
+  zMax?: number;
+  /**
+   * Sets or retrieves the name of the x axis.
+   * Default value: ""
+   */
+  xLabel?: string;
+  /**
+   * Sets or retrieves the unit of the x axis.
+   * Default value: ""
+   */
+  xUnit?: string;
+  /**
+   * Sets or retrieves the name of the y axis.
+   * Default value: ""
+   */
+  yLabel?: string;
+  /**
+   * Sets or retrieves the unit of the y axis.
+   * Default value: ""
+   */
+  yUnit?: string;
+  /**
+   * Sets or retrieves the name of the z axis, shown above the colour ramp.
+   * Default value: ""
+   */
+  zLabel?: string;
+  /**
+   * Sets or retrieves the unit of z, used in the ramp and the readouts.
+   * Default value: ""
+   */
+  zUnit?: string;
+  /**
+   * Sets or retrieves how x values are written: si in engineering notation with the x unit, plain as a number, clock as a time of day for x values in epoch milliseconds.
+   * Default value: si
+   */
+  xFormat?: IntensityGraphXFormat | string;
+  /**
+   * Sets or retrieves the named colour map.
+   * Default value: viridis
+   */
+  colorMap?: IntensityGraphColorMap | string;
+  /**
+   * Sets or retrieves the application's own colour stops, which override the named map: an array of [position, colour] pairs with positions from 0 to 1. Repeating a colour at two positions makes a band, for a pass/fail map.
+   * Default value: 
+   */
+  colorStops?: any;
+  /**
+   * Sets or retrieves the colour of a cell above zMax. Empty draws it in the top colour of the ramp, which reads as "at the limit"; a colour of its own says "beyond it", and a cap of that colour is drawn above the ramp as its key.
+   * Default value: ""
+   */
+  overRangeColor?: string;
+  /**
+   * Sets or retrieves the colour of a cell below zMin. Empty draws it in the bottom colour of the ramp; a colour of its own says the value is below the range, with a cap of that colour under the ramp as its key.
+   * Default value: ""
+   */
+  underRangeColor?: string;
+  /**
+   * Smooths between cells instead of drawing each as a block.
+   * Default value: false
+   */
+  interpolate?: boolean;
+  /**
+   * Shows the colour ramp with its z ticks at the right of the plot.
+   * Default value: true
+   */
+  showRamp?: boolean;
+  /**
+   * Shows grid lines at the ticks of the axes.
+   * Default value: false
+   */
+  showGrid?: boolean;
+  /**
+   * Shows the cursor legend under the plot.
+   * Default value: true
+   */
+  showCursorLegend?: boolean;
+  /**
+   * Sets or retrieves the cursors. Each is an object with id, label, x, y, color and visible. A cursor reads the cell under it into the legend; it is dragged on the plot and moved a cell at a time with the arrow keys.
+   * Default value: 
+   */
+  cursors?: any;
+  /**
+   * Enables placing and dragging cursors with the pointer and the keyboard.
+   * Default value: true
+   */
+  interactive?: boolean;
+  /**
+   * Sets or retrieves the title shown above the plot and used in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the number of significant digits in readouts and axis labels.
+   * Default value: 4
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the element - the ramp and cursor texts. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the element.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the element cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ IntensityGraph displays a matrix as colour on an x and a y axis, with a colour ramp that says what the colours mean and cursors that read the cell under them: the display a spectrogram, a thermal image, a die map or a sensor array ends in. In graph mode the matrix is assigned whole; in chart mode columns are pushed as they arrive and scroll along x. Colour comes from a named map or from the application's own stops, over a z range that follows the data or is fixed. The matrix is drawn once into an image and scaled onto the canvas.
+*/
+export interface IntensityGraph extends BaseElement, IntensityGraphProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a cursor is moved by the operator, with the pointer or the keyboard.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, x, y, z)
+   *  id - The cursor.
+   *  x - Its x.
+   *  y - Its y.
+   *  z - The value of the cell under it.
+   */
+  onCursorChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the plot is clicked without dragging.
+	* @param event. The custom event. Custom data event was created with: ev.detail(x, y, z, row, column)
+   *  x - The x under the pointer.
+   *  y - The y under the pointer.
+   *  z - The value of the cell, or NaN outside the matrix.
+   *  row - The row, or -1.
+   *  column - The column, or -1.
+   */
+  onCellClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Appends a column in chart mode: one z per row, newest at the right. The oldest column leaves once <em>historyLength</em> is reached. A missing column (null) is a column of missing cells, and the automatic z range follows the columns held, also once the history is full.
+   * @param {any} column. The z values, one per row, as an array or a typed array.
+   * @param {number} x?. The x of the column; unset, columns count from 0.
+   */
+  push(column: any, x?: number): void;
+  /**
+   * Empties the chart.
+   */
+  clear(): void;
+  /**
+   * Returns the cell at a point as { z, row, column }, or null outside the matrix. z is NaN for a cell that holds no number.
+   * @param {number} x. The x.
+   * @param {number} y. The y.
+   * @returns {any}
+   */
+  cellAt(x: number, y: number): any;
+  /**
+   * Returns a sentence describing what the graph shows, as used in its accessible name: the shape, the z range and where the highest value is.
+   * @returns {string}
+   */
+  describe(): string;
+  /**
+   * Redraws the element from its current properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-intensity-graph"): IntensityGraph;
+        querySelector(selectors: "smart-intensity-graph"): IntensityGraph | null;
+        querySelectorAll(selectors: "smart-intensity-graph"): NodeListOf<IntensityGraph>;
+        getElementsByTagName(qualifiedName: "smart-intensity-graph"): HTMLCollectionOf<IntensityGraph>;
+        getElementsByName(elementName: "smart-intensity-graph"): NodeListOf<IntensityGraph>;
+    }
+}
+
+/**Sets or retrieves the mode: graph shows the matrix as assigned; chart scrolls the columns that arrive through push, keeping the newest historyLength of them. */
+export declare type IntensityGraphMode = 'graph' | 'chart';
+/**Sets or retrieves how x values are written: si in engineering notation with the x unit, plain as a number, clock as a time of day for x values in epoch milliseconds. */
+export declare type IntensityGraphXFormat = 'si' | 'plain' | 'clock';
+/**Sets or retrieves the named colour map. */
+export declare type IntensityGraphColorMap = 'viridis' | 'inferno' | 'thermal' | 'grey' | 'jet' | 'blues';
+export interface JobPanelProperties {
+  /**
+   * Sets or retrieves the jobs as [{ id, name, enabled, when, action, lastRun, lastResult, runs, error }]. when is { daily: 'hh:mm' }, { weekly: { days, at } }, { every: milliseconds } or { cron }, and may carry text - the words the station's own schedule reader made of it, shown in place of the expression. action is { kind: 'recipe', recipe }, { kind: 'write', tag, value } or { kind: 'flow', flow }. lastResult is { ok, error }. The shape is what a Scada Studio station returns from /api/jobs. Assign a new array to update the component.
+   * Default value: 
+   */
+  jobs?: any;
+  /**
+   * Sets or retrieves the heading of the panel. It is also the accessible name of the group.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves whether the panel only shows the jobs. The Run now and Enable/Disable buttons are removed rather than disabled, because a control that cannot be used should not invite a press; every job and how it last went stays readable.
+   * Default value: false
+   */
+  readOnly?: boolean;
+  /**
+   * Sets or retrieves whether the Enable/Disable button is offered. Running a job and changing what the station does on its own are different rights - an operator may run the night setback early, only an engineer may switch it off - so an application can give the first without the second. When false the button is removed rather than disabled.
+   * Default value: true
+   */
+  allowToggle?: boolean;
+  /**
+   * Sets or retrieves the id of the job the application is running now. Its row says so and its button cannot be pressed twice. The application sets it on jobRun and clears it when the run comes back. From a jobRun until the application sets running, or for two seconds when it never does, the panel raises no other jobRun - so a held Enter or a double click runs a job once.
+   * Default value: ""
+   */
+  running?: string;
+  /**
+   * Sets or retrieves whether running a job by hand asks first. The confirmation says what the job does. A job writes into a plant, and running the night setback in the middle of the afternoon is a thing to be sure about, so this is on by default. The confirmation runs exactly what it showed: the job's action is copied when it opens, so a jobs update while it is open cannot change what Run it sends. A job that has left the station by then is not run. Escape, Cancel and Run it give the focus back to the Run now button.
+   * Default value: true
+   */
+  confirm?: boolean;
+  /**
+   * Sets or retrieves whether the panel is disabled.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether the panel can be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ JobPanel shows what a station does on its own - the jobs it runs because of the clock rather than because of a person - with what each does, when it runs and how it went last time. A job that failed says so where it is read, not only in a log, and a switched-off job keeps its place and recedes, in the secondary text colour, rather than disappearing. The panel never runs anything: Run now raises the jobRun event and the switch raises jobToggle, and the application does the work through the station, which records who asked. Times read in 24 hours, and a job update keeps the keyboard focus on the button it was on.
+*/
+export interface JobPanel extends BaseElement, JobPanelProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the operator runs a job by hand, after the confirmation when one is asked for. The component does not run it: the application asks the station to, sets the running property while it does, and hands back the updated jobs. It cannot know who is pressing the button or how the run should be audited, so it does not pretend to. Raised once per press: a held key or a double click does not raise it again.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, name, action)
+   *  id - The id of the job.
+   *  name - The name of the job, as the operator saw it.
+   *  action - What the job does, as it was given in <em>jobs</em>.
+   */
+  onJobRun?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the operator switches a job on or off. The list is not changed; the application stores the change on the station and hands back the updated jobs. A second click on the same switch within a second is the same press and raises nothing.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, name, enabled)
+   *  id - The id of the job.
+   *  name - Its name.
+   *  enabled - Whether the job is asked to be on: true to switch it on, false to switch it off.
+   */
+  onJobToggle?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-job-panel"): JobPanel;
+        querySelector(selectors: "smart-job-panel"): JobPanel | null;
+        querySelectorAll(selectors: "smart-job-panel"): NodeListOf<JobPanel>;
+        getElementsByTagName(qualifiedName: "smart-job-panel"): HTMLCollectionOf<JobPanel>;
+        getElementsByName(elementName: "smart-job-panel"): NodeListOf<JobPanel>;
+    }
+}
+
+export interface JogPanelProperties {
+  /**
+   * Sets or retrieves the axes as [{ id, label, unit, position, homed, min, max, state }]. position, homed and state are reported by the drive; min and max are soft limits. Setting the same axes again, in the same order, updates the rows in place as update() does and keeps a jog in progress; setting different axes ends it. For a running feed use update().
+   * Default value: 
+   */
+  axes?: any;
+  /**
+   * Sets or retrieves the selected step: 0 for continuous jogging, otherwise an increment in the axis unit. Changing the step ends a jog in progress. The step is kept to what the panel offers: 0 only while allowContinuous is true, otherwise a positive size no larger than the largest of steps. Anything else - a negative, 0 with Continuous switched off, a size larger than any offered - becomes the smallest step offered.
+   * Default value: 0
+   */
+  step?: number;
+  /**
+   * Sets or retrieves the step sizes offered.
+   * Default value: 0.01,0.1,1,10
+   */
+  steps?: any;
+  /**
+   * Determines whether Continuous is offered as a step. Off, every jog is a step: a step of 0 becomes the smallest step offered, a continuous jog in progress ends, and jogStart() does nothing.
+   * Default value: true
+   */
+  allowContinuous?: boolean;
+  /**
+   * Sets or retrieves the speed override, in percent, sent with every jog. Kept above 0 and no higher than the largest of speeds (100 when none is offered); anything else becomes the slowest speed offered.
+   * Default value: 25
+   */
+  speed?: number;
+  /**
+   * Sets or retrieves the speed overrides offered, in percent.
+   * Default value: 10,25,50,100
+   */
+  speeds?: any;
+  /**
+   * Sets or retrieves the unit for axes that name none.
+   * Default value: "mm"
+   */
+  unit?: string;
+  /**
+   * Sets or retrieves the decimal places in the position readout.
+   * Default value: 3
+   */
+  precisionDigits?: number;
+  /**
+   * Determines whether each axis has a home button.
+   * Default value: true
+   */
+  showHome?: boolean;
+  /**
+   * Determines whether the Stop button is shown. Escape stops either way.
+   * Default value: true
+   */
+  showStop?: boolean;
+  /**
+   * Determines whether the panel is interlocked, the machine not in manual, a guard open. An interlocked panel ends any jog in progress, stays readable, shows interlockReason, and raises blocked instead of moving anything.
+   * Default value: false
+   */
+  interlocked?: boolean;
+  /**
+   * Sets or retrieves why the panel will not jog, shown under it while interlocked and read out when a button is pressed.
+   * Default value: ""
+   */
+  interlockReason?: string;
+  /**
+   * Sets or retrieves the name of the mechanism the panel moves, shown in the header and used in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the target size. touch makes the jog buttons 60px high for a gloved hand.
+   * Default value: normal
+   */
+  density?: JogPanelDensity | string;
+  /**
+   * Enables or disables the component. A disabled panel cannot jog, step or home, but its Stop button stays enabled: a stop must always be possible. Prefer interlocked for a panel that must not move anything right now, it shows the reason.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages. The position readout and the step sizes use the locale's decimal separator.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the accessible names, the step and speed titles, the hints and the refusal reasons. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ JogPanel is the manual motion panel of a machine pendant. It shows one row per axis with the current position, jog minus and jog plus buttons and a home button, a step selector (continuous or a fixed increment), a speed override and a stop button. The component reports the operator actions through events; the positions are supplied by the application from the drive. A continuous jog raises jogStart and jogStop and is always ended when the pointer or key is released, focus is lost, an interlock is set or the stop button is pressed. Soft limits prevent jogging past the limit. The window losing the focus or the page being hidden also ends a continuous jog, and the Stop button stays enabled while the panel is disabled. In a narrow cell the buttons of an axis wrap under its position readout.
+*/
+export interface JogPanel extends BaseElement, JogPanelProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a continuous jog begins. jogStop always follows.
+	* @param event. The custom event. Custom data event was created with: ev.detail(axis, direction, speed)
+   *  axis - The axis id.
+   *  direction - 1 or -1.
+   *  speed - The speed override, in percent.
+   */
+  onJogStart?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a continuous jog ends, for any reason.
+	* @param event. The custom event. Custom data event was created with: ev.detail(axis, direction, duration)
+   *  axis - The axis id.
+   *  direction - 1 or -1.
+   *  duration - How long it ran, in milliseconds.
+   */
+  onJogStop?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when one increment is requested.
+	* @param event. The custom event. Custom data event was created with: ev.detail(axis, direction, step, speed)
+   *  axis - The axis id.
+   *  direction - 1 or -1.
+   *  step - The increment, in the unit.
+   *  speed - The speed override, in percent.
+   */
+  onJogStep?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a home is requested.
+	* @param event. The custom event. Custom data event was created with: ev.detail(axis)
+   *  axis - The axis id, or null for all.
+   */
+  onHomeRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered by the Stop button, Escape, or stop().
+	* @param event. The custom event.    */
+  onStop?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a step is selected.
+	* @param event. The custom event. Custom data event was created with: ev.detail(step, previousStep)
+   *  step - The step, 0 for continuous.
+   *  previousStep - The step before.
+   */
+  onStepChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a speed is selected.
+	* @param event. The custom event. Custom data event was created with: ev.detail(speed, previousSpeed)
+   *  speed - The speed, in percent.
+   *  previousSpeed - The speed before.
+   */
+  onSpeedChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a jog, step or home is refused. Nothing moves.
+	* @param event. The custom event. Custom data event was created with: ev.detail(reason, axis)
+   *  reason - Why, the interlock reason, the axis already jogging, or the limit.
+   *  axis - The axis id, or null.
+   */
+  onBlocked?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Updates one axis with the values reported by the drive (position, homed, state, min, max, label, unit) and updates its row in place. Intended for a position subscription. A jog into a limit that the update reports as reached is ended.
+   * @param {string} id. The axis.
+   * @param {any} patch. The fields to change.
+   */
+  update(id: string, patch: any): void;
+  /**
+   * Returns the axes as the panel holds them, with everything update() has reported.
+   * @returns {any}
+   */
+  axisList(): any;
+  /**
+   * Begins a continuous jog, as holding a jog button does. The jog ends with jogStop(). The request is refused, with the blocked event, while the panel is interlocked, while another axis is jogging, or when the jog would move into a soft limit. Does nothing while allowContinuous is false.
+   * @param {string} id. The axis.
+   * @param {number} direction. 1 or -1.
+   * @returns {boolean}
+   */
+  jogStart(id: string, direction: number): boolean;
+  /**
+   * Ends the continuous jog in progress, if there is one.
+   * @returns {boolean}
+   */
+  jogStop(): boolean;
+  /**
+   * Requests one increment of the selected step, as pressing a jog button does when a step is selected. Does nothing when the step is continuous.
+   * @param {string} id. The axis.
+   * @param {number} direction. 1 or -1.
+   * @returns {boolean}
+   */
+  jogStep(id: string, direction: number): boolean;
+  /**
+   * Returns the continuous jog in progress as { axis, direction }, or null.
+   * @returns {any}
+   */
+  activeJog(): any;
+  /**
+   * Requests a homing cycle for one axis, or for all axes when no axis is given. Refused while the panel is interlocked or while an axis is jogging.
+   * @param {string} id?. The axis. Omit for all.
+   * @returns {boolean}
+   */
+  home(id?: string): boolean;
+  /**
+   * Ends a jog in progress and raises the stop event for everything else that moves.
+   */
+  stop(): void;
+  /**
+   * Rebuilds the panel from its properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-jog-panel"): JogPanel;
+        querySelector(selectors: "smart-jog-panel"): JogPanel | null;
+        querySelectorAll(selectors: "smart-jog-panel"): NodeListOf<JogPanel>;
+        getElementsByTagName(qualifiedName: "smart-jog-panel"): HTMLCollectionOf<JogPanel>;
+        getElementsByName(elementName: "smart-jog-panel"): NodeListOf<JogPanel>;
+    }
+}
+
+/**Sets or retrieves the target size. touch makes the jog buttons 60px high for a gloved hand. */
+export declare type JogPanelDensity = 'normal' | 'touch';
 export interface KanbanProperties {
   /**
    * Controls whether users can reorder columns in a table or grid. When set to true and used in combination with allowDrag enabled, this property lets users rearrange columns by dragging and dropping their headers. For example, a user can click and hold the header of the first column, then drag it to a new position over another column header and drop it, changing the column order visually and functionally. This enhances the user experience by allowing customizable column layouts.
@@ -21324,6 +24754,96 @@ export declare type KanbanSelectionMode = 'zeroOrOne' | 'zeroOrManyExtended';
 export declare type KanbanTaskPosition = 'all' | 'leaf';
 /**Specifies how sub-tasks are rendered within a task card.  <br/>- '"none"' *(default)*: Sub-tasks are hidden on the task card and are only visible within the edit dialog.  <br/>- '"onePerRow"': All sub-tasks associated with the task are displayed directly on the task card, with each sub-task shown on its own row.  <br/>- '"onlyUnfinished"': Only sub-tasks that are not marked as completed are displayed on the task card; completed sub-tasks remain hidden. */
 export declare type KanbanTaskSubTasks = 'none' | 'onePerRow' | 'onlyUnfinished';
+export interface KnobProperties {
+  /**
+   * Enables or disables the component. Disabling the knob, or making it readonly, during a drag ends the drag: nothing more is written, and under switchWhenReleased or switchUntilReleased the value goes back to where the drag began.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the accessible name of the control (knobLabel) and the quality description (qualityUncertain, qualityBad, qualityStale). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover these keys.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Sets or retrieves how a pointer drag changes the value: vertical - up increases, dragSensitivity pixels covering the full range; circular - turning round the centre turns the knob through the same angle; both - the first few pixels of movement decide which. Either way the drag is relative: it moves the value from where it was, so the press itself writes nothing and a tap without movement is no change. The drag belongs to the primary button of the pointer that started it; a second finger or the right button does nothing.
+   * Default value: both
+   */
+  dragMode?: KnobDragMode | string;
+  /**
+   * Sets or gets the number of pixels of vertical drag that cover the full range. A larger value gives a finer adjustment.
+   * Default value: 150
+   */
+  dragSensitivity?: number;
+  /**
+   * Sets or gets the angle at which the scale ends, in degrees clockwise from twelve o'clock. The value may exceed 360.
+   * Default value: 495
+   */
+  endAngle?: number;
+  /**
+   * Sets or retrieves how the value is marked.
+   * Default value: pointer
+   */
+  knobStyle?: KnobKnobStyle | string;
+  /**
+   * Sets or retrieves whether the value is shown under the dial. Boolean attributes are presence-based, so set the property from script to turn it off.
+   * Default value: true
+   */
+  showValue?: boolean;
+  /**
+   * Sets or gets the angle at which the scale starts, in degrees clockwise from twelve o'clock. The default leaves a gap at the bottom, like the stop of a panel knob.
+   * Default value: 225
+   */
+  startAngle?: number;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ Knob is a rotary control for setting a value. It extends Tank, so min, max, value, interval, coerce, logarithmicScale, ranges, unit, precisionDigits, inverted, mechanicalAction and rightToLeft work as they do on Gauge, Slider and Tank. The unit is shown after the value only when showUnit is true, and the ranges are drawn only when showRanges is true. The readout is formatted with precisionDigits alone: scientificNotation, significantDigits and decimalSeparator are not applied. On the knob, rightToLeft swaps the Left and Right arrow keys. The component adds the rotary display and circular drag. The mechanicalAction property defines when the value is committed while the knob is turned. An aria-label written by the author names the knob; without one it is named by its knobLabel message.
+*/
+export interface Knob extends BaseElement, KnobProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the value changes through the pointer or the keyboard. When it fires depends on <em>mechanicalAction</em>: switchWhileDragging reports continuously, switchWhenReleased reports once on release, and switchUntilReleased is momentary: the knob takes the value while it is held and goes back on release. A press without movement changes nothing. A drag that is cancelled - the touch cancelled, the knob disabled, made readonly or removed - raises nothing it had not already reported. A value set by the application during a drag is held until the drag ends and is shown then, unless the drag committed a value of its own; under switchUntilReleased the knob returns to that value.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value)
+   *  value - The new value.
+   */
+  onChange: ((this: any, ev: Event) => any) | null;
+  /**
+   * Redraws the dial.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-knob"): Knob;
+        querySelector(selectors: "smart-knob"): Knob | null;
+        querySelectorAll(selectors: "smart-knob"): NodeListOf<Knob>;
+        getElementsByTagName(qualifiedName: "smart-knob"): HTMLCollectionOf<Knob>;
+        getElementsByName(elementName: "smart-knob"): NodeListOf<Knob>;
+    }
+}
+
+/**Sets or retrieves how a pointer drag changes the value: vertical - up increases, dragSensitivity pixels covering the full range; circular - turning round the centre turns the knob through the same angle; both - the first few pixels of movement decide which. Either way the drag is relative: it moves the value from where it was, so the press itself writes nothing and a tap without movement is no change. The drag belongs to the primary button of the pointer that started it; a second finger or the right button does nothing. */
+export declare type KnobDragMode = 'circular' | 'vertical' | 'both';
+/**Sets or retrieves how the value is marked. */
+export declare type KnobKnobStyle = 'pointer' | 'dot' | 'arc';
 export interface LayoutProperties {
   /**
    * Sets or retrieves the current animation mode for the element. When this property is set to 'none', all animations are disabled and no animation effects will be applied. Use this property to enable, disable, or specify different animation behaviors.
@@ -23400,6 +26920,452 @@ declare global {
     }
 }
 
+export interface MimicProperties {
+  /**
+   * Sets or retrieves the connections between symbols as [{ from, to, flowing, reverse, className, waypoints }]. from and to are symbol ids. A connection that names a symbol which is not on the diagram is skipped. waypoints overrides the automatic orthogonal routing.
+   * Default value: 
+   */
+  connections?: any;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether symbols can be dragged to new positions. Panning and zooming work either way.
+   * Default value: false
+   */
+  editable?: boolean;
+  /**
+   * Sets or gets the spacing of the background grid and the step used when snapToGrid is enabled.
+   * Default value: 20
+   */
+  gridSize?: number;
+  /**
+   * Sets or gets the maximum zoom of the viewport. The zoom is clamped when it is assigned.
+   * Default value: 4
+   */
+  maxZoom?: number;
+  /**
+   * Sets or gets the minimum zoom of the viewport.
+   * Default value: 0.25
+   */
+  minZoom?: number;
+  /**
+   * Sets or gets the horizontal pan of the stage in pixels.
+   * Default value: 0
+   */
+  panX?: number;
+  /**
+   * Sets or gets the vertical pan of the stage in pixels.
+   * Default value: 0
+   */
+  panY?: number;
+  /**
+   * Sets or retrieves the id of the selected symbol, or null.
+   * Default value: null
+   */
+  selection?: any;
+  /**
+   * Sets or retrieves whether a background grid is drawn. The grid scales with the zoom, so it moves with the diagram.
+   * Default value: false
+   */
+  showGrid?: boolean;
+  /**
+   * Sets or retrieves whether dragged symbols snap to the grid.
+   * Default value: false
+   */
+  snapToGrid?: boolean;
+  /**
+   * Sets or gets the default size of a symbol in pixels. A symbol can override it with its own size.
+   * Default value: 56
+   */
+  symbolSize?: number;
+  /**
+   * Sets or retrieves the equipment on the diagram as [{ id, symbol, x, y, label, state, quality, value, rotate, level, size, stubs }]. Positions are numbers in stage coordinates, so a layout can be serialised. The symbol elements are updated rather than rebuilt when the property changes, and only what changed is written - a reading that moved patches that symbol's text, and the connections are redrawn only when a symbol moves - so keyboard focus and the selection are kept and a large diagram stays responsive. A number given as value is shown as text; a null entry is skipped. Assign a new array to update the component.
+   * Default value: 
+   */
+  symbols?: any;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the accessible name of the canvas and the empty state (2 keys: mimicLabel, empty). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * Sets or retrieves the zoom factor. Clamped to minZoom and maxZoom on assignment - 0 or less is minZoom, the furthest out the diagram goes - so the property never reports a value the diagram is not at. A number written as text, such as '2' from an attribute, is taken as that number; a value that is not a number is refused.
+   * Default value: 1
+   */
+  zoom?: number;
+}
+/**
+ Mimic is a process diagram canvas. Equipment is placed on the canvas as MimicSymbol elements, connected with orthogonal routed lines, and the diagram can be panned and zoomed. Each symbol keeps its tag, state and reading and reports its own clicks. The layout of the diagram can be saved and restored. The canvas is one tab stop - the current symbol - arrowed between symbols; the viewport itself is not a tab stop. A disabled diagram raises no events and does not pan or zoom.
+*/
+export interface Mimic extends BaseElement, MimicProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a symbol has been dragged to a new position. Handle it to persist the layout.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, layout)
+   *  id - The symbol that moved.
+   *  layout - The whole layout after the move.
+   */
+  onLayoutChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the selected symbol changes.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, symbol)
+   *  id - The newly selected id, or null.
+   *  symbol - Its specification.
+   */
+  onSelectionChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a symbol is chosen, by pointer or keyboard, typically used to open its detail.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, symbol)
+   *  id - The symbol id.
+   *  symbol - Its specification.
+   */
+  onSymbolClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Fits the whole diagram into the viewport, so an operator who has zoomed into a unit can return to the plant view with one action.
+   * @param {number} padding?. Margin in pixels. Defaults to 24.
+   */
+  fit(padding?: number): void;
+  /**
+   * Gets or sets the whole diagram (symbols, connections and viewport) as a plain object. Call the method without an argument to read the layout, or pass a saved layout to restore it. Returns copies, so a saved layout is not affected by later edits. Can be combined with the autoSaveState property of DockingLayout for the panels around the diagram.
+   * @param {any} value?. A layout to restore. Omit to read the current one.
+   * @returns {any}
+   */
+  layout(value?: any): any;
+  /**
+   * Rebuilds the diagram.
+   */
+  redraw(): void;
+  /**
+   * Selects a symbol by id, or clears the selection with null. Raises selectionChange only when the selection actually changes.
+   * @param {string | number} id. The symbol id, or null.
+   */
+  select(id: string | number): void;
+  /**
+   * Returns the symbol at a point in stage coordinates, or null. When two symbols overlap, the topmost one is returned, as for a click.
+   * @param {number} x. Stage x.
+   * @param {number} y. Stage y.
+   * @returns {any}
+   */
+  symbolAt(x: number, y: number): any;
+  /**
+   * Zooms around a point in the viewport. Zooming around the pointer keeps the point under the pointer in place, which is the expected behaviour of wheel zoom.
+   * @param {number} x. Viewport x.
+   * @param {number} y. Viewport y.
+   * @param {number} factor. Multiplier, for example 1.1 to zoom in.
+   */
+  zoomAt(x: number, y: number, factor: number): void;
+  /**
+   * Zooms around the centre of the viewport.
+   * @param {number} factor. Multiplier.
+   */
+  zoomBy(factor: number): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-mimic"): Mimic;
+        querySelector(selectors: "smart-mimic"): Mimic | null;
+        querySelectorAll(selectors: "smart-mimic"): NodeListOf<Mimic>;
+        getElementsByTagName(qualifiedName: "smart-mimic"): HTMLCollectionOf<Mimic>;
+        getElementsByName(elementName: "smart-mimic"): NodeListOf<Mimic>;
+    }
+}
+
+export interface MimicSymbolProperties {
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves the equipment tag shown beside the symbol.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves where the tag is rendered.
+   * Default value: bottom
+   */
+  labelPosition?: MimicSymbolLabelPosition | string;
+  /**
+   * Sets or retrieves the content of a vessel as a percentage, drawn as a fill clipped to the vessel shape. Only the vessel symbol uses it.
+   * Default value: null
+   */
+  level?: number;
+  /**
+   * Sets or retrieves a rotation in degrees, for symbols that sit in a vertical run.
+   * Default value: 0
+   */
+  rotate?: number;
+  /**
+   * Sets or retrieves whether the symbol is drawn as the current selection.
+   * Default value: false
+   */
+  selected?: boolean;
+  /**
+   * Sets or retrieves the equipment state, which sets how the symbol is drawn. In the Industrial themes running - the normal state - is drawn solid neutral and stopped as a light body, as ISA-101 asks, so colour is left for fault; elsewhere running is green. The smart-mimic-classic class on the symbol, the diagram or the page brings the green back in the Industrial themes, and the --smart-mimic-running-fill, --smart-mimic-running-stroke and --smart-mimic-running-detail custom properties set it outright. unknown means no data: the body is hollow and dotted, so it is not read as stopped, and the reading is struck through as not current.
+   * Default value: normal
+   */
+  state?: MimicSymbolState | string;
+  /**
+   * Sets or retrieves the quality of what the symbol shows: good, uncertain, bad or stale. Reflected to an attribute when not good. Bad drops the state colour (a state from a bad signal is not a state) and strikes the reading through; stale fades the symbol and its reading; uncertain dashes the outline. A mark in the corner - a cross, a clock, a question mark - says which without colour, and the quality is spoken in the symbol's name and shown as a tooltip on the reading.
+   * Default value: good
+   */
+  quality?: MimicSymbolQuality | string;
+  /**
+   * Sets or retrieves which connection stubs are drawn. Stubs extend past the edge of the symbol on the pipe centreline, so a symbol placed in a pipe run connects to the line on either side.
+   * Default value: auto
+   */
+  stubs?: MimicSymbolStubs | string;
+  /**
+   * Sets or retrieves the symbol to draw. The built-in set contains 33 ISA-5.1 shapes: pumps (centrifugal, positive displacement, vacuum), valves (control, check, relief, ball, gate, butterfly, three-way), vessels (vertical, column, reactor, drum, silo, cyclone), rotating equipment (motor, turbine, generator, fan, blower, compressor, agitator, conveyor), electrical equipment (breaker, transformer, disconnect) and inline devices (filter, exchanger, orifice, heater, cooler, instrument bubble). The names can be enumerated at run time from the static symbols map. The value is not restricted to the built-in names, because symbolTemplate can supply additional symbols. An unknown symbol without a template falls back to the pump.
+   * Default value: "pump"
+   */
+  symbol?: string;
+  /**
+   * Sets or retrieves a function that returns the SVG markup for a symbol that is not in the built-in set. The function is called with (symbolName, element) and returns markup for the same 100x100 viewBox, or null to fall back to the built-in set. The markup is inserted as it is, so it should come from application code; markup built from plant data has to be escaped first.
+   * Default value: null
+   */
+  symbolTemplate?: any;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the equipment states and the accessible name of the symbol (8 keys: normal, running, stopped, fault, manual, maintenance, ..). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If set to true, the component cannot be focused. By default a symbol is an interactive control: it is in the tab order, has role="button" and is activated with Enter or Space. Setting this property removes it from the tab order and exposes it with role="img", which is appropriate for a symbol that is displayed only.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * Sets or retrieves a reading rendered under the symbol, already formatted with its unit. It is not reflected to an attribute: copying it to one on every update made the browser restyle every symbol of a large diagram.
+   * Default value: ""
+   */
+  value?: string;
+}
+/**
+ MimicSymbol displays one piece of equipment on a process diagram, such as a pump, a valve, a tank or a motor, with its tag, state and reading. The symbols are drawn as SVG in a 100x100 viewBox and scale with the element. The state colours come from the theme, and clicking the symbol raises an event so the application can open the related faceplate.
+*/
+export interface MimicSymbol extends BaseElement, MimicSymbolProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the symbol is chosen, by click or by pressing Enter or Space while it has focus, typically used to select the item and open its detail. A disabled symbol raises nothing.
+	* @param event. The custom event. Custom data event was created with: ev.detail(label, symbol, state)
+   *  label - The symbol's tag.
+   *  symbol - Which symbol is drawn.
+   *  state - The equipment state at the time of the click.
+   */
+  onSymbolClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Redraws the symbol.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-mimic-symbol"): MimicSymbol;
+        querySelector(selectors: "smart-mimic-symbol"): MimicSymbol | null;
+        querySelectorAll(selectors: "smart-mimic-symbol"): NodeListOf<MimicSymbol>;
+        getElementsByTagName(qualifiedName: "smart-mimic-symbol"): HTMLCollectionOf<MimicSymbol>;
+        getElementsByName(elementName: "smart-mimic-symbol"): NodeListOf<MimicSymbol>;
+    }
+}
+
+/**Sets or retrieves where the tag is rendered. */
+export declare type MimicSymbolLabelPosition = 'top' | 'bottom' | 'none';
+/**Sets or retrieves the equipment state, which sets how the symbol is drawn. In the Industrial themes running - the normal state - is drawn solid neutral and stopped as a light body, as ISA-101 asks, so colour is left for fault; elsewhere running is green. The jqx-mimic-classic class on the symbol, the diagram or the page brings the green back in the Industrial themes, and the --jqx-mimic-running-fill, --jqx-mimic-running-stroke and --jqx-mimic-running-detail custom properties set it outright. unknown means no data: the body is hollow and dotted, so it is not read as stopped, and the reading is struck through as not current. */
+export declare type MimicSymbolState = 'normal' | 'running' | 'stopped' | 'fault' | 'manual' | 'maintenance' | 'unknown';
+/**Sets or retrieves the quality of what the symbol shows: good, uncertain, bad or stale. Reflected to an attribute when not good. Bad drops the state colour (a state from a bad signal is not a state) and strikes the reading through; stale fades the symbol and its reading; uncertain dashes the outline. A mark in the corner - a cross, a clock, a question mark - says which without colour, and the quality is spoken in the symbol's name and shown as a tooltip on the reading. */
+export declare type MimicSymbolQuality = 'good' | 'uncertain' | 'bad' | 'stale';
+/**Sets or retrieves which connection stubs are drawn. Stubs extend past the edge of the symbol on the pipe centreline, so a symbol placed in a pipe run connects to the line on either side. */
+export declare type MimicSymbolStubs = 'auto' | 'both' | 'left' | 'right' | 'bottom' | 'none';
+export interface MomentaryButtonProperties {
+  /**
+   * Sets or retrieves the word on the button. It carries the meaning the kind colour cannot.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the action mode. momentary raises press and release as they happen; hold raises activate after holdDuration and reports an early release; confirm arms on the first press and raises activate on a second press within confirmTimeout. A confirm press counts when it is let go of on the button; a press that slides off, is cancelled or is ended by an interlock neither arms nor activates.
+   * Default value: momentary
+   */
+  mode?: MomentaryButtonMode | string;
+  /**
+   * Sets or retrieves how long a hold-mode button must be held before it acts, in milliseconds.
+   * Default value: 1000
+   */
+  holdDuration?: number;
+  /**
+   * Sets or retrieves how long a confirm-mode button stays armed after the first press, in milliseconds. The timeout disarms it without acting.
+   * Default value: 5000
+   */
+  confirmTimeout?: number;
+  /**
+   * Sets or retrieves the button style following the colour conventions of push button panels: a green ring for a start button, a red ring for a stop button, and a round mushroom head for an emergency stop. The colour is applied to the ring, not the whole face, so the label stays readable.
+   * Default value: normal
+   */
+  kind?: MomentaryButtonKind | string;
+  /**
+   * Sets or retrieves the device feedback reported by the plant, as a word such as running, stopped, open, closed or fault, shown as a lit lamp. An empty value shows no lamp. The property is set by the application from the feedback tag, not by the button. The button is announced as pressed (aria-pressed) only while the state is an on word - anything but stopped, closed, off, fault, tripped or unknown.
+   * Default value: ""
+   */
+  state?: string;
+  /**
+   * Determines whether the button is interlocked. An interlocked button stays readable and focusable, shows interlockReason, ends any press in progress without acting, disarms an armed button, and raises blocked instead of acting.
+   * Default value: false
+   */
+  interlocked?: boolean;
+  /**
+   * Sets or retrieves why the button will not act, shown under it while interlocked and read out when pressed.
+   * Default value: ""
+   */
+  interlockReason?: string;
+  /**
+   * Sets or retrieves the target size. touch makes the button 60px high for a gloved hand.
+   * Default value: normal
+   */
+  density?: MomentaryButtonDensity | string;
+  /**
+   * Enables or disables the component. Prefer interlocked for a button that must not act right now, it shows the reason. Disabling a button while it is held ends the press at once, as a cancelled press.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the accessible name, the hints and the blocked message. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ MomentaryButton is an operator button with three action modes. In momentary mode the button acts while it is pressed and stops when it is released. In hold mode the action starts only after the button has been held for holdDuration, shown by a progress ring. In confirm mode the action requires a second press within confirmTimeout. An interlocked button stays readable, shows the reason and raises the blocked event when pressed. The state property shows the device feedback as a lamp and is set by the application.
+*/
+export interface MomentaryButton extends BaseElement, MomentaryButtonProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a momentary button is pressed.
+	* @param event. The custom event. Custom data event was created with: ev.detail(at)
+   *  at - The time of the press, in milliseconds since the epoch.
+   */
+  onPress?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a momentary button is released, or a hold button is let go before holdDuration.
+	* @param event. The custom event. Custom data event was created with: ev.detail(duration, early)
+   *  duration - How long it was held, in milliseconds.
+   *  early - true when a hold was let go too early to act.
+   */
+  onRelease?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a hold button has been held for holdDuration, or a confirm button is pressed the second time.
+	* @param event. The custom event. Custom data event was created with: ev.detail(mode, duration)
+   *  mode - 'hold' or 'confirm'.
+   *  duration - The hold duration met, for a hold.
+   */
+  onActivate?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a confirm button is pressed the first time.
+	* @param event. The custom event. Custom data event was created with: ev.detail(timeout)
+   *  timeout - How long it stays armed, in milliseconds.
+   */
+  onArm?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when an armed confirm button times out or is disarmed without acting.
+	* @param event. The custom event.    */
+  onDisarm?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when an interlocked button is pressed. Nothing acts.
+	* @param event. The custom event. Custom data event was created with: ev.detail(reason)
+   *  reason - The interlockReason.
+   */
+  onBlocked?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Begins a press, as a pointer or the keyboard would. The method is public so that an application can drive the button from its own input, for example a physical key on a pendant. It does nothing while the button is pressed, disabled or interlocked; an interlocked button raises the blocked event. A button that is not on a page cannot be pressed.
+   */
+  press(): void;
+  /**
+   * Ends a press. A release always follows a press, so a momentary action is always stopped. A press also ends at once, as a cancelled press, when the button is removed or moved to another parent, disabled, hidden, when the focus or the pointer leaves it, or when the window loses the focus or the page is hidden. A cancelled press releases a momentary button and ends a hold early, but is not a step of a confirm. A second finger on a held button neither presses nor releases it, and a held key that repeats does not press again.
+   */
+  release(): void;
+  /**
+   * Returns whether the button is currently pressed.
+   * @returns {boolean}
+   */
+  isPressed(): boolean;
+  /**
+   * Returns whether a confirm-mode button is armed and waiting for its second press.
+   * @returns {boolean}
+   */
+  isArmed(): boolean;
+  /**
+   * Disarms a button in confirm mode without activating it.
+   */
+  disarm(): void;
+  /**
+   * Rebuilds the button from its properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-momentary-button"): MomentaryButton;
+        querySelector(selectors: "smart-momentary-button"): MomentaryButton | null;
+        querySelectorAll(selectors: "smart-momentary-button"): NodeListOf<MomentaryButton>;
+        getElementsByTagName(qualifiedName: "smart-momentary-button"): HTMLCollectionOf<MomentaryButton>;
+        getElementsByName(elementName: "smart-momentary-button"): NodeListOf<MomentaryButton>;
+    }
+}
+
+/**Sets or retrieves the action mode. momentary raises press and release as they happen; hold raises activate after holdDuration and reports an early release; confirm arms on the first press and raises activate on a second press within confirmTimeout. A confirm press counts when it is let go of on the button; a press that slides off, is cancelled or is ended by an interlock neither arms nor activates. */
+export declare type MomentaryButtonMode = 'momentary' | 'hold' | 'confirm';
+/**Sets or retrieves the button style following the colour conventions of push button panels: a green ring for a start button, a red ring for a stop button, and a round mushroom head for an emergency stop. The colour is applied to the ring, not the whole face, so the label stays readable. */
+export declare type MomentaryButtonKind = 'normal' | 'start' | 'stop' | 'emergency';
+/**Sets or retrieves the target size. touch makes the button 60px high for a gloved hand. */
+export declare type MomentaryButtonDensity = 'normal' | 'touch';
 export interface MultiColumnFilterPanelProperties {
   /**
    * Defines or retrieves the current animation mode for the element. Setting this property to 'none' disables all animations, while other values enable specific animation behaviors. Use this property to control whether animations are active or inactive.
@@ -24550,6 +28516,92 @@ declare global {
 
 /**Specifies the maximum number of items a user is allowed to select. If set to 1, only single selection is permitted; higher values enable multiple selections up to the defined limit. */
 export declare type MultiSplitButtonSelectionMode = 'none' | 'oneOrManyExtended' | 'zeroOrMany' | 'oneOrMany' | 'zeroOrOne' | 'one' | 'checkBox' | 'radioButton';
+export interface MultiStateIndicatorProperties {
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves the shape of the lamp.
+   * Default value: round
+   */
+  shape?: MultiStateIndicatorShape | string;
+  /**
+   * Sets or retrieves whether the label of the resolved state is rendered next to the lamp.
+   * Default value: false
+   */
+  showLabel?: boolean;
+  /**
+   * Sets or retrieves the state definitions. Each entry is an object with: value - the value this state matches; label - the text shown when showLabel is enabled, also used as the accessible name; severity - one of ok, advisory, warning, critical, manual, maintenance, off, unknown, which selects a colour from the active theme (an off lamp is an empty ring with a border that keeps 3:1 contrast); color - an explicit CSS colour that overrides the severity; blink - whether the lamp blinks, as ISA-18.2 uses for a state awaiting acknowledgement.
+   * Default value: 
+   */
+  states?: any;
+  /**
+   * Sets or retrieves the label used when the current value matches none of the declared states. It is empty by default, so the label comes from the unknown message ("Unknown" in English) and follows the locale, including after applyLocale. A value set here takes precedence over the message.
+   * Default value: ""
+   */
+  unknownLabel?: string;
+  /**
+   * Sets or retrieves the current value. A value that arrives as text from an attribute or a JSON payload matches a state declared with a number when it is that number written in decimal ("3" matches 3; "0x1" does not), and a text value matches a text state ignoring case and surrounding spaces. Missing data matches no state: null, an empty or blank string, false, NaN, an array or an object show the unknown state (a hatched lamp, the unknown label, and the unmatched attribute) instead of the first declared state.
+   * Default value: null
+   */
+  value?: any;
+  /**
+   * Sets or retrieves the quality of the value, as the Tank family takes it: good, uncertain (the lamp is dimmed), bad (hatched and outlined) or stale (faded). The lamp keeps the state it resolved but does not look live, and the quality word is added to the label and the accessible name, for example 'Running (quality bad)'.
+   * Default value: good
+   */
+  quality?: MultiStateIndicatorQuality | string;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the unknown state, the quality words and the accessible name (5 keys: unknown, indicatorLabel, qualityUncertain, qualityBad, qualityStale). Used in conjunction with the property locale; a change of locale redraws the label. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ MultiStateIndicator is a read-only lamp that shows one of several named states, such as running, stopped, manual, fault or unknown. The states are declared with their labels and colours, and the component resolves its value against them. The state name is included in the accessible name.
+*/
+export interface MultiStateIndicator extends BaseElement, MultiStateIndicatorProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * Returns the state definition matching a value, or null when none matches. Called without arguments it resolves the component's current value. Matching is as described for <em>value</em>: missing data matches nothing.
+   * @param {any} value?. The value to resolve. Defaults to the current value.
+   * @returns {any}
+   */
+  stateFor(value?: any): any;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-multi-state-indicator"): MultiStateIndicator;
+        querySelector(selectors: "smart-multi-state-indicator"): MultiStateIndicator | null;
+        querySelectorAll(selectors: "smart-multi-state-indicator"): NodeListOf<MultiStateIndicator>;
+        getElementsByTagName(qualifiedName: "smart-multi-state-indicator"): HTMLCollectionOf<MultiStateIndicator>;
+        getElementsByName(elementName: "smart-multi-state-indicator"): NodeListOf<MultiStateIndicator>;
+    }
+}
+
+/**Sets or retrieves the shape of the lamp. */
+export declare type MultiStateIndicatorShape = 'round' | 'square' | 'bar';
+/**Sets or retrieves the quality of the value, as the Tank family takes it: good, uncertain (the lamp is dimmed), bad (hatched and outlined) or stale (faded). The lamp keeps the state it resolved but does not look live, and the quality word is added to the label and the accessible name, for example 'Running (quality bad)'. */
+export declare type MultiStateIndicatorQuality = 'good' | 'uncertain' | 'bad' | 'stale';
 export interface NumberInputProperties {
   /**
    * Specifies or retrieves the current animation mode. When set to 'none', all animations are disabled. Setting this property to other supported values enables specific animation behaviors as defined by the available modes.
@@ -24703,6 +28755,168 @@ declare global {
     }
 }
 
+export interface NumericKeypadProperties {
+  /**
+   * Sets or retrieves the last accepted value, or the value the keypad was opened with. It is shown as the current value while a new value is typed.
+   * Default value: null
+   */
+  value?: number;
+  /**
+   * Sets or retrieves the lowest value accepted. null sets no floor.
+   * Default value: null
+   */
+  min?: number;
+  /**
+   * Sets or retrieves the highest value accepted. null sets no ceiling.
+   * Default value: null
+   */
+  max?: number;
+  /**
+   * Sets or retrieves the maximum number of decimal places of the entry. null allows any number of decimals; 0 makes the keypad integer-only and replaces the decimal key with a clear key. A key that would exceed the precision is ignored. Values above 15 are taken as 15, the most decimal places a number holds. A step key finer than the precision moves the entry by at least one decimal place in its direction.
+   * Default value: null
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves the engineering unit, shown next to the entry, the current value and the limits.
+   * Default value: ""
+   */
+  unit?: string;
+  /**
+   * Sets or retrieves what is being entered, the tag and the quantity, shown above the entry and in its accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Determines whether the sign key is offered. Off, the key becomes a clear key.
+   * Default value: true
+   */
+  allowNegative?: boolean;
+  /**
+   * Sets or retrieves the digit layout. calculator places 7 8 9 on the top row, as on an HMI keypad; phone places 1 2 3 there.
+   * Default value: calculator
+   */
+  layout?: NumericKeypadLayout | string;
+  /**
+   * Determines whether the limits are shown under the entry.
+   * Default value: true
+   */
+  showLimits?: boolean;
+  /**
+   * Determines whether the value being replaced stays in view while the new one is typed.
+   * Default value: true
+   */
+  showCurrent?: boolean;
+  /**
+   * Sets or retrieves quick steps, for example [-10, -1, 1, 10], shown as keys that adjust the entry from the current value.
+   * Default value: 
+   */
+  steps?: any;
+  /**
+   * Sets or retrieves the key size. touch makes keys 60 px with a wider gap, for a panel PC with gloves. Reflected to an attribute the stylesheet keys on.
+   * Default value: normal
+   */
+  density?: NumericKeypadDensity | string;
+  /**
+   * Enables or disables the component. A disabled keypad leaves the tab order, takes no focus and raises nothing.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages. Also sets the decimal separator shown on the decimal key, in the entry, the current value and the limits; the entry itself, text() and the events keep a point, and a physical keyboard types either.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the key names, the limits line and the refusal reasons. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ NumericKeypad is an on-screen keypad for entering a numeric value such as a setpoint on a touch panel. It validates the entry against min and max and shows the reason when the value is out of range instead of clamping it, limits the entry to the configured precisionDigits, keeps the current value in view while the new one is typed, and provides optional step keys. Accepting the entry raises the change event. A physical keyboard can also type into the keypad while it has focus, and the touch density enlarges the keys for gloved use. The decimal separator shown is the locale's, a comma for de, fr and es, and the entry is announced to screen readers as it is typed.
+*/
+export interface NumericKeypad extends BaseElement, NumericKeypadProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when an entry is accepted. Raised once per entry.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value, previousValue)
+   *  value - The value accepted.
+   *  previousValue - The value it replaces, or null.
+   */
+  onChange: ((this: any, ev: Event) => any) | null;
+  /**
+   * This event is triggered when an entry is refused. Nothing is written.
+	* @param event. The custom event. Custom data event was created with: ev.detail(text, reason)
+   *  text - The entry as typed.
+   *  reason - 'empty', 'notANumber', 'tooPrecise', 'belowMin' or 'aboveMax'.
+   */
+  onInvalid?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the entry is abandoned.
+	* @param event. The custom event.    */
+  onCancel: ((this: any, ev: Event) => any) | null;
+  /**
+   * This event is triggered on every key that changes the entry.
+	* @param event. The custom event. Custom data event was created with: ev.detail(text)
+   *  text - The entry so far.
+   */
+  onInput?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Starts an entry from a value, shows it as the current value and takes focus. The first key replaces the shown value, as on a calculator.
+   * @param {number} value?. The value to start from. Defaults to the value property.
+   */
+  open(value?: number): void;
+  /**
+   * Presses a key: a digit, '.', '-', 'backspace', 'clear', 'enter', 'escape', or a step given as a number. A digit beyond fifteen significant digits is ignored, as a number holds no more.
+   * @param {any} key. The key.
+   */
+  press(key: any): void;
+  /**
+   * Validates the entry against the limits and the precision. If the entry is valid, sets the value and raises the change event. If it is not, the entry stays on screen, the reason is shown and the invalid event is raised. Returns whether the entry was accepted. Only something typed is accepted: with nothing typed since open, accept or cancel - a second Enter, a double click or a double tap on Enter, a held Enter - it raises nothing and returns false, and it returns false while the keypad is disabled.
+   * @returns {boolean}
+   */
+  accept(): boolean;
+  /**
+   * Abandons the entry, shows the current value again and raises the cancel event. Raises nothing while the keypad is disabled.
+   */
+  cancel(): void;
+  /**
+   * Returns the reason the entry would be rejected ('empty', 'notANumber', 'tooPrecise', 'belowMin' or 'aboveMax'), or null when it would be accepted. A point typed first shows as 0. and is 'empty' until a digit follows: the zero was not typed.
+   * @returns {string}
+   */
+  validate(): string;
+  /**
+   * Returns the text entered so far.
+   * @returns {string}
+   */
+  text(): string;
+  /**
+   * Rebuilds the keypad.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-numeric-keypad"): NumericKeypad;
+        querySelector(selectors: "smart-numeric-keypad"): NumericKeypad | null;
+        querySelectorAll(selectors: "smart-numeric-keypad"): NodeListOf<NumericKeypad>;
+        getElementsByTagName(qualifiedName: "smart-numeric-keypad"): HTMLCollectionOf<NumericKeypad>;
+        getElementsByName(elementName: "smart-numeric-keypad"): NodeListOf<NumericKeypad>;
+    }
+}
+
+/**Sets or retrieves the digit layout. calculator places 7 8 9 on the top row, as on an HMI keypad; phone places 1 2 3 there. */
+export declare type NumericKeypadLayout = 'calculator' | 'phone';
+/**Sets or retrieves the key size. touch makes keys 60 px with a wider gap, for a panel PC with gloves. Reflected to an attribute the stylesheet keys on. */
+export declare type NumericKeypadDensity = 'normal' | 'touch';
 export interface NumericTextBoxProperties {
   /**
    * Specifies or retrieves the current animation mode. When set to 'none', all animations are disabled. Otherwise, the selected mode determines how animations are displayed or executed within the component.
@@ -24997,6 +29211,286 @@ export declare type NumericTextBoxInputFormat = 'integer' | 'floatingPoint' | 'c
 export declare type NumericTextBoxRadix = '2' | '8' | '10' | '16' | 'binary' | 'octal' | 'decimal' | 'hexadecimal';
 /**Specifies or retrieves the location of the spin buttons (increment and decrement controls) on the jqxNumericTextBox component. This property allows you to control whether the spin buttons appear on the left, right, or another designated position within the input field. */
 export declare type NumericTextBoxDisplayPosition = 'left' | 'right';
+export interface OctaveBandsProperties {
+  /**
+   * Enables or disables the element. Disabled, a click on a band raises no bandClick.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves the band width: whole octaves or third octaves.
+   * Default value: third
+   */
+  resolution?: OctaveBandsResolution | string;
+  /**
+   * Sets or retrieves the sample rate of pushed blocks, in samples per second. A band is shown only when all of it lies below half the sample rate. A value that is not a positive number analyses nothing: push() returns false, the header says so, and one console warning names the value; assigned levels are still shown.
+   * Default value: 48000
+   */
+  sampleRate?: number;
+  /**
+   * Sets or retrieves the FFT size a pushed block is analysed with. 0 uses the block's own length. Held to 16,777,216 at most.
+   * Default value: 0
+   */
+  size?: number;
+  /**
+   * Sets or retrieves the centre frequency of the lowest band shown. Set above frequencyMax, the two are swapped, with one console warning, rather than leaving the chart empty.
+   * Default value: 20
+   */
+  frequencyMin?: number;
+  /**
+   * Sets or retrieves the centre frequency of the highest band shown. Bands whose upper edge lies above half the sample rate are not shown whatever this says: at a sample rate of 8 kHz the 4 kHz third-octave band, which runs to 4.49 kHz, would be summed from the bins that exist and read low.
+   * Default value: 20000
+   */
+  frequencyMax?: number;
+  /**
+   * Sets or retrieves the frequency weighting applied to each band and to the overall level: Z (none), A or C, per IEC 61672.
+   * Default value: Z
+   */
+  weighting?: OctaveBandsWeighting | string;
+  /**
+   * Sets or retrieves what reads as 0 dB: 1 for dB re one unit of the signal, 0.00002 for dB SPL of a signal in pascal.
+   * Default value: 1
+   */
+  reference?: number;
+  /**
+   * Sets or retrieves the signal's unit, so a level reads dBV or, with the 20 µPa reference, dB SPL.
+   * Default value: ""
+   */
+  unit?: string;
+  /**
+   * Sets or retrieves the exponential time weighting of the bars: none, fast (125 ms) or slow (1 s), as a meter's.
+   * Default value: fast
+   */
+  averaging?: OctaveBandsAveraging | string;
+  /**
+   * Keeps the highest level of each band as a marker.
+   * Default value: true
+   */
+  peakHold?: boolean;
+  /**
+   * Sets or retrieves the level of each band in dB, in the order of bands(). Assigned by an application with its own filter bank, or computed by push.
+   * Default value: 
+   */
+  levels?: any;
+  /**
+   * Sets or retrieves the limit the bands are checked against: a level per band in dB, or [{ frequency, level }] points interpolated across the bands on the log axis. A band above its limit is drawn in the exceeded colour and counted in the header. A null or non-numeric per-band value is no limit for that band; a point that is not an object with a frequency and a level is skipped. Either is said once in a console warning.
+   * Default value: 
+   */
+  limit?: any;
+  /**
+   * Sets or retrieves the bottom of the level axis in dB. Null follows the data. With levelMax set below it, the two are swapped; set equal, the axis follows the data. Either is said once in a console warning.
+   * Default value: null
+   */
+  levelMin?: number;
+  /**
+   * Sets or retrieves the top of the level axis in dB. Null follows the data. Fixes the axis together with levelMin.
+   * Default value: null
+   */
+  levelMax?: number;
+  /**
+   * Shows the overall level in the header.
+   * Default value: true
+   */
+  showOverall?: boolean;
+  /**
+   * Shows the grid lines at the level ticks.
+   * Default value: true
+   */
+  showGrid?: boolean;
+  /**
+   * Drops pushed blocks while set.
+   * Default value: false
+   */
+  paused?: boolean;
+  /**
+   * Sets or retrieves the title shown in the header and used in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the number of decimals in levels, held to 0 to 20.
+   * Default value: 1
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the element - the header, overall, band and warning texts. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the element.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the element cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ OctaveBands displays the level in each octave or third-octave band as a bar, with the frequency-weighted overall level and a limit curve the bands are checked against: the display of a sound level meter and of a vibration survey. Bands follow IEC 61260 and the A and C weightings follow IEC 61672. Blocks of samples pushed to the component are analysed with the FFT of Smart.DSP, the power of the bins inside each band summed; an application with a real filter bank assigns the levels directly. Fast or slow averaging settles the bars, and peak hold keeps the highest level of each band. The class carries two static methods usable without an element: weighting(weighting, frequency), the A, C or Z weighting in dB at a frequency per IEC 61672, and nominal(centre), the nominal frequency a band is named by.
+*/
+export interface OctaveBands extends BaseElement, OctaveBandsProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered after a pushed block has been analysed.
+	* @param event. The custom event. Custom data event was created with: ev.detail(levels, overall, invalidSamples)
+   *  levels - The level of each band, in dB.
+   *  overall - The overall level, in dB.
+   *  invalidSamples - How many samples of the block were not numbers and were analysed as zeros; 0 for a clean block.
+   */
+  onLevelsChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a band is clicked.
+	* @param event. The custom event. Custom data event was created with: ev.detail(index, centre, label, level, peak)
+   *  index - The band.
+   *  centre - Its centre frequency.
+   *  label - Its nominal frequency.
+   *  level - Its level.
+   *  peak - Its held peak.
+   */
+  onBandClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Analyses a block of samples into band levels and shows them, with averaging and peak hold applied. Samples that are not numbers are analysed as zeros, and never passed off as clean: the header shows how many, <em>levelsChange</em> carries the count, and the console says so once per run of such blocks. Returns false, and analyses nothing, when the analyser is paused, when Smart.DSP is not loaded, when the block is not an array of at least two samples or has no number in it, or when the sample rate is not a positive number.
+   * @param {any} block. The samples, as an array or a typed array.
+   * @returns {boolean}
+   */
+  push(block: any): boolean;
+  /**
+   * Returns the bands shown: [{ centre, low, high, label, index }], centres on the IEC 61260 base-10 series, between frequencyMin and frequencyMax, and only bands whose upper edge lies below half the sample rate.
+   * @returns {any}
+   */
+  bands(): any;
+  /**
+   * Returns the overall level: the levels of the bands summed on energy, in dB, or NaN with no levels.
+   * @returns {number}
+   */
+  overall(): number;
+  /**
+   * Clears the levels and the peaks.
+   */
+  clear(): void;
+  /**
+   * Drops the held peaks.
+   */
+  resetPeaks(): void;
+  /**
+   * Returns a sentence describing what the analyser shows, as used in its accessible name: the bands, the overall level, the highest band and the number above the limit (<em>exceededSummaryOne</em> for one).
+   * @returns {string}
+   */
+  describe(): string;
+  /**
+   * Redraws the element from its current properties.
+   */
+  redraw(): void;
+  /**
+   * Redraws the plot on the next animation frame, so that many changes between two frames cost one draw.
+   */
+  invalidate(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-octave-bands"): OctaveBands;
+        querySelector(selectors: "smart-octave-bands"): OctaveBands | null;
+        querySelectorAll(selectors: "smart-octave-bands"): NodeListOf<OctaveBands>;
+        getElementsByTagName(qualifiedName: "smart-octave-bands"): HTMLCollectionOf<OctaveBands>;
+        getElementsByName(elementName: "smart-octave-bands"): NodeListOf<OctaveBands>;
+    }
+}
+
+/**Sets or retrieves the band width: whole octaves or third octaves. */
+export declare type OctaveBandsResolution = 'octave' | 'third';
+/**Sets or retrieves the frequency weighting applied to each band and to the overall level: Z (none), A or C, per IEC 61672. */
+export declare type OctaveBandsWeighting = 'Z' | 'A' | 'C';
+/**Sets or retrieves the exponential time weighting of the bars: none, fast (125 ms) or slow (1 s), as a meter's. */
+export declare type OctaveBandsAveraging = 'none' | 'fast' | 'slow';
+export interface OrderQueueProperties {
+  /**
+   * Sets or retrieves the orders as [{ id, product, quantity, unit, due, recipe, status, produced, started, finished }], the shape a Scada Studio station returns from /api/orders. status is queued, running, paused, done or aborted. Assign a new array to update the component.
+   * Default value: 
+   */
+  orders?: any;
+  /**
+   * Sets or retrieves the heading of the queue. It is also the accessible name of the group.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the line's rate in units an hour, for the projection. Left 0, the rate is the running order's own so far, once it has run five minutes and made something.
+   * Default value: 0
+   */
+  rate?: number;
+  /**
+   * Sets or retrieves whether finished and aborted orders are listed under the queue.
+   * Default value: true
+   */
+  showFinished?: boolean;
+  /**
+   * Sets or retrieves whether the queue only shows the orders. Every button is removed.
+   * Default value: false
+   */
+  readOnly?: boolean;
+  /**
+   * Sets or retrieves the id of the order the application is acting on. Its buttons wait. The queue also sets it itself as it raises orderAction, so a double press is one action even when the application sets busy only after an await. It is released when the application sets busy, refuses (errorMessage) or hands back the order changed, or after ten seconds.
+   * Default value: ""
+   */
+  busy?: string;
+  /**
+   * Sets or retrieves the reason the station refused an action. It is shown as an alert and announced.
+   * Default value: ""
+   */
+  errorMessage?: string;
+  /**
+   * Sets the reason the station refused an action, by its earlier name: it sets errorMessage. Reading it returns the element's error-reporting method, which reads as the message where text is wanted; read errorMessage for the message.
+   * Default value: ""
+   */
+  error?: string;
+  /**
+   * Sets or retrieves whether the queue is disabled.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether the queue can be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ OrderQueue shows what a line is making, how far along it is, and what comes next. The order on the line comes first, with its count against its quantity and, once it has run long enough to have a rate, when it will be done at that rate against when it is due. Start is offered on each queued order and refused, with the reason, while another order is on the line; Complete and Abort ask first, because a finished order is not started again. The component changes nothing: every button raises orderAction, and the application asks the station, which loads the order's recipe as it starts it and counts from the line's counter.
+*/
+export interface OrderQueue extends BaseElement, OrderQueueProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the operator starts, pauses, resumes, completes or aborts an order - after the confirmation, for complete and abort. The queue is not changed: the application asks the station and hands back the orders. A double press raises one action, and the answer to Complete or Abort has to be a second decision: the second click of the double-click that asked, or a press within 300 ms of the question, is not an answer.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, action)
+   *  id - The id of the order.
+   *  action - start, pause, resume, complete or abort.
+   */
+  onOrderAction?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-order-queue"): OrderQueue;
+        querySelector(selectors: "smart-order-queue"): OrderQueue | null;
+        querySelectorAll(selectors: "smart-order-queue"): NodeListOf<OrderQueue>;
+        getElementsByTagName(qualifiedName: "smart-order-queue"): HTMLCollectionOf<OrderQueue>;
+        getElementsByName(elementName: "smart-order-queue"): NodeListOf<OrderQueue>;
+    }
+}
+
 export interface PagerProperties {
   /**
    * Specifies or retrieves the current animation mode. When this property is set to 'none', all animations are disabled. Assigning any other valid value enables the corresponding animation mode.
@@ -25196,6 +29690,283 @@ declare global {
 
 /**<br/><br/>"Manages the display of ellipsis ("...") within the pagination component. Ellipsis buttons appear when there are too many pages to show at once, serving as visual indicators that more pages are available. These buttons help users quickly navigate to distant pages by indicating page ranges that are not currently displayed." */
 export declare type PagerAutoEllipsis = 'none' | 'before' | 'after' | 'both';
+export interface PanelMeterProperties {
+  /**
+   * A centre-zero movement: the needle rests in the middle of the scale and a heavier zero line is drawn there. It sets nothing on the scale itself, which is min and max, it marks the rest position.
+   * Default value: false
+   */
+  centerZero?: boolean;
+  /**
+   * When the coerce property is set to true, any value provided will automatically be adjusted to the nearest valid value based on the defined interval. This ensures that the resulting value always conforms to the step size specified by the interval property, even if the original input does not exactly match an allowed value.
+   * Default value: false
+   */
+  coerce?: boolean;
+  /**
+   * Determines whether custom tick marks, which may be placed at uneven intervals, are displayed on the plot. The specific positions of these custom ticks are specified using the customTicks property. This option allows you to override the default tick placement and use your own set of tick values.
+   * Default value: false
+   */
+  customInterval?: boolean;
+  /**
+   * When customInterval is enabled, you can define a specific list of tick values to be displayed on the plot. If coerce is set to true, any input value will automatically snap to the nearest tick from this predefined list, ensuring that only these tick values can be selected or represented.
+   * Default value: 0,50,100
+   */
+  customTicks?: Array<number | Date>;
+  /**
+   * The inertia of the coil, in milliseconds for the needle to settle. 0 is an undamped movement. The value is never animated, only the needle: a reader of the property gets the reading, and the digital display shows it undamped, so the instrument cannot show two different values for the same instant.
+   * Default value: 0
+   */
+  damping?: number;
+  /**
+   * Specifies the format of the date labels that appear when the mode property is set to 'date'. This determines how dates are displayed on the labels (e.g., 'YYYY-MM-DD', 'MM/DD/YYYY').
+   * Default value: "d"
+   */
+  dateLabelFormatString?: string;
+  /**
+   * Sets or gets the character written between the integer and the fractional part of a number, such as "." or ",", in the readout, the scale labels, the setpoint title and the accessible text. Left at "." it follows locale: a German, French or Spanish locale writes a comma, as Intl.NumberFormat does for that locale; any other character is used as set. Digits are never grouped. A value given as a string is always read with a period.
+   * Default value: "."
+   */
+  decimalSeparator?: string;
+  /**
+   * Determines whether the element is interactive or not. When enabled, the element responds to user actions (such as clicks or keyboard input); when disabled, the element appears inactive and does not accept user interaction.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Lets the reading be set by pointer or keyboard. A meter reads by default: it has role="meter" and is out of the tab order. With interactive on, it has role="slider", takes focus, and an arrow-key step starts from the end stop when the reading is off the scale.
+   * Default value: false
+   */
+  interactive?: boolean;
+  /**
+   * "When the 'coerce' property is set to 'true', all input values are automatically adjusted to fall within the specified interval. Any value outside the interval will be coerced to the nearest boundary value of the interval."
+   * Default value: 1
+   */
+  interval?: number;
+  /**
+   * Specifies the orientation of the gauge. When set to true, the starting and ending positions of the gauge are reversed, causing the gauge to be displayed in the opposite direction. If false, the gauge follows its default direction. Use this option to customize the gauge's flow based on your application's requirements.
+   * Default value: false
+   */
+  inverted?: boolean;
+  /**
+   * What is being measured, screened on the plate at the left of the movement. It is used as the accessible name of the component.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * A callback function that allows you to customize the formatting of the values shown within the gauge labels. This function receives the raw value as an argument and should return the formatted string to be displayed. Use this to control the appearance, number formatting, units, or localization of label values inside the gauge.
+   * Default value: null
+   */
+  labelFormatFunction?: any;
+  /**
+   * Specifies whether the labels within the element are displayed or hidden. When set to true, the labels inside the element are visible; when set to false, the labels are not shown. This property allows you to control the display of label text within the element.
+   * Default value: all
+   */
+  labelsVisibility?: LabelsVisibility | string;
+  /**
+   * Specifies or retrieves the current locale setting, typically defined as a language and regional code (e.g., "en-US" for U.S. English). This property works together with the messages property to determine which localized message set is displayed, enabling proper language and formatting support for users based on their selected locale.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * A callback function that allows you to customize the formatting of messages returned by the Localization Module. Use this to modify how localized strings are structured or displayed before they are delivered to your application, enabling support for advanced formatting, variable interpolation, or context-specific adaptations.
+   * Default value: null
+   */
+  localizeFormatFunction?: any;
+  /**
+   * Controls whether the element displays data using a logarithmic scale. When enabled, values are plotted on a logarithmic axis, which is useful for visualizing data that spans several orders of magnitude. When disabled, a standard linear scale is used.
+   * Default value: false
+   */
+  logarithmicScale?: boolean;
+  /**
+   * Sets or gets the top of the scale. A reading above it is kept as written: the needle rests against the right end stop and OVER is shown on the plate.
+   * Default value: 100
+   */
+  max?: number | Date;
+  /**
+   * Specifies the event or condition that triggers the update of the element’s value, such as on user input, when focus is lost, or after a specific action occurs. This setting controls how and when changes to the element's value are recognized and processed in the application.
+   * Default value: switchWhileDragging
+   */
+  mechanicalAction?: DragMechanicalAction | string;
+  /**
+   * Specifies or retrieves an object containing the text strings displayed by the widget, allowing for customization and localization of all user-facing messages. This property works together with the locale property to support multiple languages by providing translated strings for different locales. Use this to ensure the widget's interface is fully adaptable to users' language preferences. The panel meter's own keys are panelMeterLabel, setpointIs, overRange, underRange, overRangeFlag, underRangeFlag, noReading, noReadingFlag, qualityUncertain, qualityBad, qualityStale, uncertainFlag, badFlag and staleFlag.
+   * Default value:    * {
+   *   "en": {
+   *     "propertyUnknownType": "'' property is with undefined 'type' member!",
+   *     "propertyInvalidValue": "Invalid '!",
+   *     "propertyInvalidValueType": "Invalid '!",
+   *     "elementNotInDOM": "Element does not exist in DOM! Please, add the element to the DOM, before invoking a method.",
+   *     "moduleUndefined": "Module is undefined.",
+   *     "missingReference": ".",
+   *     "htmlTemplateNotSuported": ": Browser doesn't support HTMLTemplate elements.",
+   *     "invalidTemplate": "' property accepts a string that must match the id of an HTMLTemplate element from the DOM.",
+   *     "significantPrecisionDigits": ": the properties significantDigits and precisionDigits cannot be set at the same time.",
+   *     "invalidMinOrMax": " value. Max cannot be lower than Min.",
+   *     "noInteger": ": precisionDigits could be set only on \"floatingPoint\" scaleType."
+   *   }
+   * }
+   */
+  messages?: any;
+  /**
+   * Sets or gets the bottom of the scale. A reading below it is kept as written: the needle rests against the left end stop and UNDER is shown on the plate.
+   * Default value: 0
+   */
+  min?: number | Date;
+  /**
+   * Draws the anti-parallax mirror band under the scale: the strip an operator lines the needle up with its own reflection in, which is how a moving-coil meter is read accurately.
+   * Default value: false
+   */
+  mirror?: boolean;
+  /**
+   * Specifies whether the element is configured to handle numerical values or date values, enabling appropriate functionality and validation for each data type.
+   * Default value: numeric
+   */
+  mode?: ScaleMode | string;
+  /**
+   * Specifies or retrieves the element’s name attribute, which serves as the identifier for the element’s value when form data is submitted to the server. This name is used as the key in the name-value pair sent with the form submission, enabling the server-side application to access the corresponding data.
+   * Default value: ""
+   */
+  name?: string;
+  /**
+   * Sets or gets how many digits are shown after the decimal point in the readout, the setpoint title and the accessible text. Values outside 0 to 20 are held to that range. null shows the reading as written, to at most twelve significant digits, so an arrow-key step never shows binary noise such as 0.30000000000000004.
+   * Default value: null
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it: the needle is dimmed for uncertain and stale and greyed over a hatched plate for bad, and the word UNCERTAIN, BAD or STALE is printed at the top left of the plate so it is legible without colour. The scale and its numbers are never dimmed. The quality is also added to the accessible name, for example "Bus, quality bad". A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings.
+   * Default value: good
+   */
+  quality?: PanelMeterQuality | string;
+  /**
+   * This property is an array containing multiple objects, where each object defines a distinct range. Each range represents a colored area characterized by its own specific size and properties, such as start and end values, color, and label. These ranges allow you to visually differentiate segments according to predefined criteria on a graphical interface or data visualization component.
+   * Default value: 
+   */
+  ranges?: {startValue?: number | Date, endValue?: number | Date, className?: string}[];
+  /**
+   * When the element is set to read-only, users are unable to modify its value or content; they can view the information but cannot interact with or edit the element in any way.
+   * Default value: false
+   */
+  readonly?: boolean;
+  /**
+   * Sets or gets whether the Left and Right arrow keys are swapped for a right-to-left language, such as Arabic or Hebrew, when the meter is interactive. A CSS direction of rtl on the component has the same effect. The property does not mirror the drawing.
+   * Default value: false
+   */
+  rightToLeft?: boolean;
+  /**
+   * Specifies the data type used for the gauge’s value and defines the corresponding scale (e.g., linear, logarithmic). This setting ensures that input values are interpreted correctly and displayed with the appropriate measurement scale on the gauge.
+   * Default value: floatingPoint
+   */
+  scaleType?: ScaleType | string;
+  /**
+   * Specifies whether numerical values should be displayed using scientific notation (e.g., 1.23e+4) instead of standard decimal formatting. Set to true to enable scientific notation, or false to display numbers in regular decimal form.
+   * Default value: false
+   */
+  scientificNotation?: boolean;
+  /**
+   * The value the red set pointer is clipped to on the scale plate. null for none.
+   * Default value: null
+   */
+  setpoint?: number;
+  /**
+   * This property determines whether the gauge’s range indicators are displayed on the gauge component. When set to true, the range segments (such as colored bands or sections representing value intervals) will be visible on the gauge; when set to false, these range indicators will be hidden.
+   * Default value: false
+   */
+  showRanges?: boolean;
+  /**
+   * Draws the set pointer.
+   * Default value: false
+   */
+  showSetpoint?: boolean;
+  /**
+   * Prints the unit on the plate at the right of the movement and after the digital reading. It is on by default: an instrument whose plate does not say what it measures cannot be read.
+   * Default value: true
+   */
+  showUnit?: boolean;
+  /**
+   * Shows the digital reading under the case, at the precision set by precisionDigits. It is never damped, and it shows -- when there is no reading.
+   * Default value: false
+   */
+  showValue?: boolean;
+  /**
+   * Calculates the number of significant digits present in a given number. This property is relevant only when the scaleType is set to 'integer', ensuring that the digit count pertains exclusively to whole numbers, not decimals or other formats.
+   * Default value: null
+   */
+  significantDigits?: number | null;
+  /**
+   * How far the needle travels, in degrees. A moving-coil movement swings about 90 to 120 degrees; a scale wider than that is a dial, which is what the Gauge draws.
+   * Default value: 100
+   */
+  sweepAngle?: number;
+  /**
+   * Sets or retrieves the visual theme applied to the element, allowing you to customize or query its overall appearance—such as colors, backgrounds, and style variations—to match different design schemes.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Controls whether the ticks are displayed or hidden on the axis. If set to true, ticks will be visible; if false, ticks will be hidden. This option allows you to toggle the tick marks for improved chart customization.
+   * Default value: minor
+   */
+  ticksVisibility?: TicksVisibility | string;
+  /**
+   * Specifies whether the element can receive keyboard focus. When set to true, the element can be focused programmatically or via user interaction (such as using the Tab key); when set to false, the element will be excluded from the tab order and cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * Sets or gets the unit of the reading, such as bar or °C. It is printed on the scale plate and after the digital reading while showUnit is set. Empty by default, so nothing is printed until a unit is given.
+   * Default value: ""
+   */
+  unit?: string;
+  /**
+   * Provides a way to retrieve or assign the unlockKey property, which is a unique code required to activate or gain access to the product's full features. Use this property to securely manage the product's access control.
+   * Default value: ""
+   */
+  unlockKey?: string;
+  /**
+   * Not applied by the panel meter: the reading is never clamped to min and max; a reading past either end is shown as OVER or UNDER.
+   * Default value: strict
+   */
+  validation?: Validation | string;
+  /**
+   * Sets or retrieves the reading, as a number or a decimal string, in the unit of the scale. It is kept as written and never clamped: a reading past min or max pins the needle against that end stop, raises the OVER or UNDER flag on the plate and is read out as over range or under range, and the read-only offScale getter returns 'over', 'under' or ''. A value that is not a finite number - null, NaN, an infinity, an empty or non-numeric string such as '0x1F' - is no reading: the needle is removed, the case is dashed, NO DATA is shown on the plate, the readout shows --, and aria-valuenow is removed. With coerce and customInterval, the reading is snapped to the interval.
+   * Default value: 0
+   */
+  value?: string | number | Date;
+  /**
+   * Gets or sets the word length used for values. This property is only applicable when scaleType is set to 'integer'; it has no effect for other scale types.
+   * Default value: int32
+   */
+  wordLength?: WordLength | string;
+}
+/**
+ PanelMeter draws the moving-coil instrument screwed into the front of a rack: a rectangular case, a shallow arc of scale across the top of it and a long needle swinging from a pivot near the bottom. It is not a gauge with its arc cut down; the geometry exists because the pointer is a physical arm, and with it come the things a dial has no use for: the anti-parallax mirror band, end stops that pin the needle and raise an over-range flag while the reading is still reported, the damping of the coil, and a centre-zero movement. It extends the scale engine, so logarithmic scales, units, precision, alarm bands and reading quality behave as they do on the gauge, the thermometer and the knob. It does not clamp the reading: a value past either end of the scale pins the needle against that stop and raises OVER or UNDER on the plate, and a value that is not a finite number, such as null or NaN, removes the needle and shows NO DATA. The whole face is drawn in one viewBox, so it scales to any size and prints at any resolution.
+*/
+export interface PanelMeter extends BaseElement, PanelMeterProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the reading is changed through the component, which only happens when interactive is enabled.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value)
+   *  value - The new reading.
+   */
+  onChange: ((this: any, ev: Event) => any) | null;
+  /**
+   * Redraws the face.
+   */
+  refresh(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-panel-meter"): PanelMeter;
+        querySelector(selectors: "smart-panel-meter"): PanelMeter | null;
+        querySelectorAll(selectors: "smart-panel-meter"): NodeListOf<PanelMeter>;
+        getElementsByTagName(qualifiedName: "smart-panel-meter"): HTMLCollectionOf<PanelMeter>;
+        getElementsByName(elementName: "smart-panel-meter"): NodeListOf<PanelMeter>;
+    }
+}
+
+/**Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it: the needle is dimmed for uncertain and stale and greyed over a hatched plate for bad, and the word UNCERTAIN, BAD or STALE is printed at the top left of the plate so it is legible without colour. The scale and its numbers are never dimmed. The quality is also added to the accessible name, for example "Bus, quality bad". A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings. */
+export declare type PanelMeterQuality = 'good' | 'uncertain' | 'bad' | 'stale';
 export interface PasswordInputProperties {
   /**
    * Determines whether the element is interactive or inactive. When enabled, the element can be used and respond to user actions; when disabled, the element is not interactive and will not respond to user input.
@@ -25747,6 +30518,127 @@ declare global {
 
 /**Specifies the format of the file path according to the operating system’s conventions. Adjusts elements such as drive letters, folder separators (e.g., forward slashes '/' for Unix-based systems or backslashes '\' for Windows), and other path components to ensure compatibility with the selected platform. */
 export declare type PathFormat = 'windows' | 'unix';
+export interface PermissiveProperties {
+  /**
+   * Sets or retrieves the conditions as [{ id, label, satisfied, required, bypassed, bypassedBy, tag, value, description, timestamp }]. required defaults to true; an advisory condition is listed but never blocks. timestamp is the time the condition last changed state and is used to determine the first-out condition. Assign a new array to update the component. Flags given as text, as a tag database may hand them over, are read as such: 'false', '0', 'no', 'off' and '' are not set.
+   * Default value: 
+   */
+  conditions?: any;
+  /**
+   * Sets or retrieves the type of the list. A permissive list gates a start, and the verdict reads ready or not permitted. An interlock list trips a running device, the verdict reads healthy or tripped, and the first-out condition is marked.
+   * Default value: permissive
+   */
+  mode?: PermissiveMode | string;
+  /**
+   * Sets or retrieves the title of the list, usually the device name and the purpose of the list.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Determines whether the earliest unsatisfied required condition, by timestamp, is marked as first-out. Applies in interlock mode only. Conditions without a timestamp cannot be first-out, and a tie is reported as no first-out.
+   * Default value: true
+   */
+  showFirstOut?: boolean;
+  /**
+   * Determines whether met conditions are listed. When off, a long list shows only the conditions that block; the verdict still counts every condition.
+   * Default value: true
+   */
+  showSatisfied?: boolean;
+  /**
+   * Determines whether each condition shows how long it has been in its state, from its timestamp. The ages tick without the rows being rebuilt.
+   * Default value: true
+   */
+  showTimestamps?: boolean;
+  /**
+   * Determines whether a bypass control is offered on each required condition that blocks, and a removal control on each bypassed one. The control raises bypassRequest and changes nothing itself.
+   * Default value: false
+   */
+  allowBypass?: boolean;
+  /**
+   * Determines whether a change of verdict is read through the live region, assertively for a trip, politely otherwise.
+   * Default value: true
+   */
+  announceChanges?: boolean;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the verdicts, the state words, the badges and the ages. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ Permissive displays a list of conditions that a start requires or that a running device depends on, with whether each condition is met. Required conditions that are not met block the start, bypassed conditions count as met and are listed separately, and advisory conditions never block. In interlock mode the condition that went unhealthy first is marked from the timestamps supplied by the application. A bypass request raises the bypassRequest event and is not applied by the component.
+*/
+export interface Permissive extends BaseElement, PermissiveProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the verdict changes, a start becomes possible or a device trips, and not on every redraw. It also fires when the list is emptied (ready false, nothing blocking) and when it is filled again.
+	* @param event. The custom event. Custom data event was created with: ev.detail(ready, blocking, firstOut)
+   *  ready - Whether every required condition is met or bypassed.
+   *  blocking - The ids of the required conditions not met.
+   *  firstOut - The id of the first-out condition, or null.
+   */
+  onReadyChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a bypass control is pressed. The list is not changed; the application applies the bypass, records who applied it, and returns an updated list. It is raised once per press: the control waits for the application's updated list, or five seconds, before it asks again. Each bypass control is named after its condition.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, bypass, condition)
+   *  id - The condition's id.
+   *  bypass - True to apply a bypass, false to remove one.
+   *  condition - The condition as the application supplied it.
+   */
+  onBypassRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a condition row is clicked, so that the application can open the faceplate or trend of the tag.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, condition)
+   *  id - The condition's id.
+   *  condition - The condition as the application supplied it.
+   */
+  onConditionClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns a summary of the list as <em>{ total, required, satisfied, unsatisfied, bypassed, ready, blocking, firstOut }</em>, where <em>blocking</em> is the ids of the required conditions that are not met and <em>firstOut</em> is an id or null. With no conditions, ready is false: an empty list permits nothing.
+   * @returns {any}
+   */
+  summary(): any;
+  /**
+   * Returns the condition with the given id, as the application supplied it, or null.
+   * @param {string} id. The condition's id.
+   * @returns {any}
+   */
+  conditionById(id: string): any;
+  /**
+   * Rebuilds the header and the list.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-permissive"): Permissive;
+        querySelector(selectors: "smart-permissive"): Permissive | null;
+        querySelectorAll(selectors: "smart-permissive"): NodeListOf<Permissive>;
+        getElementsByTagName(qualifiedName: "smart-permissive"): HTMLCollectionOf<Permissive>;
+        getElementsByName(elementName: "smart-permissive"): NodeListOf<Permissive>;
+    }
+}
+
+/**Sets or retrieves the type of the list. A permissive list gates a start, and the verdict reads ready or not permitted. An interlock list trips a running device, the verdict reads healthy or tripped, and the first-out condition is marked. */
+export declare type PermissiveMode = 'permissive' | 'interlock';
 export interface PhoneInputProperties {
   /**
    * Determines whether the element is interactive or inactive. When enabled, the element can be interacted with by the user; when disabled, the element becomes unresponsive to user actions, often appearing visually distinct (e.g., grayed out).
@@ -25919,6 +30811,85 @@ declare global {
     }
 }
 
+export interface PipeProperties {
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether the segment turns a corner, and which way.
+   * Default value: none
+   */
+  elbow?: PipeElbow | string;
+  /**
+   * Sets or retrieves whether the line is carrying flow. A flowing pipe animates a marching dash and takes the active colour. With reduced motion the dash stands still and chevrons show the direction.
+   * Default value: false
+   */
+  flowing?: boolean;
+  /**
+   * Sets or retrieves the direction of the segment.
+   * Default value: horizontal
+   */
+  orientation?: PipeOrientation | string;
+  /**
+   * Sets or retrieves whether the flow animation runs the other way, for a line that returns.
+   * Default value: false
+   */
+  reverse?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the flow states and the accessible name with the direction of flow (8 keys: flowing, idle, pipeLabel, flowingFromTo, sideLeft, sideRight, sideTop, sideBottom). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Sets or retrieves the stroke width of the line in pixels. The stroke does not scale with the segment, so a long run has the same weight as a short one. 1 to 64; a value that is not a number draws the default 3. The direction chevrons are sized from it.
+   * Default value: 3
+   */
+  thickness?: number;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ Pipe displays a section of process line on a mimic diagram. It has a flow state and direction, and an in-service state. A flowing pipe animates a dashed line in the direction of flow; where the user has asked for reduced motion (prefers-reduced-motion) the line stands still and chevrons along it point the way the flow goes, so forward and reverse still look different. Pipe segments stretch to fill their container so a run can be built on a grid. A pipe is decoration and hidden from assistive technology; given role="img", it is named from its messages with the direction of flow - "Process line, flowing from the left to the right" - unless it has an aria-label of its own.
+*/
+export interface Pipe extends BaseElement, PipeProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * Redraws the pipe.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-pipe"): Pipe;
+        querySelector(selectors: "smart-pipe"): Pipe | null;
+        querySelectorAll(selectors: "smart-pipe"): NodeListOf<Pipe>;
+        getElementsByTagName(qualifiedName: "smart-pipe"): HTMLCollectionOf<Pipe>;
+        getElementsByName(elementName: "smart-pipe"): NodeListOf<Pipe>;
+    }
+}
+
+/**Sets or retrieves whether the segment turns a corner, and which way. */
+export declare type PipeElbow = 'none' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
+/**Sets or retrieves the direction of the segment. */
+export declare type PipeOrientation = 'horizontal' | 'vertical';
 export interface PivotTableProperties {
   /**
    * Defines the animation mode for the element. When this property is set to 'none', all animations are disabled. Otherwise, setting this property to a supported value enables the corresponding animation behavior. Use this property to retrieve the current animation mode or specify the desired mode.
@@ -26563,6 +31534,172 @@ export declare type PivotTableRowTotalsPosition = 'near' | 'far';
 export declare type PivotTableSelectionMode = 'many' | 'extended' | 'cell';
 /**Specifies the sorting mode applied to the PivotTable, controlling how data rows or columns are ordered (e.g., ascending, descending, or custom criteria). This setting determines the sequence in which PivotTable items are displayed based on the selected sort option. */
 export declare type PivotTableSortMode = 'none' | 'one' | 'many';
+export interface PolarPlotProperties {
+  /**
+   * Enables or disables the element. Disabled, the plot leaves the tab order, the legend buttons are disabled, and no cursorChange or plotVisibilityChange is raised; enabled again, all of it comes back.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves the plots. Each is an object with id, label, color, lineWidth, visible, style (line or points), closed (joins the last point to the first) and either angles and radii or x and y about the centre. A point without a reading - null, NaN or an infinite value on either axis - is a gap in the trace: not drawn, not read by the cursor, not in the radius range, and counted in the readout and the accessible name ("no reading at 2 of 360 points"), with one console warning. An item that is not an object is skipped, with one console warning.
+   * Default value: 
+   */
+  plots?: any;
+  /**
+   * Sets or retrieves the markers: named points, each an object with label, color and either angle and radius or x and y. They are drawn on the plot and listed under it. An item that is not an object is skipped, with one console warning.
+   * Default value: 
+   */
+  markers?: any;
+  /**
+   * Sets or retrieves the unit of angles given and shown.
+   * Default value: deg
+   */
+  angleUnit?: PolarPlotAngleUnit | string;
+  /**
+   * Sets or retrieves where angle zero points.
+   * Default value: right
+   */
+  angleOrigin?: PolarPlotAngleOrigin | string;
+  /**
+   * Sets or retrieves the direction angles increase in.
+   * Default value: counterclockwise
+   */
+  angleDirection?: PolarPlotAngleDirection | string;
+  /**
+   * Sets or retrieves the radius at the centre. Null uses zero, or the smallest negative value in the data. A value that is not a finite number is ignored; set above radiusMax, the two are swapped. Each is said once in a console warning.
+   * Default value: null
+   */
+  radiusMin?: number;
+  /**
+   * Sets or retrieves the radius at the rim. Null follows the data, rounded up to a nice number. A value that is not above the centre (radiusMin equal to radiusMax, for one) leaves no radius axis, so it is ignored and the rim follows the data; this, a value that is not a finite number, and limits set the wrong way round (swapped) are each said once in a console warning.
+   * Default value: null
+   */
+  radiusMax?: number;
+  /**
+   * Sets or retrieves the unit of the radius, used in the ring labels and the readouts.
+   * Default value: ""
+   */
+  radiusUnit?: string;
+  /**
+   * Shows the rings and the spokes.
+   * Default value: true
+   */
+  showGrid?: boolean;
+  /**
+   * Shows the legend, where a plot is hidden and shown.
+   * Default value: true
+   */
+  showLegend?: boolean;
+  /**
+   * Sets or retrieves the angle of the cursor, which reads every plot. Null hides it. The cursor is placed by clicking the plot and moved with the arrow keys; the arrows rotate it on screen, the same in a right-to-left layout. Where a plot has nothing drawn at the cursor's angle - beyond the ends of an open trace, or across a gap - its reading is "--".
+   * Default value: null
+   */
+  cursor?: number;
+  /**
+   * Enables placing and moving the cursor with the pointer and the keyboard.
+   * Default value: true
+   */
+  interactive?: boolean;
+  /**
+   * Sets or retrieves the title shown above the plot and used in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the number of significant digits in radii. Held to 1 to 21; a value outside that, or not a number (4 is then used), is said once in a console warning.
+   * Default value: 4
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves the line width of the plots, in pixels. A plot can carry its own.
+   * Default value: 1.6
+   */
+  lineWidth?: number;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the element - the legend, marker, cursor and gap texts and the summary, with chartSummaryOne for a single plot. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the element.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the element cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ PolarPlot displays data on a circular grid: a radius against an angle, or an x and a y about a centre. It is the orbit a pair of proximity probes draws of a shaft, the pattern an antenna radiates and the round-out a dial indicator records. Angles start to the right or at the top and run counterclockwise or clockwise. The radius axis can start below zero, so a pattern in dBi reads its floor at the centre. Markers name a point, and a cursor at an angle reads every plot's radius there.
+*/
+export interface PolarPlot extends BaseElement, PolarPlotProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the cursor is placed or moved by the operator.
+	* @param event. The custom event. Custom data event was created with: ev.detail(angle)
+   *  angle - The cursor angle, in the element's angle unit.
+   */
+  onCursorChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a plot is hidden or shown from the legend.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, visible)
+   *  id - The plot.
+   *  visible - Whether it is now shown.
+   */
+  onPlotVisibilityChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns a plot's radius at an angle, interpolated between the neighbouring points that span it - from the last point back to the first only when the plot is closed, as drawn. Returns NaN where the plot has nothing drawn at that angle: beyond the ends of an open trace, across a gap, or for an unknown plot.
+   * @param {string} id. The plot.
+   * @param {number} angle. In the element's angle unit.
+   * @returns {number}
+   */
+  valueAt(id: string, angle: number): number;
+  /**
+   * Shows or hides a plot.
+   * @param {string} id. The plot.
+   * @param {boolean} visible?. Shown when true, hidden when false; toggled when omitted.
+   */
+  togglePlot(id: string, visible?: boolean): void;
+  /**
+   * Returns a sentence describing what the plot shows, as used in its accessible name: the number of plots, the radius range, where the largest radius is, and how many points of a plot have no reading.
+   * @returns {string}
+   */
+  describe(): string;
+  /**
+   * Redraws the element from its current properties.
+   */
+  redraw(): void;
+  /**
+   * Redraws the plot on the next animation frame, so that many changes between two frames cost one draw.
+   */
+  invalidate(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-polar-plot"): PolarPlot;
+        querySelector(selectors: "smart-polar-plot"): PolarPlot | null;
+        querySelectorAll(selectors: "smart-polar-plot"): NodeListOf<PolarPlot>;
+        getElementsByTagName(qualifiedName: "smart-polar-plot"): HTMLCollectionOf<PolarPlot>;
+        getElementsByName(elementName: "smart-polar-plot"): NodeListOf<PolarPlot>;
+    }
+}
+
+/**Sets or retrieves the unit of angles given and shown. */
+export declare type PolarPlotAngleUnit = 'deg' | 'rad';
+/**Sets or retrieves where angle zero points. */
+export declare type PolarPlotAngleOrigin = 'right' | 'top';
+/**Sets or retrieves the direction angles increase in. */
+export declare type PolarPlotAngleDirection = 'counterclockwise' | 'clockwise';
 export interface PowerButtonProperties {
   /**
    * Specifies or retrieves the current animation mode for the element. When the property is set to 'none', all animations are disabled and the element will render without any animated transitions or effects. Otherwise, animations will be applied according to the specified mode.
@@ -27542,6 +32679,87 @@ declare global {
     }
 }
 
+export interface RecipePanelProperties {
+  /**
+   * Sets or retrieves the recipes as [{ id, name, note, entries: [{ tag, label, value, unit }] }]. label is what an operator calls the value; without one the tag is shown, which is what an engineer calls it. Assign a new array to update the component.
+   * Default value: 
+   */
+  recipes?: any;
+  /**
+   * Sets or retrieves the id of the recipe whose values are shown. An empty value shows the first recipe.
+   * Default value: ""
+   */
+  selected?: string;
+  /**
+   * Sets or retrieves the heading of the panel. It is also the accessible name of the group.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves whether the panel only shows the recipes. The Load button is removed rather than disabled, because a control that cannot be used should not invite a press; the values are still readable.
+   * Default value: false
+   */
+  readOnly?: boolean;
+  /**
+   * Sets or retrieves whether loading asks first. When true, the confirmation names every value that is about to be written. A recipe moves several setpoints at once, so this is on by default. The confirmation is modal - the panel behind it does not respond and Tab stays on its two buttons - and it freezes what it names: Load it sends the recipe as it was shown. If that recipe changes underneath while the question is open (the list is refreshed, another recipe is selected), the question is withdrawn and the panel says so. The second click of the double-click that opened it, a press within 300 ms of opening and a held key do not answer it.
+   * Default value: true
+   */
+  confirm?: boolean;
+  /**
+   * Sets or retrieves whether a load is in flight. The application sets it while it writes, so the button cannot be pressed twice and the panel says what it is doing. The panel also sets it itself as it raises recipeApply, so a double press is one load even when the application sets busy only after an await. It is released when the application sets busy to false or sets result, or after ten seconds.
+   * Default value: false
+   */
+  busy?: boolean;
+  /**
+   * Sets or retrieves what the last load did, as { name, applied, of, failed: [{ tag, error }], at }. The application sets it when the writes come back. The entries named in failed are marked refused in the values table, so a load that half-succeeded is visible rather than only logged. A load refused as a whole - the role may not load, the session ran out - wrote nothing, and is given as { name, error }, which the panel says in those words rather than as "0 of 5 written".
+   * Default value: null
+   */
+  result?: any;
+  /**
+   * Sets or retrieves whether the panel is disabled.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether the panel can be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ RecipePanel lists the recipes a line can be set to and loads one into the plant in a single action. A recipe is a named set of values, and the panel shows what loading the chosen one would write - with the names an operator knows and the units they are in - before it writes anything. The panel never writes: loading raises the recipeApply event and the application performs the writes, then sets the result property. A load that half-succeeds is reported, and the entries the plant refused stay marked in the values table.
+*/
+export interface RecipePanel extends BaseElement, RecipePanelProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the operator loads a recipe, after the confirmation when one is asked for. The component does not write: the application performs the writes and then sets the result property. It cannot know who is pressing the button or how the writes should be audited, so it does not pretend to. With confirm on, the id and the values are the ones the confirmation showed.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, name, entries)
+   *  id - The id of the recipe.
+   *  name - The name of the recipe, as the operator saw it.
+   *  entries - The values to write, as <em>[{ tag, value }]</em>.
+   */
+  onRecipeApply?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a recipe is chosen, by pointer or by keyboard. It is also raised when the recipe already shown is chosen again. Nothing is written; only what the panel shows changes.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, name)
+   *  id - The id of the recipe now shown.
+   *  name - Its name.
+   */
+  onRecipeSelect?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-recipe-panel"): RecipePanel;
+        querySelector(selectors: "smart-recipe-panel"): RecipePanel | null;
+        querySelectorAll(selectors: "smart-recipe-panel"): NodeListOf<RecipePanel>;
+        getElementsByTagName(qualifiedName: "smart-recipe-panel"): HTMLCollectionOf<RecipePanel>;
+        getElementsByName(elementName: "smart-recipe-panel"): NodeListOf<RecipePanel>;
+    }
+}
+
 export interface RepeatButtonProperties {
   /**
    * Gets or sets the animation mode for the element. When this property is set to 'none', all animations are disabled. Otherwise, specifying a different value will enable and control the element’s animation behavior according to the selected mode.
@@ -27650,6 +32868,152 @@ declare global {
         querySelectorAll(selectors: "smart-repeat-button"): NodeListOf<RepeatButton>;
         getElementsByTagName(qualifiedName: "smart-repeat-button"): HTMLCollectionOf<RepeatButton>;
         getElementsByName(elementName: "smart-repeat-button"): NodeListOf<RepeatButton>;
+    }
+}
+
+export interface ResourcePickerProperties {
+  /**
+   * Enables or disables the element. Disabled, the field and its buttons are disabled and out of the tab order, an open list closes without a close event, and nothing is selected or requested.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves the resources found. Each is an object with name (the resource string), alias, description, kind (gpib, tcpip, usb, serial, pxi, daq or other; worked out from the name when absent), available and an optional id. A plain string is taken as a resource name; null and anything else that is not an object is skipped, with one console warning per list.
+   * Default value: 
+   */
+  resources?: any;
+  /**
+   * Sets or retrieves the resource string in force.
+   * Default value: ""
+   */
+  value?: string;
+  /**
+   * Sets or retrieves the kinds listed. Empty lists every kind.
+   * Default value: 
+   */
+  kinds?: any;
+  /**
+   * Accepts a typed resource the list does not have, once it parses as a resource name.
+   * Default value: false
+   */
+  allowCustom?: boolean;
+  /**
+   * Lists only the resources that are available.
+   * Default value: false
+   */
+  availableOnly?: boolean;
+  /**
+   * Shows the refresh button, which raises refreshRequest.
+   * Default value: true
+   */
+  refreshable?: boolean;
+  /**
+   * Shows discovery in progress: the refresh button waits and the empty list says so. The application sets it while it searches.
+   * Default value: false
+   */
+  busy?: boolean;
+  /**
+   * Sets or retrieves the label above the field, which also names the combobox.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the text shown when nothing is selected. Empty uses the localized default.
+   * Default value: ""
+   */
+  placeholder?: string;
+  /**
+   * Shows the value without allowing a change.
+   * Default value: false
+   */
+  readonly?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the element - the placeholder, refresh, kind and hint texts. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the element.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the element cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ ResourcePicker selects an instrument or a channel: it lists the resources the application has found, grouped by interface and named by alias, filters them as text is typed, and reads a typed resource string before it is accepted. The refresh button raises a request; the application performs the discovery and assigns the list. GPIB, LAN, USB, serial, PXI and DAQ names are parsed into their parts by a static method usable without an element.
+*/
+export interface ResourcePicker extends BaseElement, ResourcePickerProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a resource is selected from the list or typed and accepted.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value, previousValue, resource, parsed)
+   *  value - The resource string.
+   *  previousValue - The one before.
+   *  resource - The entry of the list, or null for a typed resource.
+   *  parsed - The parts of the name, as parse() reads them.
+   */
+  onChange: ((this: any, ev: Event) => any) | null;
+  /**
+   * This event is triggered when the refresh button is pressed. The application performs the discovery, sets busy while it runs and assigns the resources it found.
+	* @param event. The custom event.    */
+  onRefreshRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the list opens.
+	* @param event. The custom event.    */
+  onOpen?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the list closes.
+	* @param event. The custom event.    */
+  onClose: ((this: any, ev: Event) => any) | null;
+  /**
+   * Opens the list.
+   */
+  open(): void;
+  /**
+   * Closes the list and shows the value again.
+   */
+  close(): void;
+  /**
+   * Selects a resource by name and raises <em>change</em>. A name the list does not have is taken only when custom entries are allowed and it parses; otherwise the hint says so.
+   * @param {string} name. The resource string or id.
+   */
+  select(name: string): void;
+  /**
+   * Also available as a static method of the class. Reads a resource string into its parts by the VISA resource syntax (IVI VPP-4.3): { kind, interface, ... } with the fields of its kind - <em>board</em>, <em>address</em> (0 to 30) and <em>secondary</em> (0 to 30, or 96 to 126 as the bus code some tools write; reported as written) for GPIB; <em>board</em>, <em>host</em>, <em>addressType</em> (ipv4, ipv6 or hostname), <em>device</em>, <em>port</em>, <em>socket</em> and <em>protocol</em> (vxi-11, hislip or socket) for LAN, where the host is an IPv4 address of four octets 0 to 255, an RFC 1123 host name or an IPv6 address - in brackets as VISA writes it (TCPIP0::[fe80::1]::inst0::INSTR), or bare where that is unambiguous, and the port is 0 to 65535; <em>vendor</em>, <em>product</em> (0 to 0xFFFF), <em>serial</em> and <em>interfaceNumber</em> for USB; <em>board</em> and <em>port</em> for serial (ASRL3, ASRLCOM3, and device paths such as ASRL/dev/ttyUSB0, whose board is null); <em>board</em>, <em>bus</em> (0 to 255), <em>device</em> (0 to 31), <em>function</em> (0 to 7), <em>chassis</em> and <em>slot</em> for PXI, from any of its three forms - PXI[bus]::device[::function], PXI[interface]::[bus-]device[.function] and PXI[interface]::CHASSISn::SLOTn[::FUNCn] - where only the last names a slot and the others give slot null, since a PCI device number is not a slot; <em>device</em>, <em>channelType</em>, <em>channel</em> and <em>channelEnd</em> for DAQ. The trailing ::INSTR may be left out, as the syntax allows. Text that is not a resource, including one that breaks these ranges (GPIB0::31::INSTR, TCPIP0::999.1.1.1::INSTR, PXI0::2::11::INSTR), is { kind: "other", name, reason } with <em>reason</em> the rule it broke in English, or null; empty text is null.
+   * @param {string} name. The resource string.
+   * @returns {any}
+   */
+  parse(name: string): any;
+  /**
+   * Also available as a static method of the class. True for a name the picker recognises as a resource: one that parse() reads as a kind other than "other", within the VISA ranges.
+   * @param {string} name. The resource string.
+   * @returns {boolean}
+   */
+  isValid(name: string): boolean;
+  /**
+   * Redraws the element from its current properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-resource-picker"): ResourcePicker;
+        querySelector(selectors: "smart-resource-picker"): ResourcePicker | null;
+        querySelectorAll(selectors: "smart-resource-picker"): NodeListOf<ResourcePicker>;
+        getElementsByTagName(qualifiedName: "smart-resource-picker"): HTMLCollectionOf<ResourcePicker>;
+        getElementsByName(elementName: "smart-resource-picker"): NodeListOf<ResourcePicker>;
     }
 }
 
@@ -28077,6 +33441,169 @@ declare global {
         querySelectorAll(selectors: "smart-ribbon-tab"): NodeListOf<RibbonTab>;
         getElementsByTagName(qualifiedName: "smart-ribbon-tab"): HTMLCollectionOf<RibbonTab>;
         getElementsByName(elementName: "smart-ribbon-tab"): NodeListOf<RibbonTab>;
+    }
+}
+
+export interface RootCauseTreeProperties {
+  /**
+   * Enables or disables the component. Disabled, the tree is dimmed and leaves the tab order, and neither a click nor a key opens, closes or selects a node or raises an event. It comes back when it is cleared.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused. Set, no node is a tab stop.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * Sets or retrieves the analysis, as { id, label, tag, contribution, evidence, children }, contribution being 0 to 1 and children more of the same. Assign a new object to update the component. A contribution outside 0 to 1 is shown as the number the model gave (300 %, -30 %) with OVER or UNDER beside it and in the spoken name, the bar held inside its track; one that is not a number (missing, NaN, Infinity, text) shows "--" and is spoken "no reading". Neither is ever folded away. A node that is its own ancestor (a loop in the data) is drawn once, with a "Loop back to ..." marker where the loop would start again (Enter on it selects the node it repeats), and the tree is drawn at most 64 levels deep and 5000 nodes, with a note where it is cut; either raises structureWarning once per root and one console warning. The property is not reflected to an attribute.
+   * Default value: null
+   */
+  root?: any;
+  /**
+   * Sets or retrieves the contribution share below which nodes are collapsed into a count under their parent, for example "and 4 more under 5 %". 0 shows every node. Only a share inside 0 to 1 is folded: a contribution out of range, or none at all, is always shown. A value that is not a number counts as 0.
+   * Default value: 0
+   */
+  minContribution?: number;
+  /**
+   * Sets or retrieves the number of levels shown below the root. 0 shows every level. A node at the limit shows no expander.
+   * Default value: 0
+   */
+  maxDepth?: number;
+  /**
+   * Sets or retrieves the selected node's id, or null.
+   * Default value: "null"
+   */
+  selected?: string;
+  /**
+   * Sets or retrieves the ids of the nodes shown open. Every node is open until this is set. Assign a new array to update the component.
+   * Default value: null
+   */
+  expandedIds?: any;
+  /**
+   * Determines whether each node's evidence is shown under its label.
+   * Default value: true
+   */
+  showEvidence?: boolean;
+  /**
+   * Determines whether each node's tag is shown beside its label and spoken with it.
+   * Default value: true
+   */
+  showTags?: boolean;
+  /**
+   * Determines whether children are ordered by contribution, largest first, or shown in the order given.
+   * Default value: true
+   */
+  sortByContribution?: boolean;
+  /**
+   * Sets or retrieves a name for the analysis, spoken as part of the tree's label.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or gets the language-specific strings the component shows, keyed by locale then by message. Used with the locale property.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Sets or gets the locale, which selects a block of messages.
+   * Default value: "en"
+   */
+  locale?: string;
+}
+/**
+ RootCauseTree displays the ranked, nested explanation produced by a root-cause analysis model: the deviation at the root, the contributing conditions below it and their share of the contribution as a bar and a percentage, with the evidence for each node. Nodes below a configurable share are collapsed into a count. Selecting a node raises the nodeSelect event, where the application can open the underlying data or record a verdict. The arrow keys follow the tree pattern: ArrowRight opens a node or goes to its first child, ArrowLeft closes it or goes to its parent - mirrored on a right-to-left page or with rightToLeft, where the tree is indented from the right and opens towards the left. Contributions are written in the element's locale.
+*/
+export interface RootCauseTree extends BaseElement, RootCauseTreeProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a node is selected, clicked, Enter or Space pressed on it, or select() called.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, node, path, depth)
+   *  id - The node's id.
+   *  node - The node as it was given.
+   *  path - The ids from the root to the node.
+   *  depth - How many levels below the root.
+   */
+  onNodeSelect?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a node is opened.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, node)
+   *  id - The node's id.
+   *  node - The node as it was given.
+   */
+  onExpand?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a node is closed.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, node)
+   *  id - The node's id.
+   *  node - The node as it was given.
+   */
+  onCollapse?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered once when a root is assigned that cannot be drawn as given: a node that is its own ancestor (a loop) or more than 64 levels. The tree is drawn with markers where it is cut, and nothing is thrown.
+	* @param event. The custom event. Custom data event was created with: ev.detail(reasons, cycles, maxLevels)
+   *  reasons - What was found: cycle, depth, or both.
+   *  cycles - The loops, as [{ id, parent }]: the node that repeats and the node whose child it is.
+   *  maxLevels - The most levels drawn, 64.
+   */
+  onStructureWarning?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns a node by id, as it was given, or null. A loop in the data is not followed round.
+   * @param {string} id. The node's id.
+   * @returns {any}
+   */
+  nodeById(id: string): any;
+  /**
+   * Returns the nodes from the root to one, root first, empty when the id is not in the tree. A loop in the data is not followed round.
+   * @param {string} id. The node's id.
+   * @returns {any}
+   */
+  pathTo(id: string): any;
+  /**
+   * Returns the causes of the whole tree ranked by contribution, largest first, as <em>[{ id, label, tag, contribution, depth }]</em>. <em>contribution</em> is the number the model gave, outside 0 to 1 too; null where it gave none that is a number, and those come last. A loop in the data is not followed round.
+   * @param {number} count?. How many. All when omitted.
+   * @returns {any}
+   */
+  ranked(count?: number): any;
+  /**
+   * Selects a node, expands the path to it, moves focus to it and raises the nodeSelect event.
+   * @param {string} id. The node's id.
+   */
+  select(id: string): void;
+  /**
+   * Expands or collapses one node and raises the expand or collapse event.
+   * @param {string} id. The node's id.
+   * @param {boolean} open?. Force a state instead of toggling.
+   */
+  toggle(id: string, open?: boolean): void;
+  /**
+   * Expands every node.
+   */
+  expandAll(): void;
+  /**
+   * Collapses every node except the root.
+   */
+  collapseAll(): void;
+  /**
+   * Rebuilds the component from its properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-root-cause-tree"): RootCauseTree;
+        querySelector(selectors: "smart-root-cause-tree"): RootCauseTree | null;
+        querySelectorAll(selectors: "smart-root-cause-tree"): NodeListOf<RootCauseTree>;
+        getElementsByTagName(qualifiedName: "smart-root-cause-tree"): HTMLCollectionOf<RootCauseTree>;
+        getElementsByName(elementName: "smart-root-cause-tree"): NodeListOf<RootCauseTree>;
     }
 }
 
@@ -29441,6 +34968,251 @@ export declare type SchedulerViewSelectorType = 'auto' | 'tabs' | 'menu';
 export declare type SchedulerViewStartDay = 'firstDayOfWeek' | 'dateCurrent';
 /**Specifies how the names of the weekdays are displayed within the element (e.g., full names, short names, or initials). */
 export declare type WeekDayFormat = 'short' | 'long' | 'narrow';
+export interface ScopeProperties {
+  /**
+   * Sets or retrieves the channels as [{ field, label, unit, color, voltsPerDivision, offset, visible }]. field is the key under which a pushed block carries the samples of the channel. A voltsPerDivision of null autoscales the channel; offset is in divisions from the centre line. Assign a new array to update the component.
+   * Default value: 
+   */
+  channels?: any;
+  /**
+   * Sets or retrieves the sample rate in samples per second. The timebase, the trigger's holdoff and every measurement follow from it. A value that is not a positive, finite number is taken as 1, with one console warning.
+   * Default value: 1
+   */
+  sampleRate?: number;
+  /**
+   * Sets or retrieves the timebase in seconds per horizontal division. One screen is this times horizontalDivisions. A value that is not a positive, finite number is taken as 1 ms, with one console warning. A screen holds at most 2 000 000 samples; a longer timebase at the sample rate is shortened to fit, and the header shows the timebase drawn.
+   * Default value: 0.001
+   */
+  timePerDivision?: number;
+  /**
+   * Sets or retrieves how many divisions the graticule has across. From 1 to 100: a larger value draws 100, and NaN, Infinity or a value below 1 draws the default 10, with one console warning.
+   * Default value: 10
+   */
+  horizontalDivisions?: number;
+  /**
+   * Sets or retrieves how many divisions the graticule has down. From 1 to 100: a larger value draws 100, and NaN, Infinity or a value below 1 draws the default 8, with one console warning.
+   * Default value: 8
+   */
+  verticalDivisions?: number;
+  /**
+   * Sets or retrieves the field the trigger watches. Empty triggers on the first channel.
+   * Default value: ""
+   */
+  triggerSource?: string;
+  /**
+   * Sets or retrieves the level the source has to cross, in the source's units. Drawn as an arrow at the right edge and a dotted line.
+   * Default value: 0
+   */
+  triggerLevel?: number;
+  /**
+   * Sets or retrieves which way the source has to cross the level.
+   * Default value: rising
+   */
+  triggerEdge?: ScopeTriggerEdge | string;
+  /**
+   * Sets or retrieves the behaviour without a trigger. auto free-runs and captures the newest screen when nothing has triggered for about two screens; normal keeps the last capture until the next trigger; single captures once and stops until run or single arms the trigger again.
+   * Default value: auto
+   */
+  triggerMode?: ScopeTriggerMode | string;
+  /**
+   * Sets or retrieves the horizontal position of the trigger point on the screen, from 0 at the left edge to 1 at the right edge. 0.1 leaves one division of pre-trigger data, which shows what happened before the edge.
+   * Default value: 0.1
+   */
+  triggerPosition?: number;
+  /**
+   * Sets or retrieves how long after a trigger, in seconds, another is ignored, for a burst or a pulse train where only the first edge should trigger.
+   * Default value: 0
+   */
+  holdoff?: number;
+  /**
+   * Sets or retrieves how far past the level, in the source's units, the signal has to have been on the near side and has to reach on the far side for a crossing to count. A spike that pokes through the level and falls back is not an edge. The trigger point stays at the level crossing.
+   * Default value: 0
+   */
+  triggerHysteresis?: number;
+  /**
+   * Sets or retrieves how many samples each channel's ring keeps. 0 keeps four screens' worth. A block larger than the ring keeps only its newest samples. At most 8 000 000 samples per channel; a larger value (Infinity included) holds 8 000 000.
+   * Default value: 0
+   */
+  historyLength?: number;
+  /**
+   * Sets or retrieves the display mode. yt draws every channel against time; xy draws the second channel against the first, for Lissajous figures and I-V curves.
+   * Default value: yt
+   */
+  mode?: ScopeMode | string;
+  /**
+   * Sets or retrieves the first time cursor, in seconds from the trigger. null hides it. With both cursors set the readout shows their interval, its reciprocal, and each channel's value at each cursor.
+   * Default value: null
+   */
+  cursorA?: number;
+  /**
+   * Sets or retrieves the second time cursor, in seconds from the trigger. null hides it.
+   * Default value: null
+   */
+  cursorB?: number;
+  /**
+   * Sets or retrieves the automatic measurements shown in the readout for each visible channel: vpp, vrms, vmean, vmax, vmin, frequency, period, riseTime, fallTime and dutyCycle. The frequency is measured from mid-level crossings with hysteresis, averaged over every full period in the record; rise and fall times are measured from 10% to 90% on the first edge.
+   * Default value: vpp,vrms,frequency
+   */
+  measurements?: any;
+  /**
+   * Determines whether the graticule is drawn.
+   * Default value: true
+   */
+  showGrid?: boolean;
+  /**
+   * Determines whether the channel legend is shown. The legend has one button per channel with its scale, which shows or hides the channel.
+   * Default value: true
+   */
+  showLegend?: boolean;
+  /**
+   * Determines whether the measurement readout is shown.
+   * Default value: true
+   */
+  showMeasurements?: boolean;
+  /**
+   * Determines whether the trigger level and trigger time are marked on the graticule.
+   * Default value: true
+   */
+  showTriggerMarkers?: boolean;
+  /**
+   * Determines whether pushed blocks are dropped. The display holds its last capture.
+   * Default value: false
+   */
+  paused?: boolean;
+  /**
+   * Sets or retrieves the scope's name, shown in the header and in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves how many significant figures a value is printed with in the readouts. Clamped to 1-21 when formatting; a value that is not a number shows 3.
+   * Default value: 3
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves the width of a trace in pixels.
+   * Default value: 1.4
+   */
+  lineWidth?: number;
+  /**
+   * Enables or disables the component. While disabled the channel legend takes no pointer or keyboard input and leaves the tab order; it returns when the component is enabled again.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages. Values in the header, legend, cursor and measurement readouts use the locale's decimal separator (1,41 V in German); en is unchanged.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the header, the acquisition states, the measurement names and the accessible name, including noReading, which is said where a measurement shows "--". Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component. With no theme of its own the component takes the nearest themed ancestor's palette for its trace colours.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ Scope is an oscilloscope display for time-domain signals. It provides an edge trigger with level, hysteresis, holdoff and pre-trigger position in auto, normal and single modes, a graticule with a timebase in seconds per division and a vertical scale in units per division for each channel, time cursors, and automatic measurements such as peak to peak, RMS, mean, frequency, period, rise time, fall time and duty cycle. Samples are pushed in blocks into a ring buffer per channel. An XY mode draws one channel against another.
+*/
+export interface Scope extends BaseElement, ScopeProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered on every capture, on a trigger, or on an auto free-run.
+	* @param event. The custom event. Custom data event was created with: ev.detail(triggered, source, level, time)
+   *  triggered - True for a real trigger, false for an auto free-run capture.
+   *  source - The field triggered on.
+   *  level - The trigger level.
+   *  time - The record's start relative to the trigger, in seconds.
+   */
+  onTrigger?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a channel is shown or hidden from the legend or through toggleChannel.
+	* @param event. The custom event. Custom data event was created with: ev.detail(index, field, visible)
+   *  index - Which channel.
+   *  field - The channel's field.
+   *  visible - Whether it is now drawn.
+   */
+  onChannelVisibilityChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Appends a block of samples per channel and runs the trigger over it. Returns false when the scope is paused, has no channels, or the block is empty. A null, empty, non-numeric or infinite sample is no reading: a gap in the trace and in every measurement, never 0.
+   * @param {any} block. { field: samples, .. } with an array or typed array per channel, or a plain array for a single-channel scope, which goes to the first channel.
+   * @returns {boolean}
+   */
+  push(block: any): boolean;
+  /**
+   * Removes every sample and the capture.
+   */
+  clear(): void;
+  /**
+   * Re-arms the trigger and resumes after stop or a single capture.
+   */
+  run(): void;
+  /**
+   * Stops capturing until run or single is called.
+   */
+  stop(): void;
+  /**
+   * Arms the trigger for one capture and then stops.
+   */
+  single(): void;
+  /**
+   * Captures the newest screen regardless of the trigger. Returns false when there is nothing to capture.
+   * @returns {boolean}
+   */
+  forceTrigger(): boolean;
+  /**
+   * Sets the timebase to show two or three cycles of the trigger source and the scale of every channel to fill about six divisions, based on the record on screen. This is the Auto Set function of an oscilloscope. The timebase is set only from a frequency measure() accepts, on the source's new scale - from the screen, or else from the whole ring; with none (DC, noise, a single transient) the timebase is left unchanged.
+   */
+  autoSet(): void;
+  /**
+   * Returns the record on screen as <em>{ time, sampleRate, triggerIndex, triggered, channels }</em>, where <em>channels</em> maps each field to a copy of its samples and <em>time</em> is the start of the record relative to the trigger, in seconds. Returns null before the first capture.
+   * @returns {any}
+   */
+  capture(): any;
+  /**
+   * Returns the automatic measurements of the captured record for one channel as <em>{ vmax, vmin, vpp, vmean, vrms, frequency, period, riseTime, fallTime, dutyCycle }</em>, with NaN where a measurement is undefined. Frequency, period and duty cycle are measured from rising mid-level crossings with hysteresis and are NaN (shown as "--") unless the swing is at least a fifth of a division on the channel's scale, the record holds at least two full periods, and the periods agree within 25 % - so DC, noise and a single transient have no frequency. The duty cycle is taken over the whole periods. Rise and fall time are NaN when the swing is too small to have edges. Returns null before any capture.
+   * @param {string} field?. The channel's field. Defaults to the trigger source.
+   * @returns {any}
+   */
+  measure(field?: string): any;
+  /**
+   * Shows or hides one channel and raises the channelVisibilityChange event.
+   * @param {number} index. Which channel.
+   * @param {boolean} visible?. Force a state instead of toggling.
+   */
+  toggleChannel(index: number, visible?: boolean): void;
+  /**
+   * Rebuilds the header, legend, readouts and accessible name, and redraws the plot.
+   */
+  redraw(): void;
+  /**
+   * Redraws the plot on the next animation frame, so that many pushes between two frames cost one draw.
+   */
+  invalidate(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-scope"): Scope;
+        querySelector(selectors: "smart-scope"): Scope | null;
+        querySelectorAll(selectors: "smart-scope"): NodeListOf<Scope>;
+        getElementsByTagName(qualifiedName: "smart-scope"): HTMLCollectionOf<Scope>;
+        getElementsByName(elementName: "smart-scope"): NodeListOf<Scope>;
+    }
+}
+
+/**Sets or retrieves which way the source has to cross the level. */
+export declare type ScopeTriggerEdge = 'rising' | 'falling';
+/**Sets or retrieves the behaviour without a trigger. auto free-runs and captures the newest screen when nothing has triggered for about two screens; normal keeps the last capture until the next trigger; single captures once and stops until run or single arms the trigger again. */
+export declare type ScopeTriggerMode = 'auto' | 'normal' | 'single';
+/**Sets or retrieves the display mode. yt draws every channel against time; xy draws the second channel against the first, for Lissajous figures and I-V curves. */
+export declare type ScopeMode = 'yt' | 'xy';
 export interface ScrollBarProperties {
   /**
    * Specifies the current animation mode for the component. You can retrieve the current mode or assign a new one. Setting this property to 'none' disables all animations; other values will enable and determine the type of animation applied.
@@ -29576,6 +35348,786 @@ declare global {
     }
 }
 
+export interface SelectorSwitchProperties {
+  /**
+   * Sets or retrieves the positions, as [{ id, label, description }]. Empty shows Hand. Off. Auto, localized.
+   * Default value: 
+   */
+  positions?: any;
+  /**
+   * Sets or retrieves the id of the current position, as reported by the plant. Setting it clears a pending request, whether or not it is the requested position, and raises the change event.
+   * Default value: ""
+   */
+  value?: string;
+  /**
+   * Sets or retrieves how the positions are drawn: a joined row of segments; a knob with a pointer over the segments; or, above the segments, the switch a panel would carry: a toggle lever that leans to its position, a rocker whose pressed face is lit, or a slide whose knob sits at its position. The segments stay the part that is pressed and read. While a request is pending the pointer, lever, lamp or knob shows it halfway or in the pending colour.
+   * Default value: segmented
+   */
+  appearance?: SelectorSwitchAppearance | string;
+  /**
+   * Determines whether a position has to be pressed twice to request it. The first press arms the position and shows it as armed; a press on a different position arms that one instead. The second press has to be a separate decision: the second click of a double-click, a press within 300 ms of the first and the repeat of a held key do not send the request. The second press has to be a second decision: the second click of a double-click or a double tap, a press within 300 ms of the first and a held key do not confirm.
+   * Default value: false
+   */
+  confirm?: boolean;
+  /**
+   * Sets or retrieves how long an armed position waits for its second press, in milliseconds.
+   * Default value: 5000
+   */
+  confirmTimeout?: number;
+  /**
+   * Sets or retrieves how long a request stays shown as pending before it is dropped as unanswered, in milliseconds. When it runs out the switch raises requestTimeout and says under the switch that the plant did not confirm the position.
+   * Default value: 10000
+   */
+  pendingTimeout?: number;
+  /**
+   * Determines whether the switch is interlocked. An interlocked switch stays readable, shows interlockReason, drops any pending request, and raises blocked instead of positionRequest.
+   * Default value: false
+   */
+  interlocked?: boolean;
+  /**
+   * Sets or retrieves why the switch will not act, shown under it while interlocked and read out when pressed.
+   * Default value: ""
+   */
+  interlockReason?: string;
+  /**
+   * Sets or retrieves whether the switch is read-only. A read-only switch shows the position in force, stays focusable and readable, and takes no request.
+   * Default value: false
+   */
+  readonly?: boolean;
+  /**
+   * Sets or retrieves the name of the device the switch controls, shown above the positions and used in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the target size. touch makes each position 52px high for a gloved hand.
+   * Default value: normal
+   */
+  density?: SelectorSwitchDensity | string;
+  /**
+   * Enables or disables the component. Prefer interlocked for a switch that must not act right now, it shows the reason.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the default position names, the accessible names, the hints and the blocked message. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ SelectorSwitch is a switch with a set of named positions, such as a Hand-Off-Auto selector, a duty/standby selector or a local/remote switch. The positions can be displayed as a row of segments or as a rotary knob. The current position is set by the application through the value property; pressing another position raises the positionRequest event and shows the position as pending until the application updates the value or pendingTimeout elapses. The confirm property requires a second press, and an interlocked switch shows the reason and raises the blocked event. Arrow keys move between positions and Enter or Space requests the focused one.
+*/
+export interface SelectorSwitch extends BaseElement, SelectorSwitchProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a position is requested. The application writes it to the plant and reports the answer through value.
+	* @param event. The custom event. Custom data event was created with: ev.detail(position, from)
+   *  position - The id of the position requested.
+   *  from - The id of the position in force.
+   */
+  onPositionRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a requested position was not confirmed by the plant within pendingTimeout. The request is dropped and the switch says so.
+	* @param event. The custom event. Custom data event was created with: ev.detail(position, value)
+   *  position - The id of the position that was requested.
+   *  value - The id of the position the plant still reports.
+   */
+  onRequestTimeout?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when value changes, when the plant reports a position.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value, previousValue)
+   *  value - The id of the position now in force.
+   *  previousValue - The id of the position before.
+   */
+  onChange: ((this: any, ev: Event) => any) | null;
+  /**
+   * This event is triggered when an interlocked switch is pressed. Nothing is requested.
+	* @param event. The custom event. Custom data event was created with: ev.detail(position, reason)
+   *  position - The id of the position that was pressed.
+   *  reason - The interlockReason.
+   */
+  onBlocked?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Requests a position, as a press does. With confirm enabled, the first call arms the position and a second call within confirmTimeout sends the request. The value does not change until the application reports the new position. One request per intent: the position in force and the position already requested and not yet answered are not requested again, and false is returned. Nothing is requested while the switch is disabled, read-only or interlocked.
+   * @param {string} id. The id of the position.
+   * @returns {boolean}
+   */
+  request(id: string): boolean;
+  /**
+   * Returns the id of the requested position not yet confirmed by the plant, or null.
+   * @returns {string}
+   */
+  pending(): string;
+  /**
+   * Rebuilds the switch from its properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-selector-switch"): SelectorSwitch;
+        querySelector(selectors: "smart-selector-switch"): SelectorSwitch | null;
+        querySelectorAll(selectors: "smart-selector-switch"): NodeListOf<SelectorSwitch>;
+        getElementsByTagName(qualifiedName: "smart-selector-switch"): HTMLCollectionOf<SelectorSwitch>;
+        getElementsByName(elementName: "smart-selector-switch"): NodeListOf<SelectorSwitch>;
+    }
+}
+
+/**Sets or retrieves how the positions are drawn: a joined row of segments; a knob with a pointer over the segments; or, above the segments, the switch a panel would carry: a toggle lever that leans to its position, a rocker whose pressed face is lit, or a slide whose knob sits at its position. The segments stay the part that is pressed and read. While a request is pending the pointer, lever, lamp or knob shows it halfway or in the pending colour. */
+export declare type SelectorSwitchAppearance = 'segmented' | 'rotary' | 'toggle' | 'rocker' | 'slide';
+/**Sets or retrieves the target size. touch makes each position 52px high for a gloved hand. */
+export declare type SelectorSwitchDensity = 'normal' | 'touch';
+export interface SequenceEditorProperties {
+  /**
+   * Sets or retrieves the id of the step being run. Null when nothing is running.
+   * Default value: null
+   */
+  currentStep?: any;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets a function (step, value) that returns true, false, or undefined to fall back to the built-in limit forms. Only needed for a limit that cannot be expressed as a range or as a nominal value with a tolerance.
+   * Default value: null
+   */
+  limitEvaluator?: any;
+  /**
+   * Sets or retrieves whether the sequence is being edited or run.
+   * Default value: edit
+   */
+  mode?: SequenceEditorMode | string;
+  /**
+   * Sets or gets the number of decimal places used when a measurement is shown.
+   * Default value: 3
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves whether the result column is shown. The property is read when the default columns are built, so set it before the component is initialized. Boolean attributes are presence-based, so the column cannot be turned off from markup.
+   * Default value: true
+   */
+  showResults?: boolean;
+  /**
+   * Sets or retrieves the sequence as [{ id, name, action, unit, min, max, nominal, tolerance, value, skipped, aborted }]. Only id is required. A step with neither a range nor a nominal value is an action rather than a measurement: it can run but cannot fail on a value. The state of a step is derived from its measurement and its limit, so updating the measurement updates the verdict. Assign a new array to update the component.
+   * Default value: 
+   */
+  steps?: any;
+  /**
+   * Sets or retrieves whether a failed step aborts the rest of the run.
+   * Default value: false
+   */
+  stopOnFailure?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the column headers, the step states, the limit words and the accessible name (17 keys: columnStep, columnAction, columnLimit, columnValue, columnResult, pending, ..). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ SequenceEditor is a step sequence editor and runner for test sequences, batch procedures and recipes. It extends Table, so sorting, column resizing, virtualization, state persistence and export are inherited. Each step has a limit defined as a range or a nominal value with a tolerance, and the component evaluates the results against the limits, runs the sequence through its run state machine and produces a report. The component does not execute steps: it raises stepStart and waits for the application to call setResult. A custom limit evaluator can be supplied through the limitEvaluator property. Every Table property, method and event - columns, paging, sorting, filtering, selection, exportData and the rest - applies to the sequence editor as well; see the Table API.
+*/
+export interface SequenceEditor extends BaseElement, SequenceEditorProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the run finishes or is aborted.
+	* @param event. The custom event. Custom data event was created with: ev.detail(aborted, report)
+   *  aborted - Whether it was aborted rather than completed.
+   *  report - The full record.
+   */
+  onSequenceComplete?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the run is paused.
+	* @param event. The custom event. Custom data event was created with: ev.detail(step)
+   *  step - The step it paused at.
+   */
+  onSequencePause?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a measurement is recorded against a step.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, state, passed, step)
+   *  id - The step's id.
+   *  state - The state it settled into.
+   *  passed - Whether it passed.
+   *  step - The step that completed.
+   */
+  onStepComplete?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when setResult is called for a step that is not the one running. The result is not recorded and the run does not move.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, value, current)
+   *  id - The step the result was for.
+   *  value - The result that was refused.
+   *  current - The step that is running.
+   */
+  onResultRefused?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the run reaches a step. The application performs the measurement and calls setResult; the component waits and does not execute anything itself.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, step, index)
+   *  id - The step's id.
+   *  step - The step.
+   *  index - Its position in the sequence.
+   */
+  onStepStart?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Stops the run and marks every step that has not run as aborted, so that the report shows that the run did not finish.
+   */
+  abort(): void;
+  /**
+   * Returns the limit of a step as it appears on a specification sheet: a range, a single bound, or a nominal value with a tolerance. An invalid limit is written with "(invalid limit)" after it, and warned about once in the console.
+   * @param {any} step. The step.
+   * @returns {string}
+   */
+  limitText(step: any): string;
+  /**
+   * Pauses the run at the current step.
+   */
+  pause(): void;
+  /**
+   * Returns the record of the run: the verdict, the number of steps in each state, and every step with its limit and measurement. A run passes only when no step failed and no step was left unrun.
+   * @returns {any}
+   */
+  report(): any;
+  /**
+   * Starts the run at the first pending step and raises the stepStart event. Does nothing when the sequence is already running.
+   */
+  run(): void;
+  /**
+   * Records a measurement for a step and moves to the next step. While a step is current, only that step takes a result: a result for another step is refused, raises resultRefused, changes nothing and returns false. A non-numeric result is kept and shown, and the step is marked as not evaluated rather than as passed or failed.
+   * @param {string | number} id. The step's id. Always identify a step by id and never by row index, the table sorts, so an index stops meaning anything the moment a column header is clicked.
+   * @param {any} value. The measurement.
+   * @returns {boolean}
+   */
+  setResult(id: string | number, value: any): boolean;
+  /**
+   * Marks a step as not run and moves to the next step when the sequence is running.
+   * @param {string | number} id. The step's id.
+   */
+  skip(id: string | number): void;
+  /**
+   * Returns the state of a step: pending, running, passed, failed, skipped, aborted or notEvaluated. The state is derived from the measurement and the limit. A step with a limit whose result cannot be judged against it - NaN, Infinity, a text such as n/a, or a limit that is itself invalid (a minimum above the maximum, a negative tolerance) - is notEvaluated, never passed; a report with such a step has not passed.
+   * @param {any} step. The step.
+   * @returns {string}
+   */
+  stateOf(step: any): string;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-sequence-editor"): SequenceEditor;
+        querySelector(selectors: "smart-sequence-editor"): SequenceEditor | null;
+        querySelectorAll(selectors: "smart-sequence-editor"): NodeListOf<SequenceEditor>;
+        getElementsByTagName(qualifiedName: "smart-sequence-editor"): HTMLCollectionOf<SequenceEditor>;
+        getElementsByName(elementName: "smart-sequence-editor"): NodeListOf<SequenceEditor>;
+    }
+}
+
+/**Sets or retrieves whether the sequence is being edited or run. */
+export declare type SequenceEditorMode = 'edit' | 'run';
+export interface SevenSegmentProperties {
+  /**
+   * Sets or retrieves an explicit CSS colour for the segments, overriding the theme. The component applies it as the --smart-seven-segment-color variable in its own inline style and rewrites that variable at every redraw, so set the colour through this property or in a stylesheet rule.
+   * Default value: ""
+   */
+  color?: string;
+  /**
+   * Sets or retrieves how many digit positions are shown. A minus sign occupies a position, as it does on a real panel meter. The component draws 1 to 32 positions; a value outside that range is held to it, a value that is not a number draws 4, and either case writes a console warning.
+   * Default value: 4
+   */
+  digits?: number;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether unused leading digits are padded with zeros instead of left blank. A counter usually shows leading zeros; a measurement usually does not.
+   * Default value: false
+   */
+  leadingZeros?: boolean;
+  /**
+   * Sets or retrieves the number of decimal places. The decimal point is drawn on the digit preceding the fraction and does not consume a digit position.
+   * Default value: 0
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves whether unlit segments are drawn faintly. The default is true. Boolean attributes are presence-based, so show-off-segments="false" in markup enables the option; set the property from script to disable it.
+   * Default value: true
+   */
+  showOffSegments?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the over-range, under-range, no-reading and blank readouts and the accessible name (5 keys: overRange, underRange, noReading, blank, readout). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * Sets or retrieves the engineering unit rendered beside the digits.
+   * Default value: ""
+   */
+  unit?: string;
+  /**
+   * Sets or retrieves the displayed value: a number or a decimal string. Null, an empty string, other text and values of other types blank the display. NaN or an infinity shows dashes, the readout of a meter with no signal.
+   * Default value: null
+   */
+  value?: any;
+}
+/**
+ SevenSegment is a numeric display in the style of a seven-segment LED readout, for panel meters, totalizers and counters. It is rendered as SVG, so it scales to any size, and takes its colours from the theme. Unlit segments are drawn faintly. A value that does not fit in the configured digits lights the top bar of every digit, or the bottom bar when it is negative, and NaN or an infinity shows dashes.
+*/
+export interface SevenSegment extends BaseElement, SevenSegmentProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * Returns the characters currently shown, one per digit position: blanks for padding or no value, '-' in every position for NaN or an infinity, '‾' in every position over range and '_' in every position under range. The decimal point is not part of this string.
+   * @returns {string}
+   */
+  displayText(): string;
+  /**
+   * Redraws the display.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-seven-segment"): SevenSegment;
+        querySelector(selectors: "smart-seven-segment"): SevenSegment | null;
+        querySelectorAll(selectors: "smart-seven-segment"): NodeListOf<SevenSegment>;
+        getElementsByTagName(qualifiedName: "smart-seven-segment"): HTMLCollectionOf<SevenSegment>;
+        getElementsByName(elementName: "smart-seven-segment"): NodeListOf<SevenSegment>;
+    }
+}
+
+export interface ShiftLogProperties {
+  /**
+   * Sets or retrieves the entries as [{ id, at, author, role, category, text, tag, correcting }], the shape a Scada Studio station returns from /api/shiftlog. correcting is the id of the entry an entry corrects; the corrected entry stays, marked as corrected. Assign a new array to update the component.
+   * Default value: 
+   */
+  entries?: any;
+  /**
+   * Sets or retrieves the categories an entry can have, and the filters above the list. Each is named through the category-&lt;name&gt; message, so a plant's own category needs a message too.
+   * Default value: note,handover,maintenance,quality,safety,production
+   */
+  categories?: any;
+  /**
+   * Sets or retrieves the heading of the log. It is also the accessible name of the group.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the current shift as { name, from, to }. Entries from before from are listed under Earlier shifts.
+   * Default value: null
+   */
+  shift?: any;
+  /**
+   * Sets or retrieves the name shown as writing the next entry. It is only shown: the station stamps the author of the session that sends the entry.
+   * Default value: ""
+   */
+  author?: string;
+  /**
+   * Sets or retrieves the category the list is filtered to; empty lists every entry.
+   * Default value: ""
+   */
+  filter?: string;
+  /**
+   * Sets or retrieves whether the log only shows the entries. The box and the Correct buttons are removed: a supervisor's view.
+   * Default value: false
+   */
+  readOnly?: boolean;
+  /**
+   * Sets or retrieves whether the application is storing an entry. The Add button waits while it is set.
+   * Default value: false
+   */
+  busy?: boolean;
+  /**
+   * Sets or retrieves the reason the station refused an entry. When set, it is shown and announced, and the draft is put back into the box rather than lost - unless the operator has started another entry meanwhile, which is kept: the refused text then waits beside the reason, with a button that puts it back below what is in the box.
+   * Default value: ""
+   */
+  errorMessage?: string;
+  /**
+   * Sets the reason the station refused an entry, by its earlier name: it sets errorMessage. Reading it returns the element's error-reporting method, which reads as the message where text is wanted; read errorMessage for the message.
+   * Default value: ""
+   */
+  error?: string;
+  /**
+   * Sets or retrieves the longest entry, in characters.
+   * Default value: 2000
+   */
+  maxLength?: number;
+  /**
+   * Sets or retrieves the words the entries shown must contain - in the text, the author, the tag or the category. The words are marked where they are found. The box above the list sets it as it is typed.
+   * Default value: ""
+   */
+  search?: string;
+  /**
+   * Sets or retrieves the period shown: everything, this shift (from shift.from), the last 24 hours, the last 7 days.
+   * Default value: all
+   */
+  range?: ShiftLogRange | string;
+  /**
+   * Sets or retrieves how many entries are drawn at once; the rest are a "Show more" away, so a year's log opens as fast as a day's.
+   * Default value: 100
+   */
+  pageSize?: number;
+  /**
+   * Sets or retrieves whether the log is disabled.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether the log can be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ ShiftLog is the book on the control-room desk, kept where the screens are: what one shift needs the next to know that no tag says - that a filler jammed twice and was cleared by hand, that maintenance is coming at ten. Entries are append-only, by category, and each names who wrote it; an entry is never edited, it is corrected by a new entry that says which one it corrects, so the log stays a record of what was known when. Handover entries carry the accent and safety entries the warning edge. The component writes nothing: adding an entry raises entryAdd, and the application stores it on the station, which stamps the time and the author.
+*/
+export interface ShiftLog extends BaseElement, ShiftLogProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the operator adds an entry, with the Add button or Ctrl+Enter. The component does not store it: the application sends it to the station, which stamps the time and the author, and hands back the entries. The box is cleared; if the application then sets <em>error</em>, the text comes back.
+	* @param event. The custom event. Custom data event was created with: ev.detail(text, category, tag, correcting)
+   *  text - The text of the entry.
+   *  category - Its category.
+   *  tag - The tag it is about, when one was given.
+   *  correcting - The id of the entry it corrects, when it is a correction.
+   */
+  onEntryAdd?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered by Export CSV, with the file's text. The component then downloads it; an application that stores the file its own way calls preventDefault().
+	* @param event. The custom event. Custom data event was created with: ev.detail(csv, count)
+   *  csv - The CSV.
+   *  count - The entries in it.
+   */
+  onExportRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the search is changed in the box.
+	* @param event. The custom event. Custom data event was created with: ev.detail(search)
+   *  search - The words searched for.
+   */
+  onSearchChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the operator filters the list by a category.
+	* @param event. The custom event. Custom data event was created with: ev.detail(category)
+   *  category - The category filtered to; empty for every entry.
+   */
+  onFilterChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns the entries shown - after the category, the search and the period - as CSV: time, author, category, tag, text and the entry each corrects. A cell a spreadsheet would read as a formula is written as text.
+   * @returns {string}
+   */
+  exportCsv(): string;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-shift-log"): ShiftLog;
+        querySelector(selectors: "smart-shift-log"): ShiftLog | null;
+        querySelectorAll(selectors: "smart-shift-log"): NodeListOf<ShiftLog>;
+        getElementsByTagName(qualifiedName: "smart-shift-log"): HTMLCollectionOf<ShiftLog>;
+        getElementsByName(elementName: "smart-shift-log"): NodeListOf<ShiftLog>;
+    }
+}
+
+/**Sets or retrieves the period shown: everything, this shift (from shift.from), the last 24 hours, the last 7 days. */
+export declare type ShiftLogRange = 'all' | 'shift' | 'day' | 'week';
+export interface SignatureBlockProperties {
+  /**
+   * Sets or retrieves the signature to show, as { userId, userName, meaning, meaningLabel, reason, at, recordHash, id }. null shows 'Not signed'. A meaning other than the six standard ones is shown with its meaningLabel and the localized 'by' form (the byMeaning message). A missing or unreadable at is shown as 'No date and time of signing' or 'Date and time not readable' and sets the date-invalid attribute; at may be an ISO 8601 string, a Date or epoch milliseconds.
+   * Default value: null
+   */
+  signature?: any;
+  /**
+   * Sets or retrieves the record as it is now. Given, the block verifies the signature against it and says 'Record matches signature' or 'Record altered since signing', or 'Record cannot be checked' when the signature carries no record hash (the verified attribute is then 'unknown'). The record is verified again on every assignment, including the same object assigned again after it was changed in place; a change made in place without assigning the record again is not seen.
+   * Default value: null
+   */
+  record?: any;
+  /**
+   * Determines whether the reason is shown.
+   * Default value: true
+   */
+  showReason?: boolean;
+  /**
+   * Determines whether the user ID is shown beside the printed name.
+   * Default value: true
+   */
+  showUserId?: boolean;
+  /**
+   * Determines whether the record hash is shown, shortened, with the full hash as a tooltip.
+   * Default value: false
+   */
+  showHash?: boolean;
+  /**
+   * Determines whether the block is one line instead of a stack.
+   * Default value: false
+   */
+  compact?: boolean;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the 'by' form of each meaning (byMeaning for a custom meaning), the verdicts, the date warnings and the prefixes. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ SignatureBlock displays the signature manifestation required by 21 CFR Part 11 §11.50: the meaning of the signature, the printed name of the signer, the date and time of signing with the UTC offset, and the reason if one was given. When the signed record is also provided, the component compares the record hash in the signature with the record and reports whether the record has changed since it was signed. The signature object is the one produced by the ESignature component.
+*/
+export interface SignatureBlock extends BaseElement, SignatureBlockProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * Returns the manifestation as one line, for example 'Approved by Alice Smith, 2026-09-18 14:32:00 +03:00, Batch release', for a printout or a log. It is built from what the block shows: a custom meaning in its own words, and a missing date said in words.
+   * @returns {string}
+   */
+  text(): string;
+  /**
+   * Returns whether the record given still matches the signature: true or false, or null when no record or no signature is given, or when the signature carries no record hash and so cannot be checked.
+   * @returns {boolean}
+   */
+  verified(): boolean;
+  /**
+   * Rebuilds the block from its properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-signature-block"): SignatureBlock;
+        querySelector(selectors: "smart-signature-block"): SignatureBlock | null;
+        querySelectorAll(selectors: "smart-signature-block"): NodeListOf<SignatureBlock>;
+        getElementsByTagName(qualifiedName: "smart-signature-block"): HTMLCollectionOf<SignatureBlock>;
+        getElementsByName(elementName: "smart-signature-block"): NodeListOf<SignatureBlock>;
+    }
+}
+
+export interface SiteMapProperties {
+  /**
+   * Sets or retrieves the sites as [{ id, name, x, y, lat, lon, state, alarms, reading, unit, description, href }]. On a picture, x and y are percent from its top left; with tiles, lat and lon place the site. state is normal, warning, alarm, offline or maintenance, in any case and with spaces round it ignored - or an alarm bit (1 or true is alarm, 0 or false normal), or the whole number 2 warning, 3 offline, 4 maintenance. Anything else - no state, an empty string, another word such as stale, a number outside 0 to 4 or not whole - is unknown: drawn as a hollow dotted marker with a question mark, named "State unknown", counted in the summary line and sorted in the table straight after warning (alarm, warning, unknown, offline, maintenance, normal), so a site whose state cannot be read never passes for normal. "All normal" is said only when every site is normal. A numeric reading is shown with unit; a reading that is there but is no reading (NaN, Infinity, null, an object, "NaN") shows "--" and is spoken "no reading"; a site without a reading shows none. href adds a link to the site's card (http, https or a path; nothing else is made a link). Assign a new array to update the component; readings, states and alarm counts can also come through push(). An item that is not a site (null, a number, an object with neither id nor name) is skipped with one console warning; a site with a name and no id goes by its name.
+   * Default value: 
+   */
+  sites?: any;
+  /**
+   * Sets or retrieves the heading of the map. It is also the accessible name of the group.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the URL of an image under the sites. Without one, an SVG placed inside the element is the picture, and without that the sites sit on a grid.
+   * Default value: ""
+   */
+  background?: string;
+  /**
+   * Sets or retrieves the URL of the map tiles, with {z}, {x} and {y}, and optionally {s} for a subdomain - https://tile.openstreetmap.org/{z}/{x}/{y}.png, or a plant's own tile server. With tiles, sites are placed by lat and lon. Nothing is fetched while it is empty.
+   * Default value: ""
+   */
+  tiles?: string;
+  /**
+   * Sets or retrieves the letters {s} in tiles takes, one per tile in turn.
+   * Default value: "abc"
+   */
+  tileSubdomains?: string;
+  /**
+   * Sets or retrieves the tile provider's credit, shown in the corner of the map. OpenStreetMap's own is shown when tiles come from it and this is empty.
+   * Default value: ""
+   */
+  attribution?: string;
+  /**
+   * Sets or retrieves where a map with tiles opens, as { lat, lon }. With zoom; null (either) fits every site.
+   * Default value: null
+   */
+  center?: any;
+  /**
+   * Sets or retrieves the tile zoom a map opens at (1 to maxZoom), or the magnification of a picture (1 to 8). null fits every site.
+   * Default value: null
+   */
+  zoom?: number;
+  /**
+   * Sets or retrieves the closest tile zoom offered.
+   * Default value: 18
+   */
+  maxZoom?: number;
+  /**
+   * Sets or retrieves whether the map pans and zooms at all. Off, it stays as it opened and the zoom buttons are gone.
+   * Default value: true
+   */
+  zoomable?: boolean;
+  /**
+   * Sets or retrieves what the mouse wheel does over the map: zoom only with Ctrl held, as a page the map is only part of needs (the wheel alone scrolls the page, and a hint says how to zoom); always; or never.
+   * Default value: ctrl
+   */
+  wheelZoom?: SiteMapWheelZoom | string;
+  /**
+   * Sets or retrieves where the selected site's card opens: under the map, beside its marker, or nowhere (for a screen with its own detail panel).
+   * Default value: below
+   */
+  detail?: SiteMapDetail | string;
+  /**
+   * Sets or retrieves the picture's width to height, as CSS aspect-ratio has it.
+   * Default value: "16 / 9"
+   */
+  aspectRatio?: string;
+  /**
+   * Sets or retrieves the id of the selected site, which is shown under the map.
+   * Default value: ""
+   */
+  selected?: string;
+  /**
+   * Sets or retrieves whether the sites are shown on the map or as a table.
+   * Default value: map
+   */
+  view?: SiteMapView | string;
+  /**
+   * Sets or retrieves whether every site is named beside its marker. Off, only the selected site and those that need someone are named.
+   * Default value: true
+   */
+  showLabels?: boolean;
+  /**
+   * Sets or retrieves whether the map is disabled. Disabled, every button of the map is disabled and the link leaves the tab order: nothing is reached, clicked, panned or zoomed, and no event is raised. They come back when it is cleared.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether the map can be focused. Set, no part of the map is a tab stop; the pointer still works.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ SiteMap puts many sites on one picture - the pump stations of a water network, the turbines of a wind farm, the substations of a grid - so that "where is something wrong" is answered with a place. The picture is the plant's own (an image, or an SVG placed inside the element that takes the theme's colours, with sites by percent) or the world: map tiles from any tile server named in tiles, with sites by latitude and longitude, drawn muted so the sites and not the streets are what the eye finds. Nothing is fetched until tiles is set, and a plant can point it at its own tile server. Either picture pans with a drag and zooms with the buttons, a pinch, a double-click, the plus and minus keys, or Ctrl and the wheel. A site that is fine is neutral grey; colour, the alarm count and a heavier mark are only for a site that needs someone. A site's card opens under the map or beside its marker, with Open for its own screen and a link when it has one; readings, states and alarm counts follow tags through push(). A summary line counts what is wrong, the markers are one tab stop walked with the arrow keys, and the same sites are a table one click away, worst first. The arrow keys walk the markers in reading order: top to bottom, then left to right - or right to left on a right-to-left page or with rightToLeft, where ArrowLeft is the next site and ArrowRight the previous. Right to left (rightToLeft, or a right-to-left page) the heading, the table and the cards mirror; the map itself does not - geography and a plant's picture have no reading direction. Readings are formatted in the element's locale.
+*/
+export interface SiteMap extends BaseElement, SiteMapProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a site is selected on the map or in the table - or deselected, with an empty id, when its card is closed.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id)
+   *  id - The id of the site.
+   */
+  onSiteSelect?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered by the Open button of the selected site, for the application to go to that site's screen.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id)
+   *  id - The id of the site.
+   */
+  onSiteOpen?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the map has been panned or zoomed, once the movement stops - with the view as getView() gives it, for an application that keeps where an operator left the map.
+	* @param event. The custom event. Custom data event was created with: ev.detail(zoom, center)
+   *  zoom - The zoom.
+   *  center - The center: { lat, lon } with tiles, { x, y } in percent on a picture.
+   */
+  onMapMove?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the operator switches between the map and the table.
+	* @param event. The custom event. Custom data event was created with: ev.detail(view)
+   *  view - map or list.
+   */
+  onViewChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Changes readings, states and alarm counts as they arrive, without re-sending the list: <em>{ '&lt;site id&gt;.reading': 4.2, '&lt;site id&gt;.state': 1 }</em>. The record a strip chart's push takes, so Connect.stream() feeds a map as it feeds a chart. A new sites array drops what push brought for the old one. A state goes through the same reading as in sites: a word or code the map does not know makes the site unknown, not normal.
+   * @param {any} record. Fields named '&lt;site id&gt;.&lt;reading|state|alarms|description|name&gt;'.
+   */
+  push(record: any): void;
+  /**
+   * Shows every site: the closest zoom at which they all fit.
+   */
+  fit(): void;
+  /**
+   * Zooms in a step at the middle of the map.
+   */
+  zoomIn(): void;
+  /**
+   * Zooms out a step.
+   */
+  zoomOut(): void;
+  /**
+   * Returns where the map is looking: <em>{ zoom, center: { lat, lon } }</em> with tiles, <em>{ zoom, center: { x, y } }</em> on a picture.
+   * @returns {any}
+   */
+  getView(): any;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-site-map"): SiteMap;
+        querySelector(selectors: "smart-site-map"): SiteMap | null;
+        querySelectorAll(selectors: "smart-site-map"): NodeListOf<SiteMap>;
+        getElementsByTagName(qualifiedName: "smart-site-map"): HTMLCollectionOf<SiteMap>;
+        getElementsByName(elementName: "smart-site-map"): NodeListOf<SiteMap>;
+    }
+}
+
+/**Sets or retrieves what the mouse wheel does over the map: zoom only with Ctrl held, as a page the map is only part of needs (the wheel alone scrolls the page, and a hint says how to zoom); always; or never. */
+export declare type SiteMapWheelZoom = 'ctrl' | 'always' | 'never';
+/**Sets or retrieves where the selected site's card opens: under the map, beside its marker, or nowhere (for a screen with its own detail panel). */
+export declare type SiteMapDetail = 'below' | 'popup' | 'none';
+/**Sets or retrieves whether the sites are shown on the map or as a table. */
+export declare type SiteMapView = 'map' | 'list';
 export interface SliderProperties {
   /**
    * Sets or retrieves the current animation mode. When this property is set to 'none', all animations are disabled. Use other valid values to enable and control different animation behaviors.
@@ -29637,11 +36189,6 @@ export interface SliderProperties {
    * Default value: all
    */
   labelsVisibility?: LabelsVisibility | string;
-  /**
-   * Defines or retrieves the unlockKey, a unique value used to authorize and enable access to the product’s features.
-   * Default value: ""
-   */
-  unlockKey?: string;
   /**
    * Specifies or retrieves the current locale setting, which determines the language and regional formatting used by the component. This property works in conjunction with the messages property to provide localized content, ensuring that labels, messages, and other text elements are displayed according to the selected locale.
    * Default value: "en"
@@ -29712,6 +36259,16 @@ export interface SliderProperties {
    */
   precisionDigits?: number;
   /**
+   * Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings.
+   * Default value: good
+   */
+  quality?: SliderQuality | string;
+  /**
+   * Sets or retrieves the coloured bands drawn behind the track, as [{ startValue, endValue, className }]. A band marks a part of the scale as normal or abnormal - the ISA-101 discipline is to leave the normal region neutral and give colour only to the zones that mean something. Bands are positioned as a percentage of the scale rather than in pixels, so they survive a resize on their own, and they honour orientation and inverted. A band outside min..max is clipped to it. Set showRanges to draw them. smart-gauge draws its own radial ranges and ignores this.
+   * Default value: 
+   */
+  ranges?: any;
+  /**
    * Enables or disables the slider's range mode. When set to true, the slider displays two thumbs, allowing users to select a value range between a minimum and maximum. If set to false, only a single thumb is shown for selecting one value.
    * Default value: false
    */
@@ -29746,6 +36303,11 @@ export interface SliderProperties {
    * Default value: false
    */
   showButtons?: boolean;
+  /**
+   * Sets or retrieves whether the value ranges are drawn. Off by default, so a tank or a slider that declares no bands is unchanged.
+   * Default value: false
+   */
+  showRanges?: boolean;
   /**
    * Controls whether the thumb label is visible or hidden. When enabled, the thumb label will be displayed; when disabled, it will be hidden. This option allows you to show or hide the label that appears above the slider's thumb to indicate its current value.
    * Default value: false
@@ -29801,6 +36363,11 @@ export interface SliderProperties {
    * Default value: "kg"
    */
   unit?: string;
+  /**
+   * Defines or retrieves the unlockKey, a unique value used to authorize and enable access to the product’s features.
+   * Default value: ""
+   */
+  unlockKey?: string;
   /**
    * Configures how the value is validated against the specified minimum and maximum limits.  - When set to 'strict', all value assignments—whether made by user interaction or programmatically—are automatically validated and coerced to remain within the min and max bounds.  - When set to 'interaction', only values entered or changed by user interaction are validated and coerced to the min and max limits. Programmatic value changes are not automatically adjusted, and if the min or max is updated such that the current value falls outside the new range, the value remains unchanged. In this mode, no change event is triggered when values remain out of bounds following these updates.
    * Default value: strict
@@ -29863,6 +36430,8 @@ declare global {
     }
 }
 
+/**Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings. */
+export declare type SliderQuality = 'good' | 'uncertain' | 'bad' | 'stale';
 /**Specifies the alignment or placement of the widget's scale indicators (such as axes, ticks, or labels) relative to the widget, determining where and how the scales appear within the widget's layout. */
 export declare type ScalePosition = 'near' | 'far' | 'both' | 'none';
 export interface SortableProperties {
@@ -30089,6 +36658,234 @@ declare global {
 
 /**Sets or retrieves the position of the close button within each item of the sort panel, allowing you to specify where the close button appears (such as left, right, or a custom location) for improved user interface customization. */
 export declare type SortPanelCloseButtonPosition = 'left' | 'right';
+export interface SpectrumProperties {
+  /**
+   * Sets or retrieves the most recent block of samples, as an array or a typed array. push sets it; an application with a complete record can assign it directly.
+   * Default value: null
+   */
+  signal?: any;
+  /**
+   * Sets or retrieves the sample rate in samples per second. Every frequency on the display follows from it; the default of 1 reads frequencies in cycles per sample. A value that is not a positive number (0, negative, NaN) analyses nothing rather than computing a spectrum on a made-up rate: the header and the plot say "Sample rate 0 is not valid", the accessible name says the same, and one console warning names the value.
+   * Default value: 1
+   */
+  sampleRate?: number;
+  /**
+   * Sets or retrieves the FFT size. 0 uses the next power of two above the block length. A size larger than the block zero-pads the transform, which interpolates the display but does not add resolution; the bin width is still the sample rate divided by the length of the real data. Held to 0 to 16,777,216; not a number uses 0. Either is said once in a console warning.
+   * Default value: 0
+   */
+  size?: number;
+  /**
+   * Sets or retrieves the window function applied before the transform. A flat-top window reads amplitude to within 0.01 dB but spreads the peak in frequency; a rectangular window does the opposite. The amplitude is corrected for the coherent gain of the window in every case.
+   * Default value: hann
+   */
+  window?: SpectrumWindow | string;
+  /**
+   * Sets or retrieves what a bin's value means: amplitude reads a sine's peak, power its square, density its power per hertz. They are not interchangeable, and the header says which one is showing.
+   * Default value: amplitude
+   */
+  scaling?: SpectrumScaling | string;
+  /**
+   * Sets or retrieves whether levels are shown in decibels against reference or as linear magnitudes.
+   * Default value: db
+   */
+  levelScale?: SpectrumLevelScale | string;
+  /**
+   * Sets or retrieves the level that corresponds to 0 dB. 1 gives dBV levels for a signal in volts; the full scale of a converter gives dBFS.
+   * Default value: 1
+   */
+  reference?: number;
+  /**
+   * Sets or retrieves the frequency axis. A log axis starts at the first bin above DC, since it has no zero, and carries decade ticks with 2 and 5 minors.
+   * Default value: linear
+   */
+  frequencyScale?: SpectrumFrequencyScale | string;
+  /**
+   * Sets or retrieves the lowest frequency shown. null follows the data: 0, or the first bin on a log axis. Set above maxFrequency, the two are swapped; a span that leaves nothing to show (equal limits, or a limit beyond the other end of the data or below the first bin on a log axis) shows the whole spectrum instead. Each is said once in a console warning.
+   * Default value: null
+   */
+  minFrequency?: number;
+  /**
+   * Sets or retrieves the highest frequency shown. null follows the data to the Nyquist frequency. See minFrequency for limits set the wrong way round.
+   * Default value: null
+   */
+  maxFrequency?: number;
+  /**
+   * Sets or retrieves the bottom of the level axis. null follows the data with some headroom; a fixed value keeps the trace from rescaling as the signal changes, as on an analyzer. Set above maxLevel, the two are swapped; equal limits, or one limit that leaves no room against the data, let the axis follow the data. Each is said once in a console warning.
+   * Default value: null
+   */
+  minLevel?: number;
+  /**
+   * Sets or retrieves the top of the level axis. null follows the data with headroom. See minLevel for limits set the wrong way round.
+   * Default value: null
+   */
+  maxLevel?: number;
+  /**
+   * Sets or retrieves the spectrum averaging mode. none draws each block as it arrives. linear averages the first averages blocks and then holds the result until clear restarts the average, like a bench analyzer. exponential weights each new block by 1/averages and continues indefinitely. Averaging is performed in the power domain regardless of the display scaling, because averaging amplitudes or decibels biases the noise floor.
+   * Default value: none
+   */
+  averaging?: SpectrumAveraging | string;
+  /**
+   * Sets or retrieves how many blocks the average spans. Held to 1 to 10,000; not a number uses 8. Either is said once in a console warning.
+   * Default value: 8
+   */
+  averages?: number;
+  /**
+   * Determines whether the highest level ever seen in each bin is kept as a second trace, until clear.
+   * Default value: false
+   */
+  peakHold?: boolean;
+  /**
+   * Sets or retrieves how many peaks are marked on the trace and listed in the readout, strongest first. 0 marks none. Peaks are found on the displayed trace, after averaging, by prominence, not height. Held to 0 to 100.
+   * Default value: 3
+   */
+  showPeaks?: number;
+  /**
+   * Sets or retrieves how far a peak must stand above its surroundings to be marked, in the level scale's own unit, decibels, or linear magnitude. It keeps one strong tone's sidelobes from being reported as three peaks. Not below 0; not a number uses 6.
+   * Default value: 6
+   */
+  minProminence?: number;
+  /**
+   * Determines whether total harmonic distortion is measured against the strongest peak and shown in the readout, as a percentage and in dB. Requires amplitude scaling.
+   * Default value: false
+   */
+  showThd?: boolean;
+  /**
+   * Sets or retrieves how many harmonics the THD measurement includes. Held to 1 to 100.
+   * Default value: 5
+   */
+  harmonics?: number;
+  /**
+   * Sets or retrieves markers placed by the application as [{ frequency, label }], drawn as labelled vertical lines, for example at the line frequency, a shaft speed, a bearing defect frequency or a filter corner, so the peaks can be compared with the expected frequencies.
+   * Default value: 
+   */
+  markers?: any;
+  /**
+   * Determines whether the grid and axis labels are drawn.
+   * Default value: true
+   */
+  showGrid?: boolean;
+  /**
+   * Determines whether the peak list and the THD value are shown as text under the plot. The readout is what a screen reader and a report receive; the markers on the canvas show the same information graphically.
+   * Default value: true
+   */
+  showReadout?: boolean;
+  /**
+   * Determines whether the header, sample rate, transform size, bin width, window, scaling and averaging state, is shown.
+   * Default value: true
+   */
+  showHeader?: boolean;
+  /**
+   * Determines whether pushed blocks are dropped. The display holds its last spectrum.
+   * Default value: false
+   */
+  paused?: boolean;
+  /**
+   * Sets or retrieves the name of the channel, shown in the header and in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the unit of the signal, for example V, g or Pa, so that a level is shown as dBV rather than dB and a linear level carries its unit.
+   * Default value: ""
+   */
+  unit?: string;
+  /**
+   * Sets or retrieves how many decimal places a level is printed with in the readout and peak labels. Held to 0 to 20.
+   * Default value: 1
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves the width of the trace in pixels.
+   * Default value: 1.2
+   */
+  lineWidth?: number;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the header, the readout, the warnings and the accessible name. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component. With no theme of its own the component takes the nearest themed ancestor's palette for its trace colours.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ Spectrum is a spectrum analyzer display. Sample blocks are pushed to the component and shown as their frequency content, with a linear or logarithmic frequency axis, levels in dB against a stated reference, linear or exponential averaging, max hold, peak markers, host-defined markers and a THD readout. The FFT and window functions are provided by Smart.DSP with the correct amplitude scaling for the selected window. The spectrum is drawn to a canvas and reduced to one envelope per pixel column.
+*/
+export interface Spectrum extends BaseElement, SpectrumProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered after each block is analysed, with the peaks found on the displayed trace.
+	* @param event. The custom event. Custom data event was created with: ev.detail(peaks, binWidth, size, invalidSamples)
+   *  peaks - The marked peaks, strongest first, as [{ frequency, level, magnitude, index, prominence }].
+   *  binWidth - The frequency resolution in hertz.
+   *  size - The transform size.
+   *  invalidSamples - How many samples of the block were not numbers and were analysed as zeros; 0 for a clean block.
+   */
+  onSpectrumChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Analyses the next block of samples and redraws. The block is copied, so a DAQ can pass the same buffer each time. Averaging and max hold accumulate across pushes. Samples that are not numbers (NaN, null, an infinite value) are analysed as zeros, which lowers the levels by an amount that depends on how many there were, so the block is never passed off as clean: the header shows "2 of 4096 samples were not numbers (analysed as 0)", the accessible name and <em>spectrumChange</em> carry the count, and the console says so once per run of such blocks. A block with no number in it is not analysed. Returns false when the analyzer is paused and the block was dropped.
+   * @param {any} samples. The samples, as an array or a typed array.
+   * @returns {boolean}
+   */
+  push(samples: any): boolean;
+  /**
+   * Clears the running average and the held maximum and restarts them from the block on screen.
+   */
+  clear(): void;
+  /**
+   * Returns the spectrum as currently shown, as <em>{ frequencies, magnitudes, levels, hold, binWidth, size, window, invalidSamples }</em>, where <em>levels</em> are in the level scale, <em>magnitudes</em> are the linear values after averaging, <em>hold</em> is the max-hold trace or null, and <em>invalidSamples</em> is how many samples of the block were not numbers. Returns null before the first signal, and while the sample rate is not a positive number.
+   * @returns {any}
+   */
+  spectrum(): any;
+  /**
+   * Returns the marked peaks, strongest first, as [{ frequency, level, magnitude, index, prominence }].
+   * @returns {any}
+   */
+  peaks(): any;
+  /**
+   * Rebuilds the header, readout and accessible name, and redraws the plot.
+   */
+  redraw(): void;
+  /**
+   * Redraws the plot on the next animation frame, so that many pushes between two frames cost one draw.
+   */
+  invalidate(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-spectrum"): Spectrum;
+        querySelector(selectors: "smart-spectrum"): Spectrum | null;
+        querySelectorAll(selectors: "smart-spectrum"): NodeListOf<Spectrum>;
+        getElementsByTagName(qualifiedName: "smart-spectrum"): HTMLCollectionOf<Spectrum>;
+        getElementsByName(elementName: "smart-spectrum"): NodeListOf<Spectrum>;
+    }
+}
+
+/**Sets or retrieves the window function applied before the transform. A flat-top window reads amplitude to within 0.01 dB but spreads the peak in frequency; a rectangular window does the opposite. The amplitude is corrected for the coherent gain of the window in every case. */
+export declare type SpectrumWindow = 'rectangular' | 'hann' | 'hamming' | 'blackman' | 'blackman-harris' | 'flat-top';
+/**Sets or retrieves what a bin's value means: amplitude reads a sine's peak, power its square, density its power per hertz. They are not interchangeable, and the header says which one is showing. */
+export declare type SpectrumScaling = 'amplitude' | 'power' | 'density';
+/**Sets or retrieves whether levels are shown in decibels against reference or as linear magnitudes. */
+export declare type SpectrumLevelScale = 'db' | 'linear';
+/**Sets or retrieves the frequency axis. A log axis starts at the first bin above DC, since it has no zero, and carries decade ticks with 2 and 5 minors. */
+export declare type SpectrumFrequencyScale = 'linear' | 'log';
+/**Sets or retrieves the spectrum averaging mode. none draws each block as it arrives. linear averages the first averages blocks and then holds the result until clear restarts the average, like a bench analyzer. exponential weights each new block by 1/averages and continues indefinitely. Averaging is performed in the power domain regardless of the display scaling, because averaging amplitudes or decibels biases the noise floor. */
+export declare type SpectrumAveraging = 'none' | 'linear' | 'exponential';
 export interface SplitterProperties {
   /**
    * Specifies or retrieves the current animation mode. When the property is set to 'none', all animations are disabled, resulting in static display without transition effects. Assigning any other valid value enables the corresponding animation mode.
@@ -30439,6 +37236,852 @@ declare global {
     }
 }
 
+export interface StackLightProperties {
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the station or machine the light belongs to, the first words of its accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or gets the segments from top to bottom as { id, color, label, state }. color is one of red, amber, green, blue and white, or any CSS colour; state is off, on, flash or fast. A segment given as a string is a colour whose id and label are that word. When empty, a red, amber and green tower is shown.
+   * Default value: 
+   */
+  segments?: any;
+  /**
+   * Sets or gets a state word known to the stateMap (running, ready, warning, starved, blocked, stopped, fault, call, maintenance, changeover or off), which lights the segments through the map. The word is matched as written, then trimmed and without regard to case, so Fault and FAULT light the red segment. When empty, the segments are driven directly by their own state. The default map lights the blue segment for call and maintenance and the white segment for changeover, which the default three-segment tower does not have; a state the tower cannot show, and a word the map does not know, are said under the tower and in its accessible name rather than shown as a dark tower, and warned about once in the console. Give segments a blue and a white segment to show them.
+   * Default value: ""
+   */
+  state?: string;
+  /**
+   * Sets or gets the map from a state word to the segments it lights, for example { running: { green: 'on' }, fault: { red: 'fast' } }. A segment not named in an entry is off. null uses the default production floor convention: running lights green, ready flashes green, warning lights amber, starved and blocked flash amber, stopped lights red, fault flashes red fast, call lights blue, maintenance flashes blue, changeover lights white and off lights nothing. A state word the map does not contain lights nothing.
+   * Default value: null
+   */
+  stateMap?: any;
+  /**
+   * Sets or gets the horn state: off, on or muted. The horn is shown while it is on or muted. Pressing it while it is on raises the muteRequest event; the application responds by setting the horn to muted.
+   * Default value: off
+   */
+  horn?: StackLightHorn | string;
+  /**
+   * Sets or gets whether the tower stands or lies: vertical, red at the top, or horizontal, red on the left.
+   * Default value: vertical
+   */
+  orientation?: StackLightOrientation | string;
+  /**
+   * Sets or gets whether a legend beside the tower names each segment and says whether it is off, on or flashing.
+   * Default value: false
+   */
+  showLabels?: boolean;
+  /**
+   * Sets or gets the duration of one flash in milliseconds. A fast segment flashes at half this duration. The shortest rate used is 667 ms, so that the fast flash stays at or below three flashes a second (WCAG 2.3.1); a smaller value is raised to it, with one console warning. The component writes the value to the --smart-stack-flash-rate variable on itself at every redraw, so set this property rather than the variable.
+   * Default value: 800
+   */
+  flashRate?: number;
+  /**
+   * Sets or gets whether every change of the light's description is announced through the live region. Off by default, because an andon board contains many lights and a screen reader user reads the one they open.
+   * Default value: false
+   */
+  announceChanges?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the accessible name, the state words on, flashing, flashing fast and off, the horn, the colour names and the legend. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ StackLight displays the tower light of a machine as a column of coloured segments that can be off, on, flashing or flashing fast, with an optional horn. The segments can be set individually or derived from a state word such as running, starved or fault through the stateMap property. The default map follows the common production floor convention and the PackML vocabulary. Pressing the horn raises the muteRequest event for the application to handle. The describe() method returns the current state of the light as text and is used as the accessible name.
+*/
+export interface StackLight extends BaseElement, StackLightProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the state word changes.
+	* @param event. The custom event. Custom data event was created with: ev.detail(state, oldState)
+   *  state - The new state word.
+   *  oldState - The previous state word.
+   */
+  onStateChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a segment is clicked. While anything listens for it, the segments are keyboard buttons - one tab stop, the arrow keys along the tower, Enter or Space to press - and the tower is a group; with no listener it is an image. It is not raised while the light is disabled.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, state)
+   *  id - The segment's id.
+   *  state - Its state: off, on, flash or fast.
+   */
+  onSegmentClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the horn is pressed while it is sounding. The application silences the horn and sets the horn property to muted. It is raised once per sounding: a second press before the application answers with a new horn value, or within five seconds, asks nothing. It is not raised while the light is disabled.
+	* @param event. The custom event. Custom data event was created with: ev.detail(label)
+   *  label - The light's label.
+   */
+  onMuteRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns the state of one segment, off, on, flash or fast, or null for an id the tower does not have.
+   * @param {string} id. The segment's id.
+   * @returns {string}
+   */
+  segmentState(id: string): string;
+  /**
+   * Returns the segments that are lit, top first, as drawn: { id, color, label, state }.
+   * @returns {any}
+   */
+  activeSegments(): any;
+  /**
+   * Returns the current state of the light as text, which is also the text given to assistive technology: the lit segments and their states, the horn and the state word.
+   * @returns {string}
+   */
+  describe(): string;
+  /**
+   * Returns what the state word asks for that the tower cannot show - <em>{ state, unknown: true }</em> for a word the map does not know, <em>{ state, missing }</em> for one whose lit segments the tower does not have - or null when the tower shows it.
+   * @returns {any}
+   */
+  unshown(): any;
+  /**
+   * Redraws the component from its current properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-stack-light"): StackLight;
+        querySelector(selectors: "smart-stack-light"): StackLight | null;
+        querySelectorAll(selectors: "smart-stack-light"): NodeListOf<StackLight>;
+        getElementsByTagName(qualifiedName: "smart-stack-light"): HTMLCollectionOf<StackLight>;
+        getElementsByName(elementName: "smart-stack-light"): NodeListOf<StackLight>;
+    }
+}
+
+/**Sets or gets the horn state: off, on or muted. The horn is shown while it is on or muted. Pressing it while it is on raises the muteRequest event; the application responds by setting the horn to muted. */
+export declare type StackLightHorn = 'off' | 'on' | 'muted';
+/**Sets or gets whether the tower stands or lies: vertical, red at the top, or horizontal, red on the left. */
+export declare type StackLightOrientation = 'vertical' | 'horizontal';
+export interface StateMachineProperties {
+  /**
+   * Sets or retrieves the state model. packml and isa88 include the states, commands and automatic transitions of their standards; custom uses the states and transitions properties.
+   * Default value: packml
+   */
+  model?: StateMachineModel | string;
+  /**
+   * Sets or retrieves the states of a custom model as [{ id, label, kind, x, y }]. kind is wait for a state the machine stays in and acting for a state it passes through; x and y are grid positions on the diagram.
+   * Default value: 
+   */
+  states?: any;
+  /**
+   * Sets or retrieves the transitions of a custom model as [{ from, to, command, many }]. A transition without a command is automatic and is taken when the acting state completes. many marks a command that is valid from many states; it is listed under its target state instead of being drawn as an arrow from each state. The command list of the model is derived from the transitions.
+   * Default value: 
+   */
+  transitions?: any;
+  /**
+   * Sets or retrieves the current state's id, as the controller reports it. A change is stamped, recorded in the history and raised as stateChange.
+   * Default value: ""
+   */
+  state?: string;
+  /**
+   * Sets or retrieves the time the current state was entered, as a timestamp. When the application sets enteredAt and state together, in either order in the same task, that time is kept for the new state and the previous state's duration is measured to it; a state change that comes without a time is stamped with the time of the change. When the state comes first, its stateChange event carries the time of the change and the history takes the controller's time when enteredAt follows. A controller that reports the time should supply it, so that the time in state is correct after a page reload.
+   * Default value: null
+   */
+  enteredAt?: number;
+  /**
+   * Sets or retrieves the unit mode. Production, Maintenance, Manual, shown beside the state. PackML keeps mode and state orthogonal, and so does this.
+   * Default value: ""
+   */
+  mode?: string;
+  /**
+   * Sets or retrieves the unit modes offered as buttons. Pressing one raises the modeRequest event; the mode does not change until the application reports it.
+   * Default value: 
+   */
+  modes?: any;
+  /**
+   * Sets or retrieves the view. diagram draws the whole model; compact hides the diagram and keeps the header with the state, its time and the mode, the mode buttons, the command bar and the history, for a faceplate or a machine list.
+   * Default value: diagram
+   */
+  view?: StateMachineView | string;
+  /**
+   * Determines whether the command bar is shown. Every command of the model is listed and only the commands that are valid from the current state are enabled.
+   * Default value: true
+   */
+  showCommands?: boolean;
+  /**
+   * Determines whether the transitions taken are listed, newest first, with the time each state lasted.
+   * Default value: true
+   */
+  showHistory?: boolean;
+  /**
+   * Sets or retrieves how many transitions the history keeps.
+   * Default value: 8
+   */
+  historyLength?: number;
+  /**
+   * Determines whether commands and modes can be requested from the component.
+   * Default value: true
+   */
+  interactive?: boolean;
+  /**
+   * Sets or retrieves whether a command is out and the controller has not answered. The component sets it when it raises commandRequest and clears it when the state changes or pendingTimeout runs out; the application may set it too - true while it writes, false when a write failed. While busy, the command sent and every other command except Stop and Abort are refused, so a second press of Start is not a second write. Stop and Abort stay available.
+   * Default value: false
+   */
+  busy?: boolean;
+  /**
+   * Sets or retrieves how long a command waits for the controller's answer, in milliseconds, before it is dropped as unanswered with commandTimeout.
+   * Default value: 10000
+   */
+  pendingTimeout?: number;
+  /**
+   * Sets or retrieves the commands that take two presses, for example ['Stop', 'Abort']. The first press arms the button and a second within five seconds sends it; the second click of a double-click, a press within 300 ms of the first and a held key do not count. Empty by default.
+   * Default value: 
+   */
+  confirmCommands?: any;
+  /**
+   * Sets or retrieves the machine's name, shown in the header and in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Determines whether a reported change of state is read through the live region, assertively for Aborting and Aborted.
+   * Default value: true
+   */
+  announceChanges?: boolean;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, one key per standard state and command, the header, the durations and the accessible names. Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ StateMachine displays the state model of a machine as a diagram with the current state highlighted, the time in the state, the unit mode and the commands that are available from the current state. The PackML / ISA-TR88.00.02 model with its seventeen states and nine commands and the ISA-88 procedural model are built in, and a custom model can be supplied. A command press raises the commandRequest event; the application reports the state the controller reached. The canCommand(), target() and nextAutomatic() methods answer from the model, and the transitions taken are listed.
+*/
+export interface StateMachine extends BaseElement, StateMachineProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a valid command is pressed. The state does not change; the application sends the command to the controller and reports the state it reaches. Until the controller answers (a change of state) or pendingTimeout runs out, the component is busy and refuses the same command and every other one except Stop and Abort.
+	* @param event. The custom event. Custom data event was created with: ev.detail(command, from, to)
+   *  command - The command.
+   *  from - The current state.
+   *  to - The state the model says the command leads to.
+   */
+  onCommandRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the controller did not answer a command - the state did not change - within pendingTimeout. The command is dropped, busy is cleared and the component says so.
+	* @param event. The custom event. Custom data event was created with: ev.detail(command, state)
+   *  command - The command that was not answered.
+   *  state - The state the controller still reports.
+   */
+  onCommandTimeout?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a unit mode button is pressed. The mode does not change until the application reports it.
+	* @param event. The custom event. Custom data event was created with: ev.detail(mode, from)
+   *  mode - The mode asked for.
+   *  from - The mode in force.
+   */
+  onModeRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the state property changes, when the application reports a new state.
+	* @param event. The custom event. Custom data event was created with: ev.detail(from, to, at, duration)
+   *  from - The state left.
+   *  to - The state entered.
+   *  at - When, as a timestamp.
+   *  duration - How long the state left lasted, in milliseconds.
+   */
+  onStateChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns the transitions legal from a state, as [{ from, to, command }].
+   * @param {string} state?. A state id. Defaults to the current state.
+   * @returns {any}
+   */
+  transitionsFrom(state?: string): any;
+  /**
+   * Returns the state a command leads to from a state, or null when the command is not legal there.
+   * @param {string} command. The command.
+   * @param {string} state?. A state id. Defaults to the current state.
+   * @returns {string}
+   */
+  target(command: string, state?: string): string;
+  /**
+   * Returns whether a command is legal from the current state.
+   * @param {string} command. The command.
+   * @returns {boolean}
+   */
+  canCommand(command: string): boolean;
+  /**
+   * Returns the commands legal from the current state, in the model's order.
+   * @returns {any}
+   */
+  commands(): any;
+  /**
+   * Returns the state an acting state completes into, or null for a wait state.
+   * @param {string} state?. A state id. Defaults to the current state.
+   * @returns {string}
+   */
+  nextAutomatic(state?: string): string;
+  /**
+   * Returns the transitions taken, newest first, as [{ from, to, at, duration }].
+   * @returns {any}
+   */
+  history(): any;
+  /**
+   * Returns the time spent in the current state, in milliseconds.
+   * @returns {number}
+   */
+  timeInState(): number;
+  /**
+   * Returns the command sent and not yet answered by the controller, or null.
+   * @returns {string}
+   */
+  pending(): string;
+  /**
+   * Rebuilds the header, diagram, command bar and history.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-state-machine"): StateMachine;
+        querySelector(selectors: "smart-state-machine"): StateMachine | null;
+        querySelectorAll(selectors: "smart-state-machine"): NodeListOf<StateMachine>;
+        getElementsByTagName(qualifiedName: "smart-state-machine"): HTMLCollectionOf<StateMachine>;
+        getElementsByName(elementName: "smart-state-machine"): NodeListOf<StateMachine>;
+    }
+}
+
+/**Sets or retrieves the state model. packml and isa88 include the states, commands and automatic transitions of their standards; custom uses the states and transitions properties. */
+export declare type StateMachineModel = 'packml' | 'isa88' | 'custom';
+/**Sets or retrieves the view. diagram draws the whole model; compact hides the diagram and keeps the header with the state, its time and the mode, the mode buttons, the command bar and the history, for a faceplate or a machine list. */
+export declare type StateMachineView = 'diagram' | 'compact';
+export interface StateTimelineProperties {
+  /**
+   * Enables or disables the component. Disabled, the timeline is dimmed, no segment is a tab stop, and neither a click nor a key selects a segment or raises segmentClick or selectionChange.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the rows, one per machine: { id, label, segments }, each segment { state, from, to, reason } with times in milliseconds since the epoch. A segment without to is open: it runs until the next segment in time, or to the end of the window. Segments may come in any order and are drawn and counted in time order; where two overlap, the one later in the array (the one pushed later) wins its interval and the earlier keeps what is left on either side, so no instant is counted twice and the time in each state never adds up to more than the window. A segment with no length is dropped. An item that is not usable - null, not an object, a segment with no state, a from that is not a time or a to before it - is skipped with one console warning per array. Assign a new array to update the component.
+   * Default value: 
+   */
+  rows?: any;
+  /**
+   * Sets or gets the segments of a single machine, drawn as one row named by label, when there are no rows. The id of that row is 'row', whatever the label: pass 'row' to summary(), segmentAt() and push() to reach it. The segments are normalised as in rows.
+   * Default value: 
+   */
+  segments?: any;
+  /**
+   * Sets or gets the vocabulary: { id, label, color }, or just an id (a string or a number), where color is ok, warning, critical, accent, neutral, off or any CSS colour. A state the vocabulary does not name is drawn neutral with its id as its label. Empty is the floor's vocabulary: running, idle, ready, starved, blocked, stopped, fault, changeover, maintenance, off. Each of those has a look of its own, in the floor's vocabulary and in a vocabulary that names it without a colour: running a muted grey-green (the normal state is not a saturated green: colour is for what is wrong), idle a hatched light grey (not to be read as a gap), ready hollow, stopped a heavy slate, starved amber, blocked yellow with dark stripes, fault red, changeover blue, maintenance purple with light stripes, off a dashed outline. Each is a CSS variable (--smart-timeline-running, --smart-timeline-running-color and so on) a page can restyle. An item with no id is skipped with one console warning.
+   * Default value: 
+   */
+  states?: any;
+  /**
+   * Sets or gets the width of the window in milliseconds, from 1000 (a second) to 315576000000 (ten years). A value that is not a positive number (NaN, Infinity, 0, negative) is ignored for the default 28800000 (8 h), and one outside the range is held at its end, each with one console warning. Over two months the axis is labelled with dates and years.
+   * Default value: 28800000
+   */
+  timeSpan?: number;
+  /**
+   * Sets or gets the right edge of the window in milliseconds since the epoch. Null follows the record: the latest end of a segment, or now while a segment is open. A value that is not a time (NaN, Infinity) is ignored with one console warning, and the axis follows the record.
+   * Default value: null
+   */
+  end?: number;
+  /**
+   * Sets or gets the selected segment as { row, from }, or null.
+   * Default value: null
+   */
+  selected?: any;
+  /**
+   * Sets or gets the name of the line or area, part of the accessible name and the name of the single row drawn from segments.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or gets whether the vocabulary is listed under the rows with its colours.
+   * Default value: true
+   */
+  showLegend?: boolean;
+  /**
+   * Sets or gets whether each row carries the time in each state over the window, as percentages, under its name.
+   * Default value: false
+   */
+  showSummary?: boolean;
+  /**
+   * Sets or gets whether the time axis is drawn above the rows.
+   * Default value: true
+   */
+  showTimeAxis?: boolean;
+  /**
+   * Sets or gets whether a segment's reason is written into it when it is wide enough to hold the words.
+   * Default value: true
+   */
+  showReasons?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the accessible names of the timeline, its rows and segments, the durations, the summary and the floor vocabulary's state names. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * If is set to true, the component cannot be focused. Set, no segment is a tab stop.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ StateTimeline displays the state history of one or more machines as coloured segments on a time axis, one row per machine. Each segment has a state, a start time, an end time and an optional reason; an open segment shows the current state. Segments are drawn and counted in time order with overlaps resolved (the later record wins), so the summaries never add up to more than the window. The component shows a legend, a time axis and, with showSummary, the time spent in each state, and provides the summary(), segmentAt() and push() methods for data feeds. The default state vocabulary covers running, idle, ready, starved, blocked, stopped, fault, changeover, maintenance and off, each with its own colour, and can be replaced. Segments narrower than two pixels are drawn together as one cell in the colour of the state that took most of it, with fine hairlines, named with every state under it and how long ("17 short states from 06:00 to 06:01: Running 35 s, Starved 13 s"): ten thousand segments are a few hundred elements, and the summaries still count every segment exactly. The arrow keys move along the time axis, which runs left to right on screen on a right-to-left page too, so ArrowRight is always later. Percentages and durations are written in the element's locale (12,5 % in German).
+*/
+export interface StateTimeline extends BaseElement, StateTimelineProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when another segment is selected by a click or by receiving the keyboard focus. Setting <em>selected</em> from script marks the segment and does not raise it.
+	* @param event. The custom event. Custom data event was created with: ev.detail(row, segment, state, from, to, count, segments)
+   *  row - The row's id.
+   *  segment - The segment as it was given; for a cell of several short segments, the first of them.
+   *  state - The segment's state.
+   *  from - When the segment began, in milliseconds since the epoch.
+   *  to - When it ended, or the end of the window for an open segment.
+   *  count - How many segments the cell stands for: 1, or more for a cell of segments too short to draw one by one.
+   *  segments - Every segment under the cell, as given.
+   */
+  onSelectionChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a segment is clicked, or Enter or Space is pressed on it.
+	* @param event. The custom event. Custom data event was created with: ev.detail(row, segment, state, from, to, count, segments)
+   *  row - The row's id.
+   *  segment - The segment as it was given; for a cell of several short segments, the first of them.
+   *  state - The segment's state.
+   *  from - When the segment began, in milliseconds since the epoch.
+   *  to - When it ended, or the end of the window for an open segment.
+   *  count - How many segments the cell stands for: 1, or more for a cell of segments too short to draw one by one.
+   *  segments - Every segment under the cell, as given.
+   */
+  onSegmentClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Returns the time in each state of a row over the window, longest first: [{ state, milliseconds, percent }]. It counts the record as drawn, overlaps resolved, so the milliseconds never add up to more than the window.
+   * @param {string} rowId. The row's id.
+   * @returns {any}
+   */
+  summary(rowId: string): any;
+  /**
+   * Returns the segment of a row under a time, as it was given, or null. Where segments overlap it is the one drawn there - the later one.
+   * @param {string} rowId. The row's id.
+   * @param {number} time. Milliseconds since the epoch.
+   * @returns {any}
+   */
+  segmentAt(rowId: string, time: number): any;
+  /**
+   * Appends a segment to the record of a row. An open segment of the row that started before the new one is closed at the new one's start. A segment that arrives late - starting before the open one - is slotted in where it happened and the open one stays ongoing; one that overlaps the record wins its interval. Intended for a data feed, with one call per state change. A row that does not exist is added. Something that is not a segment is refused with a console warning.
+   * @param {string} rowId. The row's id.
+   * @param {any} segment. The segment: { state, from, to, reason }.
+   */
+  push(rowId: string, segment: any): void;
+  /**
+   * Redraws the component from its current properties.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-state-timeline"): StateTimeline;
+        querySelector(selectors: "smart-state-timeline"): StateTimeline | null;
+        querySelectorAll(selectors: "smart-state-timeline"): NodeListOf<StateTimeline>;
+        getElementsByTagName(qualifiedName: "smart-state-timeline"): HTMLCollectionOf<StateTimeline>;
+        getElementsByName(elementName: "smart-state-timeline"): NodeListOf<StateTimeline>;
+    }
+}
+
+export interface StatusTileProperties {
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Sets or gets whether the component can be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * Sets or gets the name of the reading, shown above the value, for example 'OEE', 'Feed pressure' or 'Open alarms'.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or gets the reading. The value is not limited to numbers: 'PASS', 'Running' or a batch identifier are valid readings, and a tile holding text is sized so that the text fits. A reading that failed - NaN or an infinity, as a number or as the text 'NaN' or 'Infinity', or an object when no formatFunction is set - is shown as -- and read out as no reading, never as the words NaN, Infinity or [object Object].
+   * Default value: null
+   */
+  value?: any;
+  /**
+   * Sets or gets the engineering unit, shown next to the value and included in the accessible name.
+   * Default value: ""
+   */
+  unit?: string;
+  /**
+   * Sets or gets the state of the reading. The state is drawn as a marker along the leading edge rather than as a fill across the tile, so that a wall of tiles stays readable and colour is used only where it has a meaning. The static stateFor method derives the state from thresholds.
+   * Default value: neutral
+   */
+  state?: StatusTileState | string;
+  /**
+   * Sets or gets the direction of the reading. The direction is written as a word in addition to the arrow, because an arrow glyph is not read correctly by screen readers.
+   * Default value: none
+   */
+  trend?: StatusTileTrend | string;
+  /**
+   * Sets or gets the amount by which the reading changed, shown next to the direction with the unit after a space, for example "down 0.06 bar". Optional; an amount that is NaN, an infinity or an object is left out and only the direction is shown.
+   * Default value: null
+   */
+  trendValue?: any;
+  /**
+   * Sets or gets which direction is good: a rising yield and a rising scrap rate have the same arrow and opposite meanings. Without this property the tile can show a direction but not judge it. Use neutral for a reading that is neither, such as an ambient temperature.
+   * Default value: neutral
+   */
+  trendPolarity?: StatusTileTrendPolarity | string;
+  /**
+   * Sets or gets the target value of the reading, shown next to the trend. A target that is NaN, an infinity or an object is not shown.
+   * Default value: null
+   */
+  target?: any;
+  /**
+   * Sets or gets a short line under the reading, for example the source, the time window or what pressing the tile does.
+   * Default value: ""
+   */
+  footnote?: string;
+  /**
+   * Sets or gets the number of decimal places of a numeric reading. Values outside 0 to 20 are held to that range. Ignored when formatFunction is set and when the value is text.
+   * Default value: null
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or gets a function that takes the raw value and returns the text to display. Smart.Industrial.siFormat can be used directly, so that a tile shows 4.7 kW instead of 4700.
+   * Default value: null
+   */
+  formatFunction?: any;
+  /**
+   * Sets or retrieves recent history for a small chart under the reading, as an array of numbers. The series is scaled before it is drawn; the sparkline shows the shape of the history and the value of the tile shows the magnitude.
+   * Default value: 
+   */
+  sparkline?: any;
+  /**
+   * Determines whether the tile is a button that can be reached with Tab, activated with Enter or Space and is announced as a button. Off by default, so that a tile that does nothing is not a tab stop.
+   * Default value: false
+   */
+  interactive?: boolean;
+  /**
+   * Determines whether a change of state is announced through the shared live region. Off by default, because a wall of tiles announcing every change would not be usable; enable it for the tiles that carry an alarm.
+   * Default value: false
+   */
+  announceChanges?: boolean;
+  /**
+   * Sets or gets an object specifying the strings used in the component that can be localized. Assigning the property replaces the object, so include the existing languages when adding one.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Sets or gets the language. Used together with the property messages. A numeric reading, trend amount and target are written with the decimal separator of the locale (78,4 for de, fr and es), without digit grouping; a formatFunction formats for itself.
+   * Default value: "en"
+   */
+  locale?: string;
+}
+/**
+ StatusTile displays one process value with its label, unit, state and trend direction, for status walls and plant overview screens. The state (ok, advisory, warning, critical or unknown) sets the colour of the tile and is included in the accessible name, so it is available to screen readers as well as visually. The value is formatted with precisionDigits.
+*/
+export interface StatusTile extends BaseElement, StatusTileProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when an interactive tile is pressed with the pointer or with Enter or Space. It is not raised when interactive is off.
+	* @param event. The custom event. Custom data event was created with: ev.detail(label, value, state)
+   *  label - The tile's label.
+   *  value - The reading.
+   *  state - The tile's state.
+   */
+  onActivate?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the state changes. The event detail contains the new state and the previous state.
+	* @param event. The custom event. Custom data event was created with: ev.detail(state, oldState)
+   *  state - The new state.
+   *  oldState - The state before.
+   */
+  onStateChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Maps a reading to a state against a set of thresholds, so a screen can classify a value without a tile. Available as a static method and on the element. The thresholds are given as an object with advisory, warning and critical members and an optional direction: 'above' (the default) when a higher reading is worse, or 'below' for readings such as capability indices and yields where a lower reading is worse. The reading must be a finite number or a decimal string: null, an empty or blank string, NaN, an infinity, true or a hex string such as '0x1F' returns 'unknown', as does a missing thresholds object.
+   * @param {number} value. The reading to classify.
+   * @param {any} thresholds. An object of the form { advisory, warning, critical, direction }. Any threshold that is absent is skipped.
+   * @returns {string}
+   */
+  stateFor(value: number, thresholds: any): string;
+  /**
+   * Redraws the tile. The tile is redrawn automatically when a property changes; call this method after modifying the sparkline array in place.
+   */
+  redraw(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-status-tile"): StatusTile;
+        querySelector(selectors: "smart-status-tile"): StatusTile | null;
+        querySelectorAll(selectors: "smart-status-tile"): NodeListOf<StatusTile>;
+        getElementsByTagName(qualifiedName: "smart-status-tile"): HTMLCollectionOf<StatusTile>;
+        getElementsByName(elementName: "smart-status-tile"): NodeListOf<StatusTile>;
+    }
+}
+
+/**Sets or gets the state of the reading. The state is drawn as a marker along the leading edge rather than as a fill across the tile, so that a wall of tiles stays readable and colour is used only where it has a meaning. The static stateFor method derives the state from thresholds. */
+export declare type StatusTileState = 'neutral' | 'ok' | 'advisory' | 'warning' | 'critical' | 'unknown';
+/**Sets or gets the direction of the reading. The direction is written as a word in addition to the arrow, because an arrow glyph is not read correctly by screen readers. */
+export declare type StatusTileTrend = 'none' | 'up' | 'down' | 'flat';
+/**Sets or gets which direction is good: a rising yield and a rising scrap rate have the same arrow and opposite meanings. Without this property the tile can show a direction but not judge it. Use neutral for a reading that is neither, such as an ambient temperature. */
+export declare type StatusTileTrendPolarity = 'neutral' | 'higherIsBetter' | 'lowerIsBetter';
+export interface StripChartProperties {
+  /**
+   * Sets or retrieves how the vertical range is chosen.
+   * Default value: none
+   */
+  autoScale?: StripChartAutoScale | string;
+  /**
+   * Enables or disables the component. While disabled the legend takes no pointer or keyboard input and leaves the tab order; it returns when the component is enabled again.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves how many vertical divisions the graticule has, from 1 to 100. A larger value draws 100; NaN, Infinity or a negative value draws the default 6. Either is reported once in a console warning.
+   * Default value: 6
+   */
+  gridColumns?: number;
+  /**
+   * Sets or retrieves how many horizontal divisions the graticule has, from 1 to 100. A larger value draws 100; NaN, Infinity or a negative value draws the default 4. Either is reported once in a console warning.
+   * Default value: 4
+   */
+  gridRows?: number;
+  /**
+   * Sets or retrieves the number of samples the ring buffer holds, from 2 to 1 000 000. A larger value (Infinity included) holds 1 000 000; NaN or a negative value is ignored with a console warning and the buffer is kept. Changing it to another size creates a new buffer and discards the samples held.
+   * Default value: 1000
+   */
+  historyLength?: number;
+  /**
+   * Sets or retrieves the trace width in pixels.
+   * Default value: 1.5
+   */
+  lineWidth?: number;
+  /**
+   * Sets or retrieves the top of the vertical range, for pens that do not set their own. Ignored unless autoScale is none.
+   * Default value: 100
+   */
+  max?: number;
+  /**
+   * Sets or retrieves the bottom of the vertical range, for pens that do not set their own. Ignored unless autoScale is none.
+   * Default value: 0
+   */
+  min?: number;
+  /**
+   * Sets or retrieves how new samples move across the display.
+   * Default value: scroll
+   */
+  mode?: StripChartMode | string;
+  /**
+   * Sets or retrieves whether the chart is frozen. A paused chart keeps what it holds and drops anything pushed at it, and push returns false so the application knows the sample was not taken.
+   * Default value: false
+   */
+  paused?: boolean;
+  /**
+   * Sets or retrieves the channels to draw as [{ field, label, unit, color, min, max, visible }]. field is the key under which each sample carries the value; the other members are presentation. With autoScale none, min and max are the pen's scale: a reading beyond them is kept as it is in the digital display, flagged OVER or UNDER beside it and in the chart's accessible name, and its trace is pinned to the edge it left by. An item that is not an object (null, for example) is skipped with a console warning. Assign a new array to update the component; an array modified in place is deep-equal to the current one and does not trigger a redraw.
+   * Default value: 
+   */
+  pens?: any;
+  /**
+   * Sets or retrieves how many decimal places the digital readout shows, from 0 to 20; a value outside that is clamped, and one that is not a number shows 2.
+   * Default value: 2
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves whether the latest value of each pen is shown as a number above the legend. A sample with no reading for a pen - a missing, null, empty, non-numeric or infinite value - shows "--" (said as "no reading"), never 0; a reading off a fixed scale shows its real value with an OVER or UNDER flag.
+   * Default value: false
+   */
+  showDigitalDisplay?: boolean;
+  /**
+   * Sets or retrieves whether the grid is drawn. Boolean attributes are presence-based, so set the property from script to turn it off.
+   * Default value: true
+   */
+  showGrid?: boolean;
+  /**
+   * Sets or retrieves whether the scales are drawn: a y scale down the left of the plot with a label at every grid row, read on the first pen's range (the shared range, or min and max; with perPen scaling among several pens the labels take the first pen's colour), and an x scale along the bottom with a label at every grid column - seconds before now on a time axis, sample numbers otherwise. A classic waveform chart has both; the plot gives up the margins they take and is clipped to them.
+   * Default value: false
+   */
+  showScales?: boolean;
+  /**
+   * Sets or retrieves whether the pen legend is shown. The legend is a composite widget: it is one tab stop for the whole group, arrowed between, with Enter or Space showing and hiding a pen.
+   * Default value: true
+   */
+  showLegend?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages. Readings and scale labels use the locale's decimal separator (4,72 in German); en is unchanged.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the paused state, the legend, the pen names, the readings and the accessible names (14 keys: paused, noPens, chartLabel, chartLabelWithPens, legendLabel, penLabel, penHidden, penInUnit, samples, noReading, overRange, underRange, overRangeFlag, underRangeFlag). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Sets or retrieves which key on a sample carries its timestamp, when xAxisMode is time. A sample that arrives without one is stamped on arrival.
+   * Default value: "timestamp"
+   */
+  timeField?: string;
+  /**
+   * Sets or retrieves how much time the width covers, in milliseconds, when xAxisMode is time. A value that is not a positive number draws 60 000.
+   * Default value: 60000
+   */
+  timeSpan?: number;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * Sets or retrieves what the horizontal axis represents: the sample index or the sample time.
+   * Default value: sample
+   */
+  xAxisMode?: StripChartXAxisMode | string;
+}
+/**
+ StripChart is a real-time chart for continuously acquired samples: the newest sample is drawn at the right and the oldest leaves at the left. Samples are pushed into a ring buffer and drawing is batched per animation frame, so the chart can accept samples at high rates. It is intended for data acquisition from a WebSocket, an OPC UA subscription or a DAQ callback. For historian data at low rates, use the Trend component.
+*/
+export interface StripChart extends BaseElement, StripChartProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered once per overflow episode: when the ring buffer is full and the first samples are overwritten. It is raised again only after the buffer has been emptied - by clear() or a historyLength change - and has filled again, not on every push while the buffer stays full.
+	* @param event. The custom event. Custom data event was created with: ev.detail(dropped, capacity)
+   *  dropped - How many samples the push that started the episode overwrote.
+   *  capacity - The buffer's size.
+   */
+  onOverflow?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a pen is shown or hidden, whether from the legend or from togglePen.
+	* @param event. The custom event. Custom data event was created with: ev.detail(index, field, visible)
+   *  index - The pen's position in the pens array.
+   *  field - The pen's field.
+   *  visible - Whether the pen is now drawn.
+   */
+  onPenVisibilityChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when samples are appended.
+	* @param event. The custom event. Custom data event was created with: ev.detail(appended, length, written)
+   *  appended - How many samples were taken.
+   *  length - How many the buffer now holds.
+   *  written - How many have been written since the buffer was created, which keeps counting past the buffer's capacity.
+   */
+  onPointsAppended?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Empties the buffer and redraws. The next time the buffer fills, overflow is raised again.
+   */
+  clear(): void;
+  /**
+   * Marks the chart as needing a redraw and redraws it on the next animation frame, so that many pushes between two frames cost one draw. The method is called by push, so an application rarely needs to call it.
+   */
+  invalidate(): void;
+  /**
+   * Appends one sample and schedules a redraw. A pen whose field is missing, null, empty, non-numeric or infinite has no reading at that sample: its trace has a gap there and the digital display shows "--", never 0. Returns false if the chart is paused, or the sample is not an object, and the sample was dropped.
+   * @param {any} sample. Values keyed by pen field, for example { ai0: 4.72, ai1: -1.03 }. In time mode a sample without a timestamp is stamped on arrival.
+   * @returns {boolean}
+   */
+  push(sample: any): boolean;
+  /**
+   * Appends a batch of samples with one redraw for the whole batch, so a block read from a DAQ card costs the same as one sample. Items that are not objects (null, for example) are skipped. Returns false when the chart is paused, or no item was a sample, and the batch was dropped.
+   * @param {any} samples. The samples, oldest first.
+   * @returns {boolean}
+   */
+  pushMany(samples: any): boolean;
+  /**
+   * Rebuilds the legend and readout, resizes the canvas and redraws immediately.
+   */
+  redraw(): void;
+  /**
+   * Returns the samples in the buffer, oldest first, as a new array. The array is a copy, so it can be passed to an exporter or kept without being changed by later pushes.
+   * @returns {any}
+   */
+  snapshot(): any;
+  /**
+   * Shows or hides one pen.
+   * @param {number} index. Which pen, by its position in the pens array.
+   * @param {boolean} visible?. Force a state instead of toggling.
+   */
+  togglePen(index: number, visible?: boolean): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-strip-chart"): StripChart;
+        querySelector(selectors: "smart-strip-chart"): StripChart | null;
+        querySelectorAll(selectors: "smart-strip-chart"): NodeListOf<StripChart>;
+        getElementsByTagName(qualifiedName: "smart-strip-chart"): HTMLCollectionOf<StripChart>;
+        getElementsByName(elementName: "smart-strip-chart"): NodeListOf<StripChart>;
+    }
+}
+
+/**Sets or retrieves how the vertical range is chosen. */
+export declare type StripChartAutoScale = 'none' | 'perPen' | 'shared';
+/**Sets or retrieves how new samples move across the display. */
+export declare type StripChartMode = 'scroll' | 'sweep' | 'scope';
+/**Sets or retrieves what the horizontal axis represents: the sample index or the sample time. */
+export declare type StripChartXAxisMode = 'sample' | 'time';
 export interface SwitchButtonProperties {
   /**
    * Sets or retrieves the current animation mode. When this property is set to 'none', all animations are disabled. For other valid values, the corresponding animation effects will be enabled according to the specified mode.
@@ -32199,11 +39842,6 @@ export interface TankProperties {
    */
   labelsVisibility?: LabelsVisibility | string;
   /**
-   * Retrieves or assigns the unlockKey property, which serves as a security token or code required to activate and access the product's full functionality.
-   * Default value: ""
-   */
-  unlockKey?: string;
-  /**
    * Specifies the current locale for the application. This property determines language and regional formatting, and works together with the messages property to provide appropriate translations and locale-specific content. Use this property to get or set the active locale for displaying messages and other localized resources.
    * Default value: "en"
    */
@@ -32273,6 +39911,16 @@ export interface TankProperties {
    */
   precisionDigits?: number;
   /**
+   * Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings.
+   * Default value: good
+   */
+  quality?: TankQuality | string;
+  /**
+   * Sets or retrieves the coloured bands drawn behind the track, as [{ startValue, endValue, className }]. A band marks a part of the scale as normal or abnormal - the ISA-101 discipline is to leave the normal region neutral and give colour only to the zones that mean something. Bands are positioned as a percentage of the scale rather than in pixels, so they survive a resize on their own, and they honour orientation and inverted. A band outside min..max is clipped to it. Set showRanges to draw them. smart-gauge draws its own radial ranges and ignores this.
+   * Default value: 
+   */
+  ranges?: any;
+  /**
    * If the widget is set to read-only, users will not be able to interact with or modify the element's content. Any input or actions from users will be disabled, ensuring that the widget's state remains unchanged.
    * Default value: false
    */
@@ -32297,6 +39945,11 @@ export interface TankProperties {
    * Default value: false
    */
   scientificNotation?: boolean;
+  /**
+   * Sets or retrieves whether the value ranges are drawn. Off by default, so a tank or a slider that declares no bands is unchanged.
+   * Default value: false
+   */
+  showRanges?: boolean;
   /**
    * Controls whether the thumb label is visible or hidden. When enabled, the thumb label will be displayed alongside the slider's handle, providing users with a visual indicator of the current value. When disabled, the thumb label will not appear.
    * Default value: false
@@ -32353,6 +40006,11 @@ export interface TankProperties {
    */
   unit?: string;
   /**
+   * Retrieves or assigns the unlockKey property, which serves as a security token or code required to activate and access the product's full functionality.
+   * Default value: ""
+   */
+  unlockKey?: string;
+  /**
    * Enhances value validation using minimum and maximum boundaries.  - When set to 'strict', all values—whether changed by user interaction or programmatically—are always constrained within the defined min and max limits. Any attempt to set a value outside this range will automatically adjust (coerce) it to the closest valid boundary.- When set to 'interaction', only values changed by user interaction (such as form input) are validated against min and max. Programmatic updates can set values outside this range, and if the min or max properties are later adjusted such that the current value falls out of bounds, the existing value remains unchanged and is not coerced. In these cases, no change event is triggered.
    * Default value: strict
    */
@@ -32406,6 +40064,151 @@ declare global {
     }
 }
 
+/**Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings. */
+export declare type TankQuality = 'good' | 'uncertain' | 'bad' | 'stale';
+export interface TerminalProperties {
+  /**
+   * Sets or retrieves whether new lines are announced to assistive technology. Off by default and rate-limited when on. Errors are announced immediately; other lines are announced at most once every few seconds.
+   * Default value: false
+   */
+  announce?: boolean;
+  /**
+   * Sets or retrieves whether ANSI SGR escape codes are rendered as colours. The eight basic foreground colours, bold and reset are supported, which is what bench instruments and serial devices emit. When disabled, the colour codes are removed. Other escape sequences - erase line, cursor moves and visibility, window titles - and control characters such as NUL and BEL are always removed, and a carriage return goes back to the start of the line, so a progress line written over itself reads as its last state.
+   * Default value: false
+   */
+  ansiColors?: boolean;
+  /**
+   * Sets or retrieves whether the view follows the newest line. The view follows only while it is already scrolled to the bottom. Boolean attributes are presence-based, so set the property from script to turn it off.
+   * Default value: true
+   */
+  autoScroll?: boolean;
+  /**
+   * Enables or disables the component.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves a filter, either as plain text matched case-insensitively or as a /regex/. The filter affects the view only: a filtered-out line stays in the buffer, so clearing the filter restores the history. An incomplete regular expression falls back to a substring match while it is being typed. Lines that leave the buffer leave the view by which lines they are, so a filtered view keeps every matching line still in the buffer.
+   * Default value: ""
+   */
+  filter?: string;
+  /**
+   * Sets or retrieves whether a command line is shown. Pressing Enter echoes the command as a transcript line and raises the command event. The application appends the response, because the component does not know what is connected.
+   * Default value: false
+   */
+  interactive?: boolean;
+  /**
+   * Sets or retrieves how many lines the ring buffer holds. Lowering it trims the oldest immediately. Never goes below one.
+   * Default value: 500
+   */
+  maxLines?: number;
+  /**
+   * Sets or retrieves whether the terminal is frozen. A paused terminal keeps what it holds and drops anything appended, and write returns false so the application knows the line was not taken. While paused the command line sends nothing: the line stays in the box, the box says why, and Enter sends it once the terminal is resumed.
+   * Default value: false
+   */
+  paused?: boolean;
+  /**
+   * Sets or retrieves the prompt of the command line, which is also used as the prefix when a command is echoed.
+   * Default value: "> "
+   */
+  prompt?: string;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the accessible names, the paused state and the hidden-lines note (4 keys: terminalLabel, inputLabel, paused, linesHidden). Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Sets or retrieves how each line is stamped.
+   * Default value: none
+   */
+  timestampFormat?: TerminalTimestampFormat | string;
+  /**
+   * If is set to true, the component cannot be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ Terminal displays a stream of lines, such as an instrument session or an event log, at a high rate. Lines are appended without re-rendering the existing content and kept in a ring buffer of a fixed length, so the DOM does not grow. Auto-scroll pauses while the user scrolls up to read and resumes when they scroll back to the end. ANSI colour codes are supported.
+*/
+export interface Terminal extends BaseElement, TerminalProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a command is entered on the command line. The component echoes the command; the application appends the response. It is not raised while the terminal is disabled or paused, nor by the Enter that ends an IME composition. Up and Down on the command line bring back the last 50 commands sent.
+	* @param event. The custom event. Custom data event was created with: ev.detail(command)
+   *  command - What was typed, without the prompt.
+   */
+  onCommand?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a line is appended.
+	* @param event. The custom event. Custom data event was created with: ev.detail(line, length)
+   *  line - The line: { id, text, level, at }.
+   *  length - How many lines the buffer now holds.
+   */
+  onLineAppended?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Appends one line. Returns false when the terminal is paused and the line was dropped. The text is escaped, so device output cannot inject markup.
+   * @param {string} text. The line.
+   * @param {string} level?. info, warn, error, success, command or response. Drives the colour. Defaults to info.
+   * @returns {boolean}
+   */
+  write(text: string, level?: string): boolean;
+  /**
+   * Appends several lines with one scroll and one announcement. Accepts strings or <em>{ text, level }</em> objects.
+   * @param {any} lines. The lines, oldest first.
+   * @param {string} level?. Applied to any entry given as a bare string.
+   * @returns {boolean}
+   */
+  writeMany(lines: any, level?: string): boolean;
+  /**
+   * Empties the buffer and the view.
+   */
+  clear(): void;
+  /**
+   * Rebuilds the whole view. Only needed after a filter or format change; appending a line does not rebuild the view.
+   */
+  redraw(): void;
+  /**
+   * Scrolls to the newest line and resumes following new lines. Intended for a "jump to end" control.
+   */
+  scrollToEnd(): void;
+  /**
+   * Returns the lines in the buffer, oldest first, as a copy that is not changed by later writes.
+   * @returns {any}
+   */
+  snapshot(): any;
+  /**
+   * Returns the buffer as plain text, oldest first, including the timestamps when they are enabled, for export, a report or the clipboard.
+   * @param {boolean} filtered?. Only the lines the filter currently admits.
+   * @returns {string}
+   */
+  toText(filtered?: boolean): string;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-terminal"): Terminal;
+        querySelector(selectors: "smart-terminal"): Terminal | null;
+        querySelectorAll(selectors: "smart-terminal"): NodeListOf<Terminal>;
+        getElementsByTagName(qualifiedName: "smart-terminal"): HTMLCollectionOf<Terminal>;
+        getElementsByName(elementName: "smart-terminal"): NodeListOf<Terminal>;
+    }
+}
+
+/**Sets or retrieves how each line is stamped. */
+export declare type TerminalTimestampFormat = 'none' | 'time' | 'datetime' | 'elapsed';
 export interface TextAreaProperties {
   /**
    * Configures or retrieves the current animation mode. When set to 'none', all animations are disabled, resulting in instant transitions with no visual effects. Otherwise, the property determines the type or style of animation used for transitions or dynamic effects.
@@ -32957,6 +40760,307 @@ declare global {
 
 /**Specifies how the element responds when the Escape key is pressed, such as closing a dialog, dismissing a modal, or performing a custom action. */
 export declare type EscKeyMode = 'none' | 'previousValue' | 'clearValue';
+export interface ThermometerProperties {
+  /**
+   * Draws the reservoir at the foot of the stem. Set it to false for an instrument drawn into a panel cut-out, where the bulb sits behind the fascia. Boolean attributes are presence-based, so bulb="false" in markup leaves the bulb on; set the property from script to turn it off.
+   * Default value: true
+   */
+  bulb?: boolean;
+  /**
+   * When true, the reading is snapped to the nearest step of interval, counted from min. It takes effect only when customInterval is true.
+   * Default value: false
+   */
+  coerce?: boolean;
+  /**
+   * Gives the column and the bulb the colour of the alarm band the reading has reached, so the liquid carries the severity. Requires ranges and showRanges.
+   * Default value: false
+   */
+  colorByRange?: boolean;
+  /**
+   * When true, interval sets the spacing of the major marks, the step of the arrow keys and the grid coerce snaps to. When false, the scale picks a round spacing that gives about eight major marks, and an arrow key moves a hundredth of the scale.
+   * Default value: false
+   */
+  customInterval?: boolean;
+  /**
+   * Reserved: the component does not apply it yet. The marks stand at round values of the scale, or every interval when customInterval is true.
+   * Default value: 0,50,100
+   */
+  customTicks?: Array<number | Date>;
+  /**
+   * Reserved: the component does not apply it yet. The scale is always numeric.
+   * Default value: "d"
+   */
+  dateLabelFormatString?: string;
+  /**
+   * Sets or gets the character written between the integer and the fractional part of a number, such as "." or ",", in the readout, the tick labels, the marker titles and the accessible text. Left at "." it follows locale: a German, French or Spanish locale writes a comma, as Intl.NumberFormat does for that locale; any other character is used as set. Digits are never grouped. A value given as a string is always read with a period.
+   * Default value: "."
+   */
+  decimalSeparator?: string;
+  /**
+   * Determines whether the element is interactive or not. When enabled, the element responds to user actions (such as clicks or keyboard input); when disabled, the element appears inactive and does not accept user interaction.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Lets the reading be set by pointer or keyboard. A thermometer reads by default: it has role="meter" and is out of the tab order. With interactive on, it has role="slider" and takes focus.
+   * Default value: false
+   */
+  interactive?: boolean;
+  /**
+   * Sets or gets the spacing of the major marks, the step of the arrow keys and the grid coerce snaps to, in the unit of the scale. It takes effect only when customInterval is true.
+   * Default value: 1
+   */
+  interval?: number;
+  /**
+   * Specifies the orientation of the gauge. When set to true, the starting and ending positions of the gauge are reversed, causing the gauge to be displayed in the opposite direction. If false, the gauge follows its default direction. Use this option to customize the gauge's flow based on your application's requirements.
+   * Default value: false
+   */
+  inverted?: boolean;
+  /**
+   * The name of what is being measured. It is used as the accessible name of the component.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Reserved: the component does not apply it yet. The mark labels are written at the precision their spacing needs, with decimalSeparator.
+   * Default value: null
+   */
+  labelFormatFunction?: any;
+  /**
+   * Sets or gets which labels of the major marks are drawn: all of them, the two at the ends of the scale, or none.
+   * Default value: all
+   */
+  labelsVisibility?: LabelsVisibility | string;
+  /**
+   * Specifies or retrieves the current locale setting, typically defined as a language and regional code (e.g., "en-US" for U.S. English). This property works together with the messages property to determine which localized message set is displayed, enabling proper language and formatting support for users based on their selected locale.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * A callback function that allows you to customize the formatting of messages returned by the Localization Module. Use this to modify how localized strings are structured or displayed before they are delivered to your application, enabling support for advanced formatting, variable interpolation, or context-specific adaptations.
+   * Default value: null
+   */
+  localizeFormatFunction?: any;
+  /**
+   * Controls whether the element displays data using a logarithmic scale. When enabled, values are plotted on a logarithmic axis, which is useful for visualizing data that spans several orders of magnitude. When disabled, a standard linear scale is used.
+   * Default value: false
+   */
+  logarithmicScale?: boolean;
+  /**
+   * Sets or gets the top of the scale. A reading above it is kept as written: the column stands at the top of the stem and OVER is shown on the bulb.
+   * Default value: 100
+   */
+  max?: number | Date;
+  /**
+   * Reserved: the component does not apply it yet. With interactive on, a press on the stem sets the reading at once and raises change; the column is not dragged.
+   * Default value: switchWhileDragging
+   */
+  mechanicalAction?: DragMechanicalAction | string;
+  /**
+   * Specifies or retrieves an object containing the text strings displayed by the widget, allowing for customization and localization of all user-facing messages. This property works together with the locale property to support multiple languages by providing translated strings for different locales. The thermometer's own keys are thermometerLabel, highest, lowest, setpointIs, alsoReads, noConversion, overRange, underRange, overRangeFlag, underRangeFlag, noReading, noReadingFlag, qualityUncertain, qualityBad, qualityStale, uncertainFlag, badFlag and staleFlag.
+   * Default value:    * {
+   *   "en": {
+   *     "propertyUnknownType": "'' property is with undefined 'type' member!",
+   *     "propertyInvalidValue": "Invalid '!",
+   *     "propertyInvalidValueType": "Invalid '!",
+   *     "elementNotInDOM": "Element does not exist in DOM! Please, add the element to the DOM, before invoking a method.",
+   *     "moduleUndefined": "Module is undefined.",
+   *     "missingReference": ".",
+   *     "htmlTemplateNotSuported": ": Browser doesn't support HTMLTemplate elements.",
+   *     "invalidTemplate": "' property accepts a string that must match the id of an HTMLTemplate element from the DOM.",
+   *     "significantPrecisionDigits": ": the properties significantDigits and precisionDigits cannot be set at the same time.",
+   *     "invalidMinOrMax": " value. Max cannot be lower than Min.",
+   *     "noInteger": ": precisionDigits could be set only on \"floatingPoint\" scaleType."
+   *   }
+   * }
+   */
+  messages?: any;
+  /**
+   * Sets or gets the bottom of the scale. A reading below it is kept as written: the column stands at the foot of the stem and UNDER is shown on the bulb.
+   * Default value: 0
+   */
+  min?: number | Date;
+  /**
+   * Reserved: the component does not apply it yet. The scale is always numeric.
+   * Default value: numeric
+   */
+  mode?: ScaleMode | string;
+  /**
+   * Reserved: the component does not apply it yet. The thermometer has no form field, so the reading is not submitted with a form.
+   * Default value: ""
+   */
+  name?: string;
+  /**
+   * Sets or gets how many digits are shown after the decimal point in the readout, the marker titles and the accessible text. null shows the reading as written, to at most twelve significant digits.
+   * Default value: null
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it: the column and the bulb are hatched for bad and dimmed for uncertain and stale, and the word UNCERTAIN, BAD or STALE is shown on the bulb so it is legible without colour. The quality is also added to the accessible name, for example "Reactor R-101, quality bad". A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings.
+   * Default value: good
+   */
+  quality?: ThermometerQuality | string;
+  /**
+   * Sets or gets the alarm bands, as objects with startValue, endValue and className; the stylesheet colours each band by its class. With showRanges the bands are painted along the stem behind the column, and colorByRange gives the column and the bulb the class of the band the reading is in.
+   * Default value: 
+   */
+  ranges?: {startValue?: number | Date, endValue?: number | Date, className?: string}[];
+  /**
+   * When the element is set to read-only, users are unable to modify its value or content; they can view the information but cannot interact with or edit the element in any way.
+   * Default value: false
+   */
+  readonly?: boolean;
+  /**
+   * Sets or gets whether the Left and Right arrow keys are swapped for a right-to-left language, such as Arabic or Hebrew. A CSS direction of rtl on the component has the same effect. The property does not mirror the drawing.
+   * Default value: false
+   */
+  rightToLeft?: boolean;
+  /**
+   * Sets or gets which side of the stem carries the scale. When secondaryUnit is set, the second scale takes the other side.
+   * Default value: near
+   */
+  scalePosition?: ThermometerScalePosition | string;
+  /**
+   * Reserved: the component does not apply it yet. The reading is not rounded to an integer; use precisionDigits to set the digits shown.
+   * Default value: floatingPoint
+   */
+  scaleType?: ScaleType | string;
+  /**
+   * Reserved: the component does not apply it yet. Numbers are written in decimal form.
+   * Default value: false
+   */
+  scientificNotation?: boolean;
+  /**
+   * Draws a second scale on the other side in another temperature unit. It is ticked at round values of its own unit and placed by converting each mark back, so the two scales do not line up, exactly as on a dual-scale instrument. It requires the unit property to be a temperature the component recognises: °C, °F or K. Asking for a second unit is a request for a second scale, so it takes the side the first one is not on whatever scalePosition says; scalePosition: none draws no scales at all.
+   * Default value: none
+   */
+  secondaryUnit?: ThermometerSecondaryUnit | string;
+  /**
+   * The temperature the process was asked for. null for an instrument that is only watching.
+   * Default value: null
+   */
+  setpoint?: number;
+  /**
+   * Draws the maximum and minimum markers, at the highest and lowest reading since resetExtremes() was last called, as a max-min thermometer does.
+   * Default value: false
+   */
+  showExtremes?: boolean;
+  /**
+   * This property determines whether the gauge’s range indicators are displayed on the gauge component. When set to true, the range segments (such as colored bands or sections representing value intervals) will be visible on the gauge; when set to false, these range indicators will be hidden.
+   * Default value: false
+   */
+  showRanges?: boolean;
+  /**
+   * Draws the setpoint marker across the stem.
+   * Default value: false
+   */
+  showSetpoint?: boolean;
+  /**
+   * Prints the unit above the scale and after the digital reading. It is on by default: a temperature without its unit does not say whether 40 is a warm day or a cool oven.
+   * Default value: true
+   */
+  showUnit?: boolean;
+  /**
+   * Shows the digital reading below the instrument, at the precision set by precisionDigits, or -- when there is no reading.
+   * Default value: false
+   */
+  showValue?: boolean;
+  /**
+   * Reserved: the component does not apply it yet. Use precisionDigits to set the digits shown.
+   * Default value: null
+   */
+  significantDigits?: number | null;
+  /**
+   * Sets or retrieves the visual theme applied to the element, allowing you to customize or query its overall appearance—such as colors, backgrounds, and style variations—to match different design schemes.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Reserved: the component does not apply it yet. The ticks are always drawn on the scale beside the stem.
+   * Default value: scale
+   */
+  ticksPosition?: TicksPosition | string;
+  /**
+   * Sets or gets which ticks the scale draws: the major ticks only, the major and the minor ticks, or none.
+   * Default value: minor
+   */
+  ticksVisibility?: TicksVisibility | string;
+  /**
+   * When true, the component stays out of the tab order even when interactive is on. A thermometer that is not interactive is never in the tab order.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+  /**
+   * The unit the scale is written in. It is a temperature by default rather than the scale engine's kilograms, and its value decides what secondaryUnit can convert from: °C, °F or K.
+   * Default value: "°C"
+   */
+  unit?: string;
+  /**
+   * Provides a way to retrieve or assign the unlockKey property, which is a unique code required to activate or gain access to the product's full features. Use this property to securely manage the product's access control.
+   * Default value: ""
+   */
+  unlockKey?: string;
+  /**
+   * Reserved: the component does not apply it yet. The reading is never clamped to min and max; a reading past either end is shown as OVER or UNDER.
+   * Default value: strict
+   */
+  validation?: Validation | string;
+  /**
+   * Sets or retrieves the reading, as a number or a numeric string, in the unit of the scale. It is kept as written: a reading past min or max pins the column at that end and shows UNDER or OVER. A value that is not a finite number, such as null, NaN or an empty string, is shown as no reading: an empty stem, -- in the readout and NO DATA on the bulb. With coerce and customInterval, the reading is snapped to the interval.
+   * Default value: 0
+   */
+  value?: string | number | Date;
+  /**
+   * Reserved: the component does not apply it yet.
+   * Default value: int32
+   */
+  wordLength?: WordLength | string;
+}
+/**
+ Thermometer shows a temperature as the instrument that measures it: a bulb that always holds the liquid, a capillary stem above it and a column standing at the reading. It carries what a thermometer carries and a level indicator does not: a second scale in another temperature unit, ticked at round values of its own unit; the maximum and minimum reached since the memory was last reset; a setpoint marker; and alarm bands the column and the bulb can take their colour from. It extends the scale engine, so logarithmic scales, units, precision, inversion and reading quality behave as they do on the gauge, the slider and the knob. It does not clamp the reading: a value past either end of the scale pins the column at that end and shows OVER or UNDER on the bulb, and a value that is not a finite number, such as null or NaN, shows NO DATA on the bulb, with an empty stem. Everything is placed as a percentage of the stem, so the component needs no measurement and survives any resize, zoom or print.
+*/
+export interface Thermometer extends BaseElement, ThermometerProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the reading is changed through the component, which only happens when interactive is enabled.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value)
+   *  value - The new reading.
+   */
+  onChange: ((this: any, ev: Event) => any) | null;
+  /**
+   * This event is triggered when the maximum and minimum memory is reset.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value)
+   *  value - The reading both markers were set to.
+   */
+  onExtremesReset?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Puts the maximum and minimum markers back on the current reading, as the pin on a max-min thermometer does. Raises the extremesReset event.
+   */
+  resetExtremes(): void;
+  /**
+   * Redraws the instrument.
+   */
+  refresh(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-thermometer"): Thermometer;
+        querySelector(selectors: "smart-thermometer"): Thermometer | null;
+        querySelectorAll(selectors: "smart-thermometer"): NodeListOf<Thermometer>;
+        getElementsByTagName(qualifiedName: "smart-thermometer"): HTMLCollectionOf<Thermometer>;
+        getElementsByName(elementName: "smart-thermometer"): NodeListOf<Thermometer>;
+    }
+}
+
+/**Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it: the column and the bulb are hatched for bad and dimmed for uncertain and stale, and the word UNCERTAIN, BAD or STALE is shown on the bulb so it is legible without colour. The quality is also added to the accessible name, for example "Reactor R-101, quality bad". A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings. */
+export declare type ThermometerQuality = 'good' | 'uncertain' | 'bad' | 'stale';
+/**Sets or gets which side of the stem carries the scale. When secondaryUnit is set, the second scale takes the other side. */
+export declare type ThermometerScalePosition = 'near' | 'far' | 'both' | 'none';
+/**Draws a second scale on the other side in another temperature unit. It is ticked at round values of its own unit and placed by converting each mark back, so the two scales do not line up, exactly as on a dual-scale instrument. It requires the unit property to be a temperature the component recognises: °C, °F or K. Asking for a second unit is a request for a second scale, so it takes the side the first one is not on whatever scalePosition says; scalePosition: none draws no scales at all. */
+export declare type ThermometerSecondaryUnit = 'none' | 'celsius' | 'fahrenheit' | 'kelvin';
 export interface TimeInputProperties {
   /**
    * Specifies the current animation mode for the component. You can retrieve the current mode or assign a new one using this property. To completely disable animations, set the property to 'none'. When set to any other supported value, the corresponding animation effects will be enabled.
@@ -33822,6 +41926,113 @@ declare global {
 export declare type TooltipArrowDirection = 'bottom' | 'top' | 'left' | 'right';
 /**Specifies or retrieves the method by which the tooltip is activated, such as on hover, focus, or click events. */
 export declare type TooltipOpenMode = 'click' | 'focus' | 'hover' | 'manual';
+export interface TouchKeyboardProperties {
+  /**
+   * Sets or retrieves the letters: qwerty, qwertz with the German letters, or azerty with the French ones.
+   * Default value: qwerty
+   */
+  layout?: TouchKeyboardLayout | string;
+  /**
+   * Sets or retrieves the field to type into, as an element or a selector - or a form or any other container, whose fields the keyboard serves, following focus among them and no others. Two keyboards on one page are kept apart this way. A number field named here is typed over when it is touched afresh, as one found through autoAttach is.
+   * Default value: null
+   */
+  target?: any;
+  /**
+   * Sets or retrieves whether the keyboard follows focus, typing into whichever text field on the page was last focused.
+   * Default value: false
+   */
+  autoAttach?: boolean;
+  /**
+   * Sets or retrieves where the keyboard sits: in the page; beside the field touched, under it or over it where the screen has no room (popup); or across the bottom of the screen (docked), where a dialog the field is in moves up above the keys. A popup or docked keyboard follows focus and shows only while a field is being typed into.
+   * Default value: inline
+   */
+  mode?: TouchKeyboardMode | string;
+  /**
+   * Sets or retrieves when the keypad replaces the letters: for number, decimal and phone fields (by type or inputmode), always, or never.
+   * Default value: auto
+   */
+  keypad?: TouchKeyboardKeypad | string;
+  /**
+   * Sets or retrieves whether a popup or docked keyboard is showing.
+   * Default value: false
+   */
+  opened?: boolean;
+  /**
+   * Sets or retrieves what the keyboard has typed when there is no field.
+   * Default value: ""
+   */
+  value?: string;
+  /**
+   * Sets or retrieves whether the preview is masked. A password field is masked anyway.
+   * Default value: false
+   */
+  masked?: boolean;
+  /**
+   * Sets or retrieves whether the line naming the field, and what it holds, is shown above the keys.
+   * Default value: true
+   */
+  showPreview?: boolean;
+  /**
+   * Sets or retrieves whether the keyboard is disabled.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves whether the keyboard can be focused.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ TouchKeyboard is the on-screen keyboard for a panel PC that has none, or a kiosk browser whose system keyboard covers the field it types into. It types at the caret of a field - the target, or the last text field focused - and raises the field's own input event, so whatever listens to the field hears typing. It sits in the page, or out of the way until a field is touched: beside the field (popup) or across the bottom of the screen (docked), going away on Done, Escape, Enter in a one-line field or a touch elsewhere. What it shows follows the field: a keypad for a number, a decimal or a phone number, @ and .com for an email address, / and .com for a URL, the letters otherwise. A number field's range is shown, and a half-typed number ("12.") is held until it is one. A number field or a numeric text box touched afresh shows its value selected and is typed over - the first key replaces it - and a number outside the field's range is refused on Enter or Done, with the reason, instead of being handed to a field that would clamp it. Docked, it lifts a dialog the field is in above its keys. Keys are at least 44 pixels, Shift twice is caps lock, Backspace held repeats, and the keys are one tab stop moved through with the arrow keys. A number outside the field's range is held on the preview line and is never written into the field or sent through its input events; the field keeps the value it had when the entry began. A read-only or disabled field is never typed into.
+*/
+export interface TouchKeyboard extends BaseElement, TouchKeyboardProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered by Enter in a one-line field, which also raises the field's keydown and keyup of Enter and its change event (a numeric text box commits on them), and submits the field's form as a keyboard's Enter would - through its default button, or with none when the field is its only one-line field - and puts a popup or docked keyboard away. In a text area Enter starts a new line instead. A number outside the field's range is not accepted: the keyboard stays up and says so.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value)
+   *  value - The value of the field, or of the keyboard when there is no field.
+   */
+  onAccept?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the keyboard's own value changes, when there is no field. With a field, listen to the field's input event.
+	* @param event. The custom event. Custom data event was created with: ev.detail(value)
+   *  value - The new value.
+   */
+  onChange: ((this: any, ev: Event) => any) | null;
+  /**
+   * This event is triggered when the keyboard is put away - by Done, Escape, Enter or a touch elsewhere - or, in the page, by the hide key or Escape, for the application to decide.
+	* @param event. The custom event.    */
+  onClose: ((this: any, ev: Event) => any) | null;
+  /**
+   * Shows a popup or docked keyboard for a field, or for the one it follows.
+   * @param {HTMLElement} field?. The field to type into.
+   */
+  open(field?: HTMLElement): void;
+  /**
+   * Puts a popup or docked keyboard away, raising close.
+   */
+  close(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-touch-keyboard"): TouchKeyboard;
+        querySelector(selectors: "smart-touch-keyboard"): TouchKeyboard | null;
+        querySelectorAll(selectors: "smart-touch-keyboard"): NodeListOf<TouchKeyboard>;
+        getElementsByTagName(qualifiedName: "smart-touch-keyboard"): HTMLCollectionOf<TouchKeyboard>;
+        getElementsByName(elementName: "smart-touch-keyboard"): NodeListOf<TouchKeyboard>;
+    }
+}
+
+/**Sets or retrieves the letters: qwerty, qwertz with the German letters, or azerty with the French ones. */
+export declare type TouchKeyboardLayout = 'qwerty' | 'qwertz' | 'azerty';
+/**Sets or retrieves where the keyboard sits: in the page; beside the field touched, under it or over it where the screen has no room (popup); or across the bottom of the screen (docked), where a dialog the field is in moves up above the keys. A popup or docked keyboard follows focus and shows only while a field is being typed into. */
+export declare type TouchKeyboardMode = 'inline' | 'popup' | 'docked';
+/**Sets or retrieves when the keypad replaces the letters: for number, decimal and phone fields (by type or inputmode), always, or never. */
+export declare type TouchKeyboardKeypad = 'auto' | 'always' | 'never';
 export interface TreeProperties {
   /**
    * Enables drag-and-drop functionality within the current tree structure. When this option is set to 'true', users can drag items from the current tree and drop them into another tree that has the allowDrop setting enabled. This facilitates moving or copying items between compatible trees using a drag-and-drop interface.
@@ -34513,6 +42724,303 @@ declare global {
     }
 }
 
+export interface TrendProperties {
+  /**
+   * Sets or retrieves the pens as [{ field, label, unit, min, max, color, visible, precision, quality, qualityField }]. field is the key under which each record carries the value; min and max are the engineering range the pen is scaled against, and a pen without them is scaled to the data on screen. quality is the tag's current quality - good, uncertain, bad or stale, or an OPC UA status code - and applies to the latest reading; qualityField names the record field that carries each sample's own quality (a word or a status code), read at the cursor too. A reading whose quality is not good says so beside the value, in the readout and in the accessible names. Items that are not objects, or have no field, are skipped. Assign a new array to update the component.
+   * Default value: 
+   */
+  pens?: any;
+  /**
+   * Sets or retrieves the records held by the trend as { timestamp, field: value, .. }, in time order. Assigning the property replaces the records; push and pushMany add to them. A record without a timestamp is stamped with the current time.
+   * Default value: 
+   */
+  data?: any;
+  /**
+   * Sets or retrieves the key a record carries its time under, a timestamp in milliseconds or a Date.
+   * Default value: "timestamp"
+   */
+  timeField?: string;
+  /**
+   * Sets or retrieves the prediction bands, one per pen, as [{ field, label, confidence, color, records }], where records is [{ timestamp, expected, lower, upper }] in time order and confidence is the confidence level as a fraction (0.95 for a 95% interval). A band is drawn under its pen and scaled against the pen's range, and the readout shows the expected value and the interval at the cursor. The model that produces the band is part of the application. Assign a new array to update the component.
+   * Default value: 
+   */
+  bands?: any;
+  /**
+   * Sets or retrieves the anomaly markers as [{ id, field, timestamp, timestampEnd, severity, score, label, description }]. severity is advisory, warning or critical (other values are treated as warning) and score is the model's confidence from 0 to 1, shown with the marker. A marker with a field is placed on that pen's line; a marker without a field spans the plot. A marker with a timestampEnd is an interval and is drawn as a band of time. Markers can be stepped through with N and P, are read out at the cursor, and are reported by the markerClick event. Assign a new array to update the component. Items that are not objects (null, for example) are skipped with a console warning.
+   * Default value: 
+   */
+  markers?: any;
+  /**
+   * Determines whether the prediction bands are drawn and read out. The bands are kept either way.
+   * Default value: true
+   */
+  showBands?: boolean;
+  /**
+   * Determines whether the anomaly markers are drawn, read out and stepped through. The markers are kept either way.
+   * Default value: true
+   */
+  showMarkers?: boolean;
+  /**
+   * Sets or retrieves the window's width in milliseconds.
+   * Default value: 900000
+   */
+  timeSpan?: number;
+  /**
+   * Sets or retrieves the right edge of the window as a timestamp, while the trend is not live. The value is clamped to the newest sample, so the window cannot be moved into the future.
+   * Default value: null
+   */
+  end?: number;
+  /**
+   * Determines whether the window follows the newest sample. Dragging, zooming, setWindow and pan turn it off; goLive turns it back on.
+   * Default value: true
+   */
+  live?: boolean;
+  /**
+   * Sets or retrieves how the pens share the plot. percent draws every pen from 0 to 100% of its own range, as a historian does, which compares signals by shape; value draws all pens on one axis in engineering units, from min to max or from the data, for pens that share a unit.
+   * Default value: percent
+   */
+  scaleMode?: TrendScaleMode | string;
+  /**
+   * Sets or retrieves the bottom of the shared value axis in value mode. null follows the data.
+   * Default value: null
+   */
+  min?: number;
+  /**
+   * Sets or retrieves the top of the shared value axis in value mode. null follows the data.
+   * Default value: null
+   */
+  max?: number;
+  /**
+   * Sets or retrieves the maximum interval between two samples, in milliseconds, before the line is broken between them and valueAt returns NaN inside the gap. null (the default) works it out from the data: five times the median interval between records, so a late or missed poll is still joined and an outage is a gap, not a slope. 0 never breaks the line. With historian data that is stored on change (compressed), where long intervals are normal, set it to the longest interval that is not an outage, or 0. NaN or a negative value is ignored with a console warning and the interval is worked out from the data.
+   * Default value: null
+   */
+  gapAfter?: number;
+  /**
+   * Sets or retrieves the number of records kept, 100 000 by default; the oldest records are dropped beyond it, but never a record inside the window on screen (or the one just before it), so a window wider than the bound keeps everything it shows. 0 keeps every record. When records assigned through data are dropped, a console warning says how many. NaN or a negative value keeps 100 000.
+   * Default value: 100000
+   */
+  historyLength?: number;
+  /**
+   * Sets or retrieves how long, in milliseconds, a pen may go without a new sample while the trend is live before its latest reading is marked stale - in the pens panel, the readout and their accessible names. null (the default) uses the gap interval (gapAfter, or the one worked out from the data), and never less than 2 s. 0 never marks a pen stale. The time is counted from when a sample arrived through push(), pushMany() or data, so a source clock that is off does not matter; history pages older than the newest sample held do not count as new.
+   * Default value: null
+   */
+  staleAfter?: number;
+  /**
+   * Sets or retrieves the cursor as a timestamp. null hides it. With a cursor, the readout and the pens panel show the interpolated value of every pen at that time; without a cursor they show the newest values.
+   * Default value: null
+   */
+  cursor?: number;
+  /**
+   * Determines whether the pens panel is shown next to the plot. The panel has one button per pen with its label, range and value, which shows or hides the pen.
+   * Default value: true
+   */
+  showPens?: boolean;
+  /**
+   * Determines whether the readout under the plot, the instant and every visible pen's value at it, is shown.
+   * Default value: true
+   */
+  showReadout?: boolean;
+  /**
+   * Determines whether grid lines are drawn at the value and time ticks.
+   * Default value: true
+   */
+  showGrid?: boolean;
+  /**
+   * Determines whether the time axis is labelled under the plot, seconds on a short window, minutes on an hour, the date on a day.
+   * Default value: true
+   */
+  showTimeAxis?: boolean;
+  /**
+   * Determines whether the plot responds to the pointer and keyboard: drag pans, wheel zooms around the pointer, click places the cursor, double-click returns to live, and with focus the arrow keys move the cursor, plus and minus zoom, L returns to live and Escape clears the cursor. Off for a trend embedded in a scrolling page. The plot is then role="application" with a focusable tab stop and announces what the cursor reads; with interactive off it is role="img" and not a tab stop.
+   * Default value: true
+   */
+  interactive?: boolean;
+  /**
+   * Sets or retrieves the trend's name, shown in the header and in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves how many decimal places a value is printed with, for pens that do not set their own. Clamped to 0-20 when formatting.
+   * Default value: 2
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves the width of a pen in pixels.
+   * Default value: 1.5
+   */
+  lineWidth?: number;
+  /**
+   * Enables or disables the component. While disabled the plot and the pens panel take no pointer or keyboard input - no cursor, zoom, pan or live change - and leave the tab order; they return when the component is enabled again.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages. Values in the pens panel, the readout, the accessible names and the value axis use the locale's number format (84,20 in German); en is unchanged, and toCSV() stays machine-readable.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the component, the header, the state words, the pens panel, the readout and the accessible names, including noReading, qualityUncertain, qualityBad, qualityStale and plotRole (the plot's role description). Used in conjunction with the property locale.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the component. With no theme of its own the component takes the nearest themed ancestor's palette for its pen colours.
+   * Default value: ""
+   */
+  theme?: string;
+}
+/**
+ Trend is a historian trend chart for process data. Pens are drawn against their own engineering ranges, the time axis can be panned and zoomed, a cursor reads the value of every pen at one instant, and live mode follows the newest sample. The component draws model outputs on the same axes: prediction bands with a confidence interval and anomaly markers with a severity and a score. History is supplied by the application; the historyRequest event is raised for time ranges the trend does not have, and Smart.Industrial.Connect.trend can answer it from a data session. Records are reduced to one column per pixel before drawing, and gaps longer than gapAfter are drawn as gaps.
+*/
+export interface Trend extends BaseElement, TrendProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when the interval on screen changes, by a drag, a zoom, a pan, setWindow, goLive, or a new sample while live.
+	* @param event. The custom event. Custom data event was created with: ev.detail(from, to, live)
+   *  from - The window's start, as a timestamp.
+   *  to - The window's end, as a timestamp.
+   *  live - Whether the window follows the newest sample.
+   */
+  onWindowChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the window reaches a time before the earliest record held, once per interval rather than once per pixel of a drag. The application responds with pushMany; Smart.Industrial.Connect.trend responds from the history of a session.
+	* @param event. The custom event. Custom data event was created with: ev.detail(from, to, fields)
+   *  from - The start of the interval needed, as a timestamp.
+   *  to - The end of the interval needed, the earliest record held, or the window's end.
+   *  fields - The pens' fields.
+   */
+  onHistoryRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the cursor is placed, moved or cleared through the pointer or keyboard.
+	* @param event. The custom event. Custom data event was created with: ev.detail(time, values)
+   *  time - The cursor's timestamp, or null when cleared.
+   *  values - Every pen's value at the cursor, keyed by field; NaN where there is none.
+   */
+  onCursorChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a marker is clicked, or Enter is pressed with the cursor on one. The cursor has already moved to the marker. A host that wants the operator's verdict on the model, a true or a false positive, asks for it here.
+	* @param event. The custom event. Custom data event was created with: ev.detail(marker, time)
+   *  marker - The marker, as it was given.
+   *  time - The time under the pointer or cursor.
+   */
+  onMarkerClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a pen is shown or hidden from the pens panel or through togglePen.
+	* @param event. The custom event. Custom data event was created with: ev.detail(index, field, visible)
+   *  index - Which pen.
+   *  field - The pen's field.
+   *  visible - Whether it is now drawn.
+   */
+  onPenVisibilityChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Appends one record and redraws. Returns false when there was nothing to add.
+   * @param {any} record. { timestamp, field: value, .. }. A record without a timestamp is stamped on arrival.
+   * @returns {boolean}
+   */
+  push(record: any): boolean;
+  /**
+   * Appends a batch of records, either live samples or a page of history, merged in time order, so that history arriving after live samples is placed correctly. Returns false when there was nothing to add.
+   * @param {any} records. The records.
+   * @returns {boolean}
+   */
+  pushMany(records: any): boolean;
+  /**
+   * Removes every record.
+   */
+  clear(): void;
+  /**
+   * Returns a copy of the records held, oldest first.
+   * @returns {any}
+   */
+  snapshot(): any;
+  /**
+   * Returns a pen's value at an instant, interpolated between the samples either side, or NaN outside the record, inside a gap (two samples further apart than gapAfter, or than the interval worked out from the data when gapAfter is null), next to a sample with no reading, or for a pen with no samples.
+   * @param {string} field. The pen's field.
+   * @param {number} time. A timestamp.
+   * @returns {number}
+   */
+  valueAt(field: string, time: number): number;
+  /**
+   * Returns the expected value and interval of a band for a pen at a time, interpolated between the two band records on either side, as <em>{ expected, lower, upper, confidence, label }</em>, or null when the pen has no band at that time.
+   * @param {string} field. The pen's field.
+   * @param {number} time. A timestamp.
+   * @returns {any}
+   */
+  bandAt(field: string, time: number): any;
+  /**
+   * Returns the markers at a time: an interval marker that contains the time, or an instant marker within one pixel column of it, so that a cursor placed with the pointer selects the marker.
+   * @param {number} time. A timestamp.
+   * @returns {any}
+   */
+  markersAt(time: number): any;
+  /**
+   * Moves the cursor to the next marker on screen after the cursor (or to the first marker when there is no cursor or the cursor is past the last one), announces it and returns it. Returns null when there are no markers on screen.
+   * @returns {any}
+   */
+  nextMarker(): any;
+  /**
+   * Moves the cursor to the previous marker on screen, wrapping to the last one, announces it and returns it. Returns null when there are no markers on screen.
+   * @returns {any}
+   */
+  previousMarker(): any;
+  /**
+   * Returns the visible window as CSV, an ISO timestamp column and one column per visible pen, for a spreadsheet.
+   * @returns {string}
+   */
+  toCSV(): string;
+  /**
+   * Returns to live mode and follows the newest sample.
+   */
+  goLive(): void;
+  /**
+   * Shows the given time interval and leaves live mode.
+   * @param {number} from. A timestamp.
+   * @param {number} to. A timestamp.
+   */
+  setWindow(from: number, to: number): void;
+  /**
+   * Zooms the window by a factor, keeping one time in place, and leaves live mode.
+   * @param {number} factor. Above 1 zooms in, below 1 zooms out.
+   * @param {number} around?. A timestamp to keep in place; defaults to the window's centre.
+   */
+  zoom(factor: number, around?: number): void;
+  /**
+   * Moves the window by a time interval and leaves live mode. The window stops at the newest sample.
+   * @param {number} delta. Milliseconds; negative moves back into the record.
+   */
+  pan(delta: number): void;
+  /**
+   * Shows or hides one pen and raises the penVisibilityChange event.
+   * @param {number} index. Which pen.
+   * @param {boolean} visible?. Force a state instead of toggling.
+   */
+  togglePen(index: number, visible?: boolean): void;
+  /**
+   * Rebuilds the header, pens panel, readout and accessible names, and redraws the plot.
+   */
+  redraw(): void;
+  /**
+   * Redraws the plot on the next animation frame, so that many pushes between two frames cost one draw.
+   */
+  invalidate(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-trend"): Trend;
+        querySelector(selectors: "smart-trend"): Trend | null;
+        querySelectorAll(selectors: "smart-trend"): NodeListOf<Trend>;
+        getElementsByTagName(qualifiedName: "smart-trend"): HTMLCollectionOf<Trend>;
+        getElementsByName(elementName: "smart-trend"): NodeListOf<Trend>;
+    }
+}
+
+/**Sets or retrieves how the pens share the plot. percent draws every pen from 0 to 100% of its own range, as a historian does, which compares signals by shape; value draws all pens on one axis in engineering units, from min to max or from the data, for pens that share a unit. */
+export declare type TrendScaleMode = 'percent' | 'value';
 export interface ValidatorProperties {
   /**
    * 
@@ -34663,6 +43171,241 @@ declare global {
 
 /**The type of validation the rule makes. Set to 'remote' to validate the value against a server endpoint defined by url. */
 export declare type ValidatorRuleType = 'compare' | 'custom' | 'email' | 'notNumber' | 'numeric' | 'pattern' | 'phone' | 'range' | 'remote' | 'required' | 'startWithLetter' | 'stringLength' | 'zipCode';
+export interface WaveformGraphProperties {
+  /**
+   * Enables or disables the element. Disabled, the plot leaves the tab order, the legend and palette buttons are disabled, and no cursor, zoom, click, visibility or export event is raised; enabled again, all of it comes back.
+   * Default value: false
+   */
+  disabled?: boolean;
+  /**
+   * Sets or retrieves the plots. Each is an object with id, label, unit, color, y (the record), t0 and dt (start and interval of a waveform) or x (the x values of an XY plot), scale (the id of the y scale it is read on), style (line, points, step or bars), lineWidth and visible. A sample that is not a number - NaN, null, an empty string - is a gap, never 0. An item that is not an object is skipped, and a dt that is not a number is taken as 1; each is said once in a console warning.
+   * Default value: 
+   */
+  plots?: any;
+  /**
+   * Sets or retrieves the y scales. Each is an object with id, label, unit, min, max, autoScale, logarithmic and position (left or right). Limits alone fix a scale; empty gives one scale that follows the data. A min above max is swapped, with one console warning. An item that is not an object is skipped, with one console warning.
+   * Default value: 
+   */
+  scales?: any;
+  /**
+   * Sets or retrieves how the scales are laid out: overlaid on one plot area, or stacked with a band per scale.
+   * Default value: overlaid
+   */
+  layout?: WaveformGraphLayout | string;
+  /**
+   * Sets or retrieves the name of the x axis.
+   * Default value: ""
+   */
+  xLabel?: string;
+  /**
+   * Sets or retrieves the unit of the x axis, used in its labels and readouts.
+   * Default value: ""
+   */
+  xUnit?: string;
+  /**
+   * Sets or retrieves the start of the x axis. With xMax, fixes the axis; null follows the data. Set above xMax, the two are swapped; equal to it, or not a finite number, the axis follows the data. Each is said once in a console warning.
+   * Default value: null
+   */
+  xMin?: number;
+  /**
+   * Sets or retrieves the end of the x axis. With xMin, fixes the axis; null follows the data. See xMin for limits set the wrong way round.
+   * Default value: null
+   */
+  xMax?: number;
+  /**
+   * Draws the x axis on a logarithmic scale. A log axis has no zero: points at x <= 0 are not drawn, and are not dropped silently - the header and the accessible name say how many ("3 points at x ≤ 0 not shown on the log axis"), with one console warning. The axis then starts at the smallest x above zero, also when xMin or a zoom reaches zero or below, and zooming and panning work in decades.
+   * Default value: false
+   */
+  xLogarithmic?: boolean;
+  /**
+   * Sets or retrieves how x values are written: si in engineering notation with the x unit, plain as a number, clock as a time of day for x values in epoch milliseconds.
+   * Default value: si
+   */
+  xFormat?: WaveformGraphXFormat | string;
+  /**
+   * Sets or retrieves the cursors. Each is an object with id, label, x, y, plot (the id of the plot it is locked to, which then supplies y), color and visible. Cursors are dragged on the plot and moved with the arrow keys, which follow the x axis as drawn, left to right, also in a right-to-left layout; on a log axis a key press moves a pixel. The cursor legend reads each one and the difference between the first two. An item that is not an object is skipped, with one console warning.
+   * Default value: 
+   */
+  cursors?: any;
+  /**
+   * Sets or retrieves the annotations: text at a point in data coordinates. Each is an object with x, y, text, plot (the id of a plot that supplies y) and color. An item that is not an object is skipped, with one console warning.
+   * Default value: 
+   */
+  annotations?: any;
+  /**
+   * Shows the grid lines at the ticks of the axes.
+   * Default value: true
+   */
+  showGrid?: boolean;
+  /**
+   * Shows the plot legend, where a plot is hidden and shown.
+   * Default value: true
+   */
+  showLegend?: boolean;
+  /**
+   * Shows the cursor legend under the plot.
+   * Default value: true
+   */
+  showCursorLegend?: boolean;
+  /**
+   * Shows the tool palette: zoom in, zoom out, fit, auto scale and CSV export.
+   * Default value: true
+   */
+  showPalette?: boolean;
+  /**
+   * Enables panning by dragging, zooming with the wheel, box zoom with Shift and drag, placing and dragging cursors, double-click to fit, and the keys of the plot area.
+   * Default value: true
+   */
+  interactive?: boolean;
+  /**
+   * Sets or retrieves the title shown above the plot and used in the accessible name.
+   * Default value: ""
+   */
+  label?: string;
+  /**
+   * Sets or retrieves the number of significant digits in readouts and axis labels. Held to 1 to 21; a value outside that, or not a number (4 is then used), is said once in a console warning.
+   * Default value: 4
+   */
+  precisionDigits?: number;
+  /**
+   * Sets or retrieves the line width of line and step plots, in pixels. A plot can carry its own.
+   * Default value: 1.5
+   */
+  lineWidth?: number;
+  /**
+   * Sets or gets the language. Used in conjunction with the property messages.
+   * Default value: "en"
+   */
+  locale?: string;
+  /**
+   * Sets or gets an object specifying the strings used by the element - the legend, cursor, palette and log-axis texts and the summary, with chartSummaryOne for a single plot. Used in conjunction with the property locale. The de, fr, es and zh packs in the package cover it.
+   * Default value:    * [object Object]
+   */
+  messages?: any;
+  /**
+   * Determines the theme. Theme defines the look of the element.
+   * Default value: ""
+   */
+  theme?: string;
+  /**
+   * Reserved: the component does not apply it yet. The plot area, the plot legend and the tool palette stay in the tab order.
+   * Default value: false
+   */
+  unfocusable?: boolean;
+}
+/**
+ WaveformGraph displays complete records against engineering axes: waveforms with a start time and a sample interval, or XY pairs. Plots share the x axis and each is read on a y scale; scales are overlaid or stacked in bands. Cursors are free or locked to a plot, with a legend that reads every cursor and the difference between the first two. Annotations are placed in data coordinates. The view pans and zooms, and the plots that are shown export as CSV, each as its whole record whatever the zoom. Records are reduced to one column per pixel with the minimum and maximum kept, so a one-sample spike still reaches its height.
+*/
+export interface WaveformGraph extends BaseElement, WaveformGraphProperties {
+
+  /* Get a member by its name */
+  [name: string]: any;
+  /**
+   * This event is triggered when a cursor is moved by the operator, with the pointer or the keyboard.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, x, y)
+   *  id - The cursor.
+   *  x - Its x position.
+   *  y - Its y value: read off its plot when locked, its own when free.
+   */
+  onCursorChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the view changes: a zoom, a pan, a box zoom or a fit.
+	* @param event. The custom event. Custom data event was created with: ev.detail(xMin, xMax, fitted)
+   *  xMin - The start of the view.
+   *  xMax - The end of the view.
+   *  fitted - True when the view shows the whole record.
+   */
+  onZoom?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the plot area is clicked without dragging.
+	* @param event. The custom event. Custom data event was created with: ev.detail(x, y)
+   *  x - The x under the pointer.
+   *  y - The y under the pointer on the first scale.
+   */
+  onPlotClick?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when a plot is hidden or shown from the legend.
+	* @param event. The custom event. Custom data event was created with: ev.detail(id, visible)
+   *  id - The plot.
+   *  visible - Whether it is now shown.
+   */
+  onPlotVisibilityChange?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * This event is triggered when the CSV button of the palette is pressed. The application decides what to do with the text: download it, send it, or show it.
+	* @param event. The custom event. Custom data event was created with: ev.detail(format, data)
+   *  format - Always csv.
+   *  data - The CSV text.
+   */
+  onExportRequest?: ((this: any, ev: Event) => any) | ((this: any, ev: CustomEvent<any>) => any) | null;
+  /**
+   * Replaces one plot's record without re-assigning the plots, for an acquisition that delivers a new record per trigger.
+   * @param {string} id. The plot.
+   * @param {any} y. The record, as an array or a typed array.
+   * @param {any} options?. Optional <em>x</em>, <em>t0</em> and <em>dt</em> to go with it.
+   */
+  setPlotData(id: string, y: any, options?: any): void;
+  /**
+   * Returns a plot's value at an x, interpolated between its samples. For a waveform it returns NaN before the first sample and from one sample interval past the last. For an XY plot, an x that no segment spans returns the y of the nearest sample, so a cursor on a scatter reads the point it sits on. An unknown plot id returns NaN.
+   * @param {string} id. The plot.
+   * @param {number} x. The position.
+   * @returns {number}
+   */
+  valueAt(id: string, x: number): number;
+  /**
+   * Shows or hides a plot.
+   * @param {string} id. The plot.
+   * @param {boolean} visible?. Shown when true, hidden when false; toggled when omitted.
+   */
+  togglePlot(id: string, visible?: boolean): void;
+  /**
+   * Shows the whole record again, on every axis.
+   */
+  fit(): void;
+  /**
+   * Shows a range of x.
+   * @param {number} from. The start.
+   * @param {number} to. The end.
+   */
+  zoomTo(from: number, to: number): void;
+  /**
+   * Zooms about the centre of the view - the geometric centre, in decades, on a log x axis.
+   * @param {number} factor. Above 1 zooms in, below 1 zooms out.
+   */
+  zoom(factor: number): void;
+  /**
+   * Returns the plots that are shown, hidden ones left out, as CSV. Each plot is exported as its whole record, whatever the zoom: one x column when the records share it, otherwise x and y columns per plot.
+   * @returns {string}
+   */
+  toCSV(): string;
+  /**
+   * Returns a sentence describing what the graph shows, as used in its accessible name: the number of plots, the x range, and on a log axis how many points at x <= 0 are not shown.
+   * @returns {string}
+   */
+  describe(): string;
+  /**
+   * Redraws the element from its current properties.
+   */
+  redraw(): void;
+  /**
+   * Redraws the plot on the next animation frame, so that many changes between two frames cost one draw.
+   */
+  invalidate(): void;
+}
+
+declare global {
+    interface Document {
+        createElement(tagName: "smart-waveform-graph"): WaveformGraph;
+        querySelector(selectors: "smart-waveform-graph"): WaveformGraph | null;
+        querySelectorAll(selectors: "smart-waveform-graph"): NodeListOf<WaveformGraph>;
+        getElementsByTagName(qualifiedName: "smart-waveform-graph"): HTMLCollectionOf<WaveformGraph>;
+        getElementsByName(elementName: "smart-waveform-graph"): NodeListOf<WaveformGraph>;
+    }
+}
+
+/**Sets or retrieves how the scales are laid out: overlaid on one plot area, or stacked with a band per scale. */
+export declare type WaveformGraphLayout = 'overlaid' | 'stacked';
+/**Sets or retrieves how x values are written: si in engineering notation with the x unit, plain as a number, clock as a time of day for x values in epoch milliseconds. */
+export declare type WaveformGraphXFormat = 'si' | 'plain' | 'clock';
 export interface WindowProperties {
   /**
    * Determines whether the 'Add New' tab within the Tabs element is currently visible to the user.  Note: This property is only relevant when used with the TabsWindow component; it does not apply to other components.

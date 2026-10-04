@@ -113,7 +113,8 @@
     --smart-text-title-color: var(--smart-base-900);
     --smart-text-color: var(--smart-base-900);
     --smart-text-secondary-color: var(--smart-base-800);
-    --smart-text-tertiary-color: var(--smart-base-700);
+    /* tertiary text: base-700 (#74787e) read 4.24:1 on base-50 and 4.44:1 on white, under the 4.5:1 WCAG asks of body text; this is base-700 a tenth of the way to base-900, 4.8:1 and 5.1:1 */
+    --smart-text-tertiary-color: #6b6f75;
     --smart-text-disabled-color: var(--smart-base-600);
     --smart-text-contrast-color: var(--smart-white);
     --smart-font-size: 14px;

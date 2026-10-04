@@ -57,11 +57,6 @@ export interface TankProperties {
    */
   labelsVisibility?: LabelsVisibility | string;
   /**
-   * Retrieves or assigns the unlockKey property, which serves as a security token or code required to activate and access the product's full functionality.
-   * Default value: ""
-   */
-  unlockKey?: string;
-  /**
    * Specifies the current locale for the application. This property determines language and regional formatting, and works together with the messages property to provide appropriate translations and locale-specific content. Use this property to get or set the active locale for displaying messages and other localized resources.
    * Default value: "en"
    */
@@ -131,6 +126,16 @@ export interface TankProperties {
    */
   precisionDigits?: number;
   /**
+   * Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings.
+   * Default value: good
+   */
+  quality?: TankQuality | string;
+  /**
+   * Sets or retrieves the coloured bands drawn behind the track, as [{ startValue, endValue, className }]. A band marks a part of the scale as normal or abnormal - the ISA-101 discipline is to leave the normal region neutral and give colour only to the zones that mean something. Bands are positioned as a percentage of the scale rather than in pixels, so they survive a resize on their own, and they honour orientation and inverted. A band outside min..max is clipped to it. Set showRanges to draw them. smart-gauge draws its own radial ranges and ignores this.
+   * Default value: 
+   */
+  ranges?: any;
+  /**
    * If the widget is set to read-only, users will not be able to interact with or modify the element's content. Any input or actions from users will be disabled, ensuring that the widget's state remains unchanged.
    * Default value: false
    */
@@ -155,6 +160,11 @@ export interface TankProperties {
    * Default value: false
    */
   scientificNotation?: boolean;
+  /**
+   * Sets or retrieves whether the value ranges are drawn. Off by default, so a tank or a slider that declares no bands is unchanged.
+   * Default value: false
+   */
+  showRanges?: boolean;
   /**
    * Controls whether the thumb label is visible or hidden. When enabled, the thumb label will be displayed alongside the slider's handle, providing users with a visual indicator of the current value. When disabled, the thumb label will not appear.
    * Default value: false
@@ -210,6 +220,11 @@ export interface TankProperties {
    * Default value: "kg"
    */
   unit?: string;
+  /**
+   * Retrieves or assigns the unlockKey property, which serves as a security token or code required to activate and access the product's full functionality.
+   * Default value: ""
+   */
+  unlockKey?: string;
   /**
    * Enhances value validation using minimum and maximum boundaries.  - When set to 'strict', all values—whether changed by user interaction or programmatically—are always constrained within the defined min and max limits. Any attempt to set a value outside this range will automatically adjust (coerce) it to the closest valid boundary.- When set to 'interaction', only values changed by user interaction (such as form input) are validated against min and max. Programmatic updates can set values outside this range, and if the min or max properties are later adjusted such that the current value falls out of bounds, the existing value remains unchanged and is not coerced. In these cases, no change event is triggered.
    * Default value: strict
@@ -272,6 +287,8 @@ export declare type DragMechanicalAction = 'switchUntilReleased' | 'switchWhenRe
 export declare type ScaleMode = 'numeric' | 'date';
 /**Specifies the layout direction of the widget, determining whether its content is arranged horizontally, vertically, or in another supported orientation. */
 export declare type Orientation = 'horizontal' | 'vertical';
+/**Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings. */
+export declare type TankQuality = 'good' | 'uncertain' | 'bad' | 'stale';
 /**Specifies the placement of the widget’s scales relative to its main content, determining where the scale markers or labels appear within the widget interface (e.g., top, bottom, left, or right). */
 export declare type ScalePosition = 'near' | 'far' | 'both' | 'none';
 /**Specifies the measurement system used for the tank's scale, such as linear, logarithmic, or custom, which determines how values are displayed and interpreted on the tank's indicator. */

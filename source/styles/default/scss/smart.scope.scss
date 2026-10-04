@@ -1,0 +1,210 @@
+/* smart-scope */
+smart-scope {
+  --smart-scope-height: 360px;
+  --smart-scope-plot-background: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+  --smart-scope-grid-color: var(--smart-border);
+  --smart-scope-axis-color: var(--smart-text-tertiary-color, var(--smart-border));
+  /* Trigger and cursor colours are read by the canvas from these; unset, the element
+     falls back to the industrial palette so the traces match the theme. */
+  display: block;
+  width: 100%;
+  height: var(--smart-scope-height);
+
+  .smart-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    gap: 4px;
+  }
+
+  .smart-scope-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+  }
+
+  .smart-scope-title {
+    font-weight: 600;
+  }
+
+  .smart-scope-settings {
+    flex: 1 1 auto;
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  /* The acquisition state is a word in a box, the way a scope's front panel shows it,
+     and it is a word before it is a colour. */
+  .smart-scope-state {
+    padding: 0 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  .smart-scope-state-triggered {
+    color: var(--smart-industrial-ok-text, var(--smart-success));
+  }
+
+  .smart-scope-state-auto,
+  .smart-scope-state-waiting,
+  .smart-scope-state-armed {
+    color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+  }
+
+  .smart-scope-state-stopped,
+  .smart-scope-state-paused {
+    color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+  }
+
+  /* The plot takes whatever the chrome leaves. min-height: 0 is what stops a flex item
+     from refusing to shrink below its content height and pushing the readout off. */
+  .smart-scope-plot {
+    position: relative;
+    /* 80px when the chart has no height of its own to share out, so the plot never collapses */
+    flex: 1 1 80px;
+    min-height: 0;
+    background: var(--smart-scope-plot-background);
+    border: 1px solid var(--smart-border);
+    border-radius: var(--smart-border-radius, 2px);
+    overflow: hidden;
+  }
+
+  /* Out of the flow: the canvas is sized to the plot, so the plot must not be sized by the
+     canvas. In flow, its pixel height fed back into the plot's, and a chart whose own height
+     was not fixed grew on every resize (a waveform graph reached 7,800px). */
+  .smart-scope-canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .smart-scope-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .smart-scope-channel {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 7px;
+    font-family: inherit;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--smart-text-color);
+    background: transparent;
+    border: 1px solid var(--smart-border);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  .smart-scope-channel:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 1px;
+  }
+
+  .smart-scope-channel-off {
+    opacity: 0.55;
+  }
+
+  .smart-scope-channel-off .smart-scope-swatch {
+    background: transparent !important;
+    border-color: var(--smart-text-tertiary-color);
+  }
+
+  .smart-scope-swatch {
+    width: 10px;
+    height: 10px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    flex: none;
+  }
+
+  .smart-scope-cursors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  .smart-scope-cursor-delta {
+    font-weight: 600;
+    color: var(--smart-text-color);
+  }
+
+  .smart-scope-measurements {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .smart-scope-measurement {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+  }
+
+  .smart-scope-measure-name {
+    color: var(--smart-text-tertiary-color, inherit);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  /* "no reading", said in place of a "--" a screen reader cannot read. Off-screen rather
+     than display:none, which would take it out of the accessibility tree too. */
+  .smart-scope-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Right to left: the text around the plot mirrors - header, legend, cursor and measurement readouts. The plot
+     does not: its axes run as the data does, and the canvas text keeps its direction. */
+  &[right-to-left] {
+    .smart-scope-header,
+    .smart-scope-legend,
+    .smart-scope-cursors,
+    .smart-scope-measurements {
+      direction: rtl;
+    }
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-scope.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}

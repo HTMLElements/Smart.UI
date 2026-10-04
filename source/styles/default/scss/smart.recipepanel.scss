@@ -1,0 +1,284 @@
+/* smart-recipe-panel */
+smart-recipe-panel {
+  /* Colour is spent on the one thing that needs it: an entry the plant refused. A loaded
+     recipe is the ordinary case and says so in words, not in green - on a screen an operator
+     reads all shift, a panel that lights up every time it works teaches them to ignore it. */
+  --smart-recipe-panel-refused-color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+  --smart-recipe-panel-done-color: var(--smart-text-secondary-color, var(--smart-text-color));
+  --smart-recipe-panel-value-font: var(--smart-industrial-readout-font, ui-monospace, "Cascadia Mono", "Consolas", "DejaVu Sans Mono", monospace);
+  --smart-recipe-panel-list-width: 180px;
+  display: block;
+  width: 100%;
+
+  .smart-recipe-panel-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .smart-recipe-panel-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  .smart-recipe-panel-title {
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  /* the choices on the left, what loading one would do on the right */
+  .smart-recipe-panel-body {
+    display: grid;
+    grid-template-columns: var(--smart-recipe-panel-list-width) minmax(0, 1fr);
+    gap: 12px;
+    min-height: 0;
+    flex: 1;
+  }
+
+  .smart-recipe-panel-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+    min-height: 0;
+    border: 1px solid var(--smart-border, #ccd6e0);
+    border-radius: var(--smart-border-radius, 3px);
+    background: var(--smart-background, #fff);
+  }
+
+  .smart-recipe-panel-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    /* a target of at least 24 pixels (WCAG 2.2, 2.5.8), and more on a plant screen */
+    min-height: 34px;
+    justify-content: center;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--smart-border-light, var(--smart-border, #ccd6e0));
+    cursor: pointer;
+  }
+
+  .smart-recipe-panel-item:last-child {
+    border-bottom: 0;
+  }
+
+  .smart-recipe-panel-item.selected {
+    background: var(--smart-ui-state-selected, var(--smart-primary));
+    color: var(--smart-ui-state-color-selected, var(--smart-primary-color, #fff));
+  }
+
+  .smart-recipe-panel-item:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: -2px;
+  }
+
+  .smart-recipe-panel-item-name {
+    font-weight: 600;
+  }
+
+  .smart-recipe-panel-item-note {
+    font-size: 11px;
+    opacity: 0.8;
+  }
+
+  .smart-recipe-panel-detail {
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  .smart-recipe-panel-values {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .smart-recipe-panel-value th {
+    text-align: start;
+    font-weight: 400;
+    padding-block: 4px;
+    padding-inline: 0 8px;
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  /* Numbers line up on their right edge, as a column of setpoints is read: 42 under 180,
+     not under its first digit. */
+  .smart-recipe-panel-value-number {
+    font-family: var(--smart-recipe-panel-value-font);
+    font-weight: 600;
+    white-space: nowrap;
+    padding-block: 4px;
+    padding-inline: 0 8px;
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &[right-to-left] {
+    direction: rtl;
+  }
+
+  /* what the plant would not take, kept in front of the operator rather than in a log */
+  .smart-recipe-panel-value.refused th,
+  .smart-recipe-panel-value.refused .smart-recipe-panel-value-number {
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+
+  .smart-recipe-panel-value-refused {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--smart-recipe-panel-refused-color);
+  }
+
+  .smart-recipe-panel-why {
+    display: block;
+    max-width: 28ch;
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1.35;
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .smart-recipe-panel-empty {
+    margin: 0;
+    padding: 10px;
+    font-size: 12px;
+    color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  }
+
+  .smart-recipe-panel-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .smart-recipe-panel-load {
+    min-height: 32px;
+    padding: 0 18px;
+    border: 1px solid var(--smart-primary);
+    border-radius: var(--smart-border-radius, 3px);
+    background: var(--smart-primary);
+    color: var(--smart-primary-color, #fff);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .smart-recipe-panel-load[disabled] {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .smart-recipe-panel-load:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 2px;
+  }
+
+  .smart-recipe-panel-outcome {
+    font-size: 12px;
+    color: var(--smart-recipe-panel-done-color);
+  }
+
+  .smart-recipe-panel-outcome.refused {
+    color: var(--smart-recipe-panel-refused-color);
+    font-weight: 600;
+  }
+
+  /* the confirmation: it names what is about to be written, over the panel rather than
+     somewhere else, so the list it is about is still on screen behind it */
+  .smart-recipe-panel-ask {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 2;
+  }
+
+  .smart-recipe-panel-ask[hidden] {
+    display: none;
+  }
+
+  .smart-recipe-panel-ask-box {
+    max-width: 420px;
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 14px 16px;
+    border: 1px solid var(--smart-border, #ccd6e0);
+    border-radius: var(--smart-border-radius, 3px);
+    background: var(--smart-background, #fff);
+    color: var(--smart-text-color);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  }
+
+  .smart-recipe-panel-ask-box p {
+    margin: 6px 0 8px;
+    font-size: 12px;
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  .smart-recipe-panel-ask-list {
+    margin: 0 0 12px;
+    padding: 0;
+    padding-inline-start: 16px;
+    font-size: 12px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+
+  .smart-recipe-panel-ask-list b {
+    font-family: var(--smart-recipe-panel-value-font);
+  }
+
+  .smart-recipe-panel-ask-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .smart-recipe-panel-ask-cancel,
+  .smart-recipe-panel-ask-confirm {
+    min-height: 30px;
+    padding: 0 14px;
+    border-radius: var(--smart-border-radius, 3px);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .smart-recipe-panel-ask-cancel {
+    border: 1px solid var(--smart-border, #ccd6e0);
+    background: var(--smart-surface, #f4f6f8);
+    color: var(--smart-text-color);
+  }
+
+  .smart-recipe-panel-ask-confirm {
+    border: 1px solid var(--smart-primary);
+    background: var(--smart-primary);
+    color: var(--smart-primary-color, #fff);
+    font-weight: 600;
+  }
+
+  .smart-recipe-panel-ask-cancel:focus-visible,
+  .smart-recipe-panel-ask-confirm:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 2px;
+  }
+
+  &[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}

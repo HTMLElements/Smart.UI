@@ -1,0 +1,231 @@
+/* smart-mimic-symbol */
+smart-mimic-symbol {
+  --smart-mimic-symbol-size: 56px;
+  --smart-mimic-fill: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+  --smart-mimic-stroke: var(--smart-text-tertiary-color);
+  --smart-mimic-detail: var(--smart-text-tertiary-color);
+  --smart-mimic-dash: none;
+  display: inline-block;
+  cursor: pointer;
+}
+smart-mimic-symbol .smart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+smart-mimic-symbol {
+  /* A symbol reports clicks, so it is keyboard-reachable and has to show where
+     the focus is. The offset clears the glyph without touching the stubs,
+     which are drawn outside the viewBox. */
+}
+smart-mimic-symbol .smart-container:focus-visible {
+  outline: 2px solid var(--smart-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+smart-mimic-symbol .smart-mimic-glyph {
+  width: var(--smart-mimic-symbol-size);
+  height: var(--smart-mimic-symbol-size);
+  line-height: 0;
+}
+smart-mimic-symbol .smart-mimic-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  /* Connection stubs are drawn past the edge of the viewBox so they reach
+     the pipe either side however wide the layout cell is. */
+  overflow: visible;
+}
+smart-mimic-symbol .smart-mimic-fill {
+  fill: var(--smart-mimic-fill);
+  stroke: var(--smart-mimic-stroke);
+  stroke-width: 2.5;
+  stroke-dasharray: var(--smart-mimic-dash);
+}
+smart-mimic-symbol .smart-mimic-line {
+  fill: var(--smart-mimic-detail);
+  stroke: var(--smart-mimic-detail);
+  stroke-width: 2.5;
+}
+smart-mimic-symbol {
+  /* Stroke-only detail. A CSS fill would override a fill="none" attribute,
+     so paths that must stay open get their own class. */
+}
+smart-mimic-symbol .smart-mimic-tube {
+  fill: none;
+  stroke: var(--smart-mimic-detail);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+smart-mimic-symbol .smart-mimic-text {
+  fill: var(--smart-mimic-detail);
+  stroke: none;
+  font-family: var(--smart-font-family);
+  font-size: 34px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+smart-mimic-symbol {
+  /* Connection stubs run out to the edge of the box on the pipe centreline,
+     so a symbol in a run joins it instead of floating beside it. */
+}
+smart-mimic-symbol .smart-mimic-stub {
+  stroke: var(--smart-mimic-pipe, var(--smart-text-tertiary-color));
+  stroke-width: 3;
+  opacity: 0.55;
+}
+smart-mimic-symbol .smart-mimic-nozzle {
+  fill: var(--smart-mimic-hardware, var(--smart-text-tertiary-color));
+  stroke: none;
+}
+smart-mimic-symbol .smart-mimic-base {
+  fill: var(--smart-mimic-hardware, var(--smart-text-tertiary-color));
+  stroke: none;
+  opacity: 0.8;
+}
+smart-mimic-symbol {
+  /* A vessel shows what is in it. */
+}
+smart-mimic-symbol .smart-mimic-vessel {
+  fill: var(--smart-mimic-vessel-empty, var(--smart-base-200));
+}
+smart-mimic-symbol .smart-mimic-level {
+  fill: var(--smart-primary);
+  opacity: 0.75;
+}
+smart-mimic-symbol .smart-mimic-label {
+  color: var(--smart-text-secondary-color);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+smart-mimic-symbol .smart-mimic-value {
+  color: var(--smart-text-color);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  white-space: nowrap;
+}
+smart-mimic-symbol .smart-mimic-label:empty,
+smart-mimic-symbol .smart-mimic-value:empty {
+  display: none;
+}
+smart-mimic-symbol {
+  /* State colours the symbol body. An item takes colour only when it is doing
+     something the operator should notice. Running is drawn through its own tokens: the
+     Industrial themes set them to a solid neutral, because running is the normal state
+     and ISA-101 keeps colour for the abnormal; elsewhere they fall back to the running
+     green. */
+}
+smart-mimic-symbol[state=running] {
+  --smart-mimic-fill: var(--smart-mimic-running-fill, var(--smart-industrial-running, var(--smart-success)));
+  --smart-mimic-stroke: var(--smart-mimic-running-stroke, var(--smart-industrial-running, var(--smart-success)));
+  --smart-mimic-detail: var(--smart-mimic-running-detail, var(--smart-industrial-ok-color, #fff));
+}
+smart-mimic-symbol[state=fault] {
+  --smart-mimic-fill: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-mimic-stroke: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-mimic-detail: var(--smart-industrial-alarm-critical-color, #fff);
+}
+smart-mimic-symbol[state=manual] {
+  --smart-mimic-stroke: var(--smart-industrial-manual, var(--smart-info));
+  --smart-mimic-dash: 5 3;
+}
+smart-mimic-symbol[state=maintenance] {
+  --smart-mimic-stroke: var(--smart-industrial-maintenance, var(--smart-secondary));
+  --smart-mimic-dash: 5 3;
+}
+smart-mimic-symbol[state=stopped] {
+  --smart-mimic-stroke: var(--smart-industrial-stopped, var(--smart-base-600));
+}
+smart-mimic-symbol {
+  /* No data is not stopped: the body is hollow and dotted, so it cannot be read as an
+     idle machine, and the reading is struck through - it is the last value there was,
+     not the value there is. */
+}
+smart-mimic-symbol[state=unknown] {
+  --smart-mimic-fill: transparent;
+  --smart-mimic-stroke: var(--smart-industrial-unknown, var(--smart-base-600));
+  --smart-mimic-detail: var(--smart-industrial-unknown, var(--smart-base-600));
+  --smart-mimic-dash: 2 3;
+}
+smart-mimic-symbol[state=unknown] .smart-mimic-value {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+smart-mimic-symbol {
+  /* Quality. Bad takes the state colour away - a state from a bad signal is not a state -
+     and strikes the reading; stale fades the symbol and its reading; uncertain dashes
+     the outline. The mark in the corner says which without colour. */
+}
+smart-mimic-symbol[quality=bad] {
+  --smart-mimic-fill: transparent;
+  --smart-mimic-stroke: var(--smart-industrial-unknown, var(--smart-base-600));
+  --smart-mimic-detail: var(--smart-industrial-unknown, var(--smart-base-600));
+  --smart-mimic-dash: 2 3;
+}
+smart-mimic-symbol[quality=bad] .smart-mimic-value {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+smart-mimic-symbol[quality=stale] .smart-mimic-svg > :not(.smart-mimic-quality), smart-mimic-symbol[quality=stale] .smart-mimic-value {
+  opacity: 0.45;
+}
+smart-mimic-symbol[quality=stale] .smart-mimic-value, smart-mimic-symbol[quality=uncertain] .smart-mimic-value {
+  font-style: italic;
+}
+smart-mimic-symbol[quality=uncertain] {
+  --smart-mimic-dash: 6 3;
+}
+smart-mimic-symbol .smart-mimic-quality-badge {
+  fill: var(--smart-text-color);
+  stroke: var(--smart-background, #fff);
+  stroke-width: 2;
+}
+smart-mimic-symbol .smart-mimic-quality-mark {
+  fill: none;
+  stroke: var(--smart-background, #fff);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+smart-mimic-symbol .smart-mimic-quality-text {
+  fill: var(--smart-background, #fff);
+  font-family: var(--smart-font-family);
+  font-size: 16px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+smart-mimic-symbol.smart-mimic-selected {
+  --smart-mimic-stroke: var(--smart-primary);
+}
+smart-mimic-symbol.smart-mimic-selected .smart-mimic-fill {
+  stroke-width: 4;
+}
+smart-mimic-symbol[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* .smart-element carries the framework's own background at higher specificity than a bare
+   tag selector. The element sits on a diagram or inline in text, so it paints nothing of
+   its own. */
+smart-mimic-symbol.smart-element {
+  background: transparent;
+}
+
+/* The running green, for a screen that is not drawn to ISA-101: put smart-mimic-classic on
+   the diagram, the page or the symbol. Specific enough to outrank the theme's tokens. */
+.smart-mimic-classic smart-mimic-symbol[state],
+smart-mimic-symbol.smart-mimic-classic[state] {
+  --smart-mimic-running-fill: var(--smart-industrial-running, var(--smart-success));
+  --smart-mimic-running-stroke: var(--smart-industrial-running, var(--smart-success));
+  --smart-mimic-running-detail: var(--smart-industrial-ok-color, #fff);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-mimic-symbol takes by default. */
+smart-mimic-symbol:not(:defined) {
+  min-width: 60px;
+  min-height: 76px;
+}

@@ -1,0 +1,134 @@
+/* smart-spectrum */
+smart-spectrum {
+  --smart-spectrum-height: 320px;
+  --smart-spectrum-plot-background: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+  --smart-spectrum-grid-color: var(--smart-border);
+  /* Trace, hold, peak and marker colours are read by the canvas from these; unset, the
+     element falls back to the industrial palette so the trace matches the theme. */
+  display: block;
+  width: 100%;
+  height: var(--smart-spectrum-height);
+
+  .smart-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    gap: 4px;
+  }
+
+  .smart-spectrum-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+  }
+
+  .smart-spectrum-title {
+    font-weight: 600;
+  }
+
+  .smart-spectrum-settings {
+    flex: 1 1 auto;
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  /* A rate nothing is analysed on, or samples that were not numbers: in the theme's
+     warning text colour (contrast-checked there), bold, so it is not read past. */
+  .smart-spectrum-warning {
+    font-weight: 600;
+    color: var(--smart-industrial-alarm-warning-text, var(--smart-text-color, inherit));
+  }
+
+  .smart-spectrum-paused {
+    padding: 0 6px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+    border: 1px solid currentColor;
+    border-radius: 2px;
+  }
+
+  /* The plot takes whatever the chrome leaves. min-height: 0 is what stops a flex item
+     from refusing to shrink below its content height and pushing the readout off. */
+  .smart-spectrum-plot {
+    position: relative;
+    /* 80px when the chart has no height of its own to share out, so the plot never collapses */
+    flex: 1 1 80px;
+    min-height: 0;
+    background: var(--smart-spectrum-plot-background);
+    border: 1px solid var(--smart-border);
+    border-radius: var(--smart-border-radius, 2px);
+    overflow: hidden;
+  }
+
+  /* Out of the flow: the canvas is sized to the plot, so the plot must not be sized by the
+     canvas. In flow, its pixel height fed back into the plot's, and a chart whose own height
+     was not fixed grew on every resize (a waveform graph reached 7,800px). */
+  .smart-spectrum-canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .smart-spectrum-readout {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 16px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .smart-spectrum-peaks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .smart-spectrum-peak-index {
+    display: inline-block;
+    min-width: 14px;
+    padding: 0 3px;
+    font-size: 10px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--smart-industrial-alarm-warning-color, var(--smart-warning-color, #ffffff));
+    background: var(--smart-industrial-alarm-warning, var(--smart-warning));
+    border-radius: 2px;
+  }
+
+  .smart-spectrum-thd {
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  /* Right to left: the text around the plot mirrors - header, legend, readout. The plot
+     does not: its axes run as the data does, and the canvas text keeps its direction. */
+  &[right-to-left] {
+    .smart-spectrum-header,
+    .smart-spectrum-readout {
+      direction: rtl;
+    }
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-spectrum.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}

@@ -1,0 +1,70 @@
+/* Smart.UI Industrial - the Industrial components, one import per element below.
+
+   Loaded alongside a theme, not instead of one. Industrial ships as its own bundle rather
+   than inside smart.default.css, so a page that does not use the line does not carry it.
+   This is the development counterpart of smart.industrial-elements.css in the build.
+
+   Not to be confused with smart.industrial.css, which is the ISA-101 *theme*: that restyles
+   the whole suite, while this styles the Industrial components themselves. A typical industrial page
+   loads smart.default.css, then this file, then optionally the industrial theme. */
+
+/* The stock chip, which ships unstyled: smart.chip.css is commented out of the default
+   bundle (gulpfile.js:1175), so a chip renders bare everywhere. The Industrial line
+   carries it here - including the severity vocabulary - without changing what every
+   existing customer of the default theme receives. */
+@import url("./default/smart.industrial-tokens.css");
+@import url("./default/smart.chip.css");
+@import url("./default/smart.causeeffectmatrix.css");
+@import url("./default/smart.devicecontrol.css");
+@import url("./default/smart.statetimeline.css");
+@import url("./default/smart.stacklight.css");
+@import url("./default/smart.thermometer.css");
+@import url("./default/smart.panelmeter.css");
+@import url("./default/smart.rootcausetree.css");
+@import url("./default/smart.anomalyheatmap.css");
+@import url("./default/smart.audittrail.css");
+@import url("./default/smart.signatureblock.css");
+@import url("./default/smart.esignature.css");
+@import url("./default/smart.jogpanel.css");
+@import url("./default/smart.selectorswitch.css");
+@import url("./default/smart.momentarybutton.css");
+@import url("./default/smart.numerickeypad.css");
+@import url("./default/smart.statemachine.css");
+@import url("./default/smart.hmishell.css");
+@import url("./default/smart.trend.css");
+@import url("./default/smart.scope.css");
+@import url("./default/smart.permissive.css");
+@import url("./default/smart.recipepanel.css");
+@import url("./default/smart.spectrum.css");
+@import url("./default/smart.controlchart.css");
+@import url("./default/smart.faceplate.css");
+@import url("./default/smart.statustile.css");
+@import url("./default/smart.mimic.css");
+@import url("./default/smart.sequenceeditor.css");
+@import url("./default/smart.terminal.css");
+@import url("./default/smart.bitfield.css");
+@import url("./default/smart.bargraph.css");
+@import url("./default/smart.knob.css");
+@import url("./default/smart.multistateindicator.css");
+@import url("./default/smart.sitemap.css");
+@import url("./default/smart.assetcard.css");
+@import url("./default/smart.touchkeyboard.css");
+@import url("./default/smart.orderqueue.css");
+@import url("./default/smart.downtimelog.css");
+@import url("./default/smart.shiftlog.css");
+@import url("./default/smart.comparisonchart.css");
+@import url("./default/smart.jobpanel.css");
+@import url("./default/smart.octavebands.css");
+@import url("./default/smart.resourcepicker.css");
+@import url("./default/smart.polarplot.css");
+@import url("./default/smart.bodeplot.css");
+@import url("./default/smart.digitalwaveform.css");
+@import url("./default/smart.intensitygraph.css");
+@import url("./default/smart.waveformgraph.css");
+@import url("./default/smart.alarmbanner.css");
+@import url("./default/smart.sevensegment.css");
+@import url("./default/smart.annunciator.css");
+@import url("./default/smart.mimicsymbol.css");
+@import url("./default/smart.pipe.css");
+@import url("./default/smart.stripchart.css");
+@import url("./default/smart.alarmgrid.css");

@@ -1,0 +1,138 @@
+/* smart-mimic */
+smart-mimic {
+  --smart-mimic-height: 420px;
+  --smart-mimic-canvas-background: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+  --smart-mimic-grid-size: 20px;
+  --smart-mimic-grid-color: var(--smart-border);
+  --smart-mimic-wire-color: var(--smart-text-tertiary-color);
+  display: block;
+  width: 100%;
+  height: var(--smart-mimic-height);
+
+  .smart-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  .smart-mimic-viewport {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: var(--smart-mimic-canvas-background);
+    border: 1px solid var(--smart-border);
+    border-radius: var(--smart-border-radius, 2px);
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .smart-mimic-viewport:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: -2px;
+  }
+
+  /* The grid scales with the zoom, so it reads as graph paper the diagram sits on
+     rather than a fixed screen texture that slides underneath it. */
+  .smart-mimic-viewport.show-grid {
+    background-image:
+      linear-gradient(to right, var(--smart-mimic-grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--smart-mimic-grid-color) 1px, transparent 1px);
+    background-size: var(--smart-mimic-grid-size) var(--smart-mimic-grid-size);
+  }
+
+  .smart-mimic-stage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+  }
+
+  .smart-mimic-wires {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .smart-mimic-items {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .smart-mimic-item {
+    position: absolute;
+  }
+
+  /* Transparent on the canvas. Every element inherits a background from .smart-element,
+     so a symbol dropped onto a diagram otherwise paints its own white box and the plant
+     reads as a row of cards rather than a process. Same defect the industrial themes had
+     to fix for gauges and tanks sitting in panels. */
+  .smart-mimic-item,
+  .smart-mimic-item.smart-element {
+    background: transparent;
+  }
+
+  .smart-mimic-wire {
+    fill: none;
+    stroke: var(--smart-mimic-wire-color);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    /* Non-scaling so a long run is the same weight as a short one at any zoom - a line
+       that thickens as you zoom in stops reading as a pipe. */
+    vector-effect: non-scaling-stroke;
+  }
+
+  .smart-mimic-wire.flowing {
+    stroke: var(--smart-primary);
+    stroke-dasharray: 6 4;
+    animation: smart-mimic-flow 1s linear infinite;
+  }
+
+  .smart-mimic-wire.flowing.reverse {
+    animation-direction: reverse;
+  }
+
+  .smart-mimic-wire.critical { stroke: var(--smart-industrial-alarm-critical, var(--smart-error)); }
+  .smart-mimic-wire.warning  { stroke: var(--smart-industrial-alarm-warning, var(--smart-warning)); }
+
+  /* An instrument tap: the line from a transmitter or a gauge to the pipe it measures. Thin
+     and dashed, as a P&ID draws it, and never animated - it carries a signal, not product,
+     and drawing it as a pipe would say the process runs through the instrument. */
+  .smart-mimic-wire.instrument {
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+    opacity: 0.75;
+  }
+
+  .smart-mimic-wire.instrument.flowing {
+    /* a signal does not flow: the animation is refused rather than quietly applied */
+    stroke: var(--smart-mimic-wire-color);
+    animation: none;
+    stroke-dasharray: 4 3;
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+@keyframes smart-mimic-flow {
+  to { stroke-dashoffset: -10; }
+}
+
+/* Respect a reduced-motion preference: marching dashes across a whole plant diagram is
+   exactly the kind of continuous motion that setting exists to stop. */
+@media (prefers-reduced-motion: reduce) {
+  smart-mimic .smart-mimic-wire.flowing {
+    animation: none;
+  }
+}
+
+/* .smart-element sets background and color at higher specificity than a bare tag selector. */
+smart-mimic.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}

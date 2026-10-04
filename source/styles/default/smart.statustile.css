@@ -1,0 +1,238 @@
+@charset "UTF-8";
+/* smart-status-tile
+ *
+ * The state is drawn as a bar down the leading edge rather than as a wash across the
+ * whole tile. A wall of forty saturated tiles is unreadable, and ISA-101 asks for colour
+ * to mean something - so the surface stays neutral and only the marker carries state.
+ *
+ * Sizes are variables because the four hand-rolled tiles this replaces each picked a
+ * different value size (30px, 26px, 21px). One default, overridable per screen, rather
+ * than a `size` property that would bake three of them into the API. */
+smart-status-tile {
+  --smart-status-tile-value-size: 26px;
+  --smart-status-tile-label-size: 11px;
+  --smart-status-tile-meta-size: 11.5px;
+  --smart-status-tile-marker-width: 3px;
+  --smart-status-tile-padding: 10px 12px;
+  --smart-status-tile-state-color: transparent;
+  display: block;
+  box-sizing: border-box;
+}
+
+/* Right to left: the tile is text, so it mirrors - the state marker is already on the
+   inline-start edge. The reading, the trend and the target take their direction from what
+   they say, so a negative number is not drawn with its minus sign after it. */
+smart-status-tile[right-to-left] {
+  direction: rtl;
+}
+
+smart-status-tile .smart-status-tile-value,
+smart-status-tile .smart-status-tile-trend,
+smart-status-tile .smart-status-tile-target {
+  unicode-bidi: plaintext;
+}
+
+smart-status-tile .smart-container {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--smart-status-tile-padding);
+  border: 1px solid var(--smart-industrial-panel-border, var(--smart-border));
+  border-radius: var(--smart-border-radius);
+  border-inline-start: var(--smart-status-tile-marker-width) solid var(--smart-status-tile-state-color);
+  background: var(--smart-industrial-panel-background, var(--smart-surface));
+}
+
+smart-status-tile .smart-status-tile-label {
+  color: var(--smart-text-tertiary-color);
+  font-size: var(--smart-status-tile-label-size);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+smart-status-tile .smart-status-tile-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Tabular figures: a reading that shifts sideways as it updates is harder to read than
+   one that does not, and these update constantly. */
+smart-status-tile .smart-status-tile-value {
+  color: var(--smart-text-color);
+  font-size: var(--smart-status-tile-value-size);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+/* A tile holding a name rather than a number needs to wrap and be smaller, or it
+   overflows the box a number fits comfortably. */
+smart-status-tile .smart-status-tile-value-text {
+  font-size: calc(var(--smart-status-tile-value-size) * 0.66);
+  font-variant-numeric: normal;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+smart-status-tile .smart-status-tile-unit {
+  color: var(--smart-text-secondary-color);
+  font-size: calc(var(--smart-status-tile-value-size) * 0.5);
+  font-weight: 500;
+}
+
+smart-status-tile .smart-status-tile-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--smart-status-tile-meta-size);
+  color: var(--smart-text-tertiary-color);
+  min-height: 1em;
+}
+
+smart-status-tile .smart-status-tile-trend[hidden],
+smart-status-tile .smart-status-tile-target[hidden],
+smart-status-tile .smart-status-tile-footnote[hidden],
+smart-status-tile .smart-status-tile-spark[hidden] {
+  display: none;
+}
+
+/* The arrow is decoration. The direction is also spelled out in the text content, so a
+   reader never depends on the glyph and neither does anyone who cannot see it. */
+smart-status-tile .smart-status-tile-trend::before {
+  margin-inline-end: 3px;
+}
+
+smart-status-tile .smart-status-tile-trend[data-direction=up]::before {
+  content: "▲";
+}
+
+smart-status-tile .smart-status-tile-trend[data-direction=down]::before {
+  content: "▼";
+}
+
+smart-status-tile .smart-status-tile-trend[data-direction=flat]::before {
+  content: "—";
+}
+
+/* Good and bad, not up and down. Rising yield and rising scrap are the same arrow and
+   opposite news, which is exactly what the hand-rolled tiles got wrong. */
+smart-status-tile .smart-status-tile-trend[data-sentiment=good] {
+  color: var(--smart-industrial-ok-text, var(--smart-success));
+}
+
+smart-status-tile .smart-status-tile-trend[data-sentiment=bad] {
+  color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+}
+
+smart-status-tile .smart-status-tile-spark {
+  margin-top: 2px;
+  min-height: 0;
+}
+
+smart-status-tile .smart-status-tile-footnote {
+  color: var(--smart-text-tertiary-color);
+  font-size: var(--smart-status-tile-meta-size);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── State ───────────────────────────────────────────────────────────────────
+   Only the marker and, for the two that demand attention, the value itself. */
+smart-status-tile[state=ok] {
+  --smart-status-tile-state-color: var(--smart-industrial-ok, var(--smart-success));
+}
+
+smart-status-tile[state=advisory] {
+  --smart-status-tile-state-color: var(--smart-industrial-alarm-advisory, var(--smart-warning));
+}
+
+smart-status-tile[state=warning] {
+  --smart-status-tile-state-color: var(--smart-industrial-alarm-warning, var(--smart-warning));
+}
+
+smart-status-tile[state=critical] {
+  --smart-status-tile-state-color: var(--smart-industrial-alarm-critical, var(--smart-error));
+}
+
+smart-status-tile[state=unknown] {
+  --smart-status-tile-state-color: var(--smart-industrial-unknown, var(--smart-base-600));
+}
+
+/* The -text tokens, not the fills: a fill colour used as text sits around 3:1, below the
+   4.5:1 floor for something read for a whole shift. */
+smart-status-tile[state=warning] .smart-status-tile-value {
+  color: var(--smart-industrial-alarm-warning-text, var(--smart-text-color));
+}
+
+smart-status-tile[state=critical] .smart-status-tile-value {
+  color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+}
+
+smart-status-tile[state=unknown] .smart-status-tile-value {
+  color: var(--smart-text-tertiary-color);
+}
+
+/* ── Interactive ─────────────────────────────────────────────────────────── */
+smart-status-tile[interactive] .smart-container {
+  cursor: pointer;
+}
+
+smart-status-tile[interactive] .smart-container:hover {
+  border-color: var(--smart-border-hover);
+}
+
+smart-status-tile .smart-container:focus-visible {
+  outline: 2px solid var(--smart-industrial-focus, var(--smart-primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--smart-industrial-focus-halo, transparent);
+}
+
+smart-status-tile[disabled] .smart-container {
+  cursor: default;
+  opacity: 0.55;
+}
+
+/* .smart-element carries the framework's own background and color at higher specificity
+   than a bare tag selector, so anything that sets those has to be restated here. */
+smart-status-tile.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* The sparkline draws into a fixed pixel box it is told about. Clipping here means a
+   stale width during a resize shows as a trimmed line rather than one crossing the tile
+   next door.
+
+   The box it is told about is this one's width, so this one's width must not come from the
+   sparkline: a tile sized by its content (a grid item, a flex item) otherwise widened by the
+   line it had just drawn, measured again, pushed the wider width, and grew without end -
+   4,300px in the copilot screen's panel. inline-size containment keeps the drawing out of
+   the width it is drawn to. */
+smart-status-tile .smart-status-tile-spark {
+  overflow: hidden;
+  contain: inline-size;
+}
+
+/* The sparkline frames itself, which is right when it stands alone and wrong inside a
+   tile that already has a border. The tile owns the box here. */
+smart-status-tile smart-sparkline,
+smart-status-tile smart-sparkline.smart-element {
+  border: none;
+  background: transparent;
+  display: block;
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-status-tile takes by default. */
+smart-status-tile:not(:defined) {
+  min-height: 100px;
+}

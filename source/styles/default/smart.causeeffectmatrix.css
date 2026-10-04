@@ -1,0 +1,266 @@
+@charset "UTF-8";
+/* smart-cause-effect-matrix */
+smart-cause-effect-matrix {
+  --smart-cem-cell-size: 34px;
+  /* the cause column and the effect headers take the length of their names, from these
+     sizes up to the caps: a cause is read by its words, and "Reactor pressure…" hid the
+     "high high" that made it a cause */
+  --smart-cem-cause-width: 220px;
+  --smart-cem-cause-max: 380px;
+  --smart-cem-effect-height: 120px;
+  --smart-cem-effect-max: 240px;
+  --smart-cem-gap: 1px;
+  --smart-cem-active: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  --smart-cem-tripped: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-cem-ok: var(--smart-industrial-ok, var(--smart-success));
+  --smart-cem-panel: var(--smart-industrial-panel-background, var(--smart-surface));
+  --smart-cem-header: var(--smart-industrial-panel-header-background, var(--smart-surface));
+  --smart-cem-border: var(--smart-industrial-panel-border, var(--smart-border));
+  --smart-cem-line: rgba(128, 128, 128, 0.16);
+  display: block;
+  font-family: var(--smart-font-family);
+  font-size: 12px;
+}
+smart-cause-effect-matrix .smart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+smart-cause-effect-matrix {
+  /* The chart scrolls sideways when the effects are more than the width; the cause column
+     stays put so a row keeps its name. */
+}
+smart-cause-effect-matrix .smart-cem-scroller {
+  overflow: auto;
+  border: var(--smart-border-width) solid var(--smart-cem-border);
+  border-radius: var(--smart-border-radius);
+  background: var(--smart-cem-panel);
+}
+smart-cause-effect-matrix .smart-cem-grid {
+  display: grid;
+  grid-template-columns: fit-content(var(--smart-cem-cause-max)) repeat(var(--smart-cem-columns, 1), var(--smart-cem-cell-size));
+  gap: var(--smart-cem-gap);
+  width: max-content;
+  background: var(--smart-cem-line);
+}
+smart-cause-effect-matrix .smart-cem-row {
+  display: contents;
+}
+smart-cause-effect-matrix .smart-cem-corner,
+smart-cause-effect-matrix .smart-cem-cause {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  min-width: var(--smart-cem-cause-width);
+  box-sizing: border-box;
+  background: var(--smart-cem-header);
+  padding: 4px 8px;
+}
+smart-cause-effect-matrix .smart-cem-corner {
+  display: flex;
+  align-items: flex-end;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-text-tertiary-color);
+}
+smart-cause-effect-matrix {
+  /* Effect headers stand up, as they do on the paper chart. */
+}
+smart-cause-effect-matrix .smart-cem-effect {
+  min-height: var(--smart-cem-effect-height);
+  box-sizing: border-box;
+  background: var(--smart-cem-header);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 6px 0;
+  cursor: pointer;
+}
+smart-cause-effect-matrix .smart-cem-effect-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  max-height: var(--smart-cem-effect-max);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+  font-size: 11px;
+}
+smart-cause-effect-matrix .smart-cem-effect-text b {
+  font-family: Consolas, "Courier New", monospace;
+}
+smart-cause-effect-matrix .smart-cem-cause {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--smart-cem-cell-size);
+  cursor: pointer;
+}
+smart-cause-effect-matrix .smart-cem-cause-tag {
+  font-family: Consolas, "Courier New", monospace;
+  font-weight: 700;
+}
+smart-cause-effect-matrix .smart-cem-cause-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--smart-text-secondary-color);
+}
+smart-cause-effect-matrix .smart-cem-badge {
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--smart-cem-active);
+  color: var(--smart-industrial-alarm-warning-color, #201400);
+}
+smart-cause-effect-matrix {
+  /* Cells: the mark, in the ink of the paper chart; a live link - an active cause reaching
+     a tripped effect - fills. */
+}
+smart-cause-effect-matrix .smart-cem-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: var(--smart-cem-cell-size);
+  background: var(--smart-cem-panel);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+smart-cause-effect-matrix .smart-cem-delay {
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--smart-text-secondary-color);
+  line-height: 1;
+}
+smart-cause-effect-matrix .smart-cem-mark-P,
+smart-cause-effect-matrix .smart-cem-mark-A {
+  font-weight: 500;
+  color: var(--smart-text-secondary-color);
+}
+smart-cause-effect-matrix .smart-cem-live {
+  background: var(--smart-cem-tripped);
+  color: var(--smart-industrial-alarm-critical-color, #ffffff);
+}
+smart-cause-effect-matrix .smart-cem-live .smart-cem-delay {
+  color: inherit;
+}
+smart-cause-effect-matrix .smart-cem-selected {
+  box-shadow: inset 0 0 0 2px var(--smart-text-color);
+}
+smart-cause-effect-matrix .smart-cem-cell:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--smart-industrial-focus, var(--smart-primary)), inset 0 0 0 4px var(--smart-industrial-focus-halo, #ffffff);
+}
+smart-cause-effect-matrix {
+  /* The state: an active cause tints its row, a tripped effect its column, a discrepancy
+     marks the effect's header. */
+}
+smart-cause-effect-matrix .smart-cem-highlight .smart-cem-active .smart-cem-cause {
+  background: var(--smart-cem-active);
+  color: var(--smart-industrial-alarm-warning-color, #201400);
+}
+smart-cause-effect-matrix .smart-cem-highlight .smart-cem-active .smart-cem-cause .smart-cem-cause-label {
+  color: inherit;
+}
+smart-cause-effect-matrix .smart-cem-highlight .smart-cem-active .smart-cem-cell:not(.smart-cem-live) {
+  background: color-mix(in srgb, var(--smart-cem-active) 18%, var(--smart-cem-panel));
+}
+smart-cause-effect-matrix .smart-cem-highlight .smart-cem-bypassed .smart-cem-cause {
+  background: repeating-linear-gradient(135deg, var(--smart-cem-header) 0 6px, var(--smart-cem-line) 6px 8px);
+  color: var(--smart-text-secondary-color);
+}
+smart-cause-effect-matrix .smart-cem-highlight .smart-cem-effect.smart-cem-tripped {
+  background: var(--smart-cem-tripped);
+  color: var(--smart-industrial-alarm-critical-color, #ffffff);
+}
+smart-cause-effect-matrix .smart-cem-highlight .smart-cem-col-tripped:not(.smart-cem-live) {
+  background: color-mix(in srgb, var(--smart-cem-tripped) 12%, var(--smart-cem-panel));
+}
+smart-cause-effect-matrix .smart-cem-effect.smart-cem-discrepancy {
+  box-shadow: inset 0 0 0 3px var(--smart-cem-active);
+}
+smart-cause-effect-matrix {
+  /* A timed trip counting down: dashed, not the solid ring of a discrepancy. The seconds
+     left are in the header's name. */
+}
+smart-cause-effect-matrix .smart-cem-effect.smart-cem-pending {
+  box-shadow: inset 0 0 0 2px var(--smart-cem-border);
+  outline: 2px dashed var(--smart-cem-active);
+  outline-offset: -4px;
+}
+smart-cause-effect-matrix {
+  /* Right to left: the causes on the right, the effects reading leftwards, and the arrow
+     keys following them. */
+}
+smart-cause-effect-matrix[right-to-left] {
+  direction: rtl;
+}
+smart-cause-effect-matrix .smart-cem-empty {
+  padding: 10px;
+  color: var(--smart-text-secondary-color);
+}
+smart-cause-effect-matrix {
+  /* The legend */
+}
+smart-cause-effect-matrix .smart-cem-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--smart-text-secondary-color);
+}
+smart-cause-effect-matrix .smart-cem-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+smart-cause-effect-matrix .smart-cem-legend-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--smart-cem-border);
+  border-radius: 2px;
+  font-weight: 700;
+  color: var(--smart-text-color);
+}
+smart-cause-effect-matrix .smart-cem-legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+smart-cause-effect-matrix .smart-cem-legend-active {
+  background: var(--smart-cem-active);
+}
+smart-cause-effect-matrix .smart-cem-legend-tripped {
+  background: var(--smart-cem-tripped);
+}
+smart-cause-effect-matrix .smart-cem-legend-discrepancy {
+  border: 3px solid var(--smart-cem-active);
+}
+
+/* .smart-element carries the framework's own background and color at higher specificity
+   than a bare tag selector, so anything that sets those has to be restated here. */
+smart-cause-effect-matrix.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-cause-effect-matrix takes by default. */
+smart-cause-effect-matrix:not(:defined) {
+  min-height: 300px;
+}

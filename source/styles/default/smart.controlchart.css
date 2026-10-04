@@ -1,0 +1,144 @@
+@charset "UTF-8";
+/* smart-control-chart */
+smart-control-chart {
+  --smart-control-chart-height: 360px;
+  --smart-control-chart-secondary-share: 34%;
+  --smart-control-chart-plot-background: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+  --smart-control-chart-grid-color: var(--smart-border);
+  /* Series and limit colours are read by the canvas from these; unset, the element falls
+     back to the industrial palette so the trace matches the theme. The limit colour is the
+     alarm red on purpose - a control limit is where the process stops being in control,
+     and it is one of the few places on an ISA-101 screen that has earned red. */
+  --smart-control-chart-center-color: var(--smart-industrial-ok, var(--smart-success));
+  --smart-control-chart-limit-color: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-control-chart-spec-color: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  --smart-control-chart-zone-color: rgba(128, 128, 128, 0.06);
+  --smart-control-chart-zone-alternate-color: rgba(128, 128, 128, 0.13);
+  display: block;
+  width: 100%;
+  height: var(--smart-control-chart-height);
+}
+smart-control-chart .smart-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+}
+smart-control-chart .smart-control-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+smart-control-chart .smart-control-title {
+  font-weight: 600;
+}
+smart-control-chart .smart-control-stats {
+  flex: 1 1 auto;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-control-chart .smart-control-status {
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+smart-control-chart {
+  /* The -text tokens rather than the fills: this is a word read all shift, and a fill
+     colour lands around 3:1 against a panel. */
+}
+smart-control-chart .smart-control-status-in {
+  color: var(--smart-industrial-ok-text, var(--smart-success));
+}
+smart-control-chart .smart-control-status-out {
+  color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+}
+smart-control-chart {
+  /* The plots take whatever the chrome leaves. min-height: 0 is what stops a flex item
+     from refusing to shrink below its content and pushing the violations list off. */
+}
+smart-control-chart .smart-control-plot {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--smart-control-chart-plot-background);
+  border: 1px solid var(--smart-border);
+  border-radius: var(--smart-border-radius, 2px);
+  overflow: hidden;
+}
+smart-control-chart .smart-control-plot-secondary {
+  flex: 0 0 var(--smart-control-chart-secondary-share);
+}
+smart-control-chart {
+  /* above the canvas, which is positioned too and comes after it in the plot */
+}
+smart-control-chart .smart-control-plot-title {
+  position: absolute;
+  z-index: 1;
+  top: 4px;
+  left: 8px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--smart-text-secondary-color, inherit);
+  pointer-events: none;
+  z-index: 1;
+}
+smart-control-chart {
+  /* Out of the flow: the canvas is sized to the plot, so the plot must not be sized by the
+     canvas. In flow, its pixel height became the plot's flex basis, the plot was then shrunk
+     to fit and the canvas kept the old height - the sample numbers along the bottom were cut
+     in half. */
+}
+smart-control-chart .smart-control-canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+smart-control-chart .smart-control-capability {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-control-chart .smart-control-violations {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  max-height: 4.5em;
+  overflow-y: auto;
+}
+smart-control-chart .smart-control-violation {
+  color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+}
+smart-control-chart .smart-control-violation::before {
+  content: "●";
+  margin-right: 4px;
+  font-size: 9px;
+  vertical-align: 1px;
+}
+smart-control-chart[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-control-chart.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}

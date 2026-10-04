@@ -1,0 +1,276 @@
+/* smart-trend */
+smart-trend {
+  --smart-trend-height: 360px;
+  --smart-trend-pens-width: 220px;
+  --smart-trend-plot-background: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+  --smart-trend-grid-color: var(--smart-border);
+  /* The cursor colour is read by the canvas; unset, the element uses the palette's
+     warning colour so the cursor is the one thing on the plot that is not a pen. */
+  display: block;
+  width: 100%;
+  height: var(--smart-trend-height);
+
+  .smart-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    gap: 4px;
+  }
+
+  .smart-trend-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+  }
+
+  .smart-trend-title {
+    font-weight: 600;
+  }
+
+  .smart-trend-range {
+    flex: 1 1 auto;
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  .smart-trend-state {
+    padding: 0 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  .smart-trend-state-live {
+    color: var(--smart-industrial-ok-text, var(--smart-success));
+  }
+
+  .smart-trend-state-paused {
+    color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+  }
+
+  /* The pens panel and the plot side by side; the plot takes what the panel leaves.
+     min-height: 0 is what stops a flex item refusing to shrink below its content. */
+  .smart-trend-body {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: 8px;
+  }
+
+  .smart-trend-pens {
+    display: flex;
+    flex: 0 0 var(--smart-trend-pens-width);
+    flex-direction: column;
+    gap: 2px;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .smart-trend-pen {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    font-family: inherit;
+    font-size: 12px;
+    text-align: left;
+    color: var(--smart-text-color);
+    background: transparent;
+    border: 1px solid var(--smart-border);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  .smart-trend-pen:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 1px;
+  }
+
+  /* A hidden pen stays legible - an operator has to be able to read the label of the
+     pen they just turned off in order to turn it back on. */
+  .smart-trend-pen-off {
+    opacity: 0.55;
+  }
+
+  .smart-trend-pen-off .smart-trend-swatch {
+    background: transparent !important;
+    border-color: var(--smart-text-tertiary-color);
+  }
+
+  .smart-trend-swatch {
+    width: 10px;
+    height: 10px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    flex: none;
+  }
+
+  .smart-trend-pen-text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .smart-trend-pen-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .smart-trend-pen-range {
+    font-size: 10px;
+    color: var(--smart-text-tertiary-color, inherit);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .smart-trend-pen-value {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Quality is not decoration - a reading that is stale, bad or uncertain says so where
+     the reading is, in words, in a text colour that holds 4.5:1 on the panel. */
+  .smart-trend-pen-quality,
+  .smart-trend-readout-quality {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--smart-industrial-alarm-warning-text, #7d4a00);
+  }
+
+  .smart-trend-pen-quality[hidden] {
+    display: none;
+  }
+
+  .smart-trend-readout-quality {
+    padding: 0 4px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+  }
+
+  .smart-trend-quality-bad {
+    color: var(--smart-industrial-alarm-critical-text, #b22027);
+  }
+
+  /* "no reading", said in place of a "--" a screen reader cannot read. Off-screen rather
+     than display:none, which would take it out of the accessibility tree too. */
+  .smart-trend-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .smart-trend-plot {
+    position: relative;
+    /* 80px when the chart has no height of its own to share out, so the plot never collapses */
+    flex: 1 1 80px;
+    min-width: 0;
+    min-height: 0;
+    background: var(--smart-trend-plot-background);
+    border: 1px solid var(--smart-border);
+    border-radius: var(--smart-border-radius, 2px);
+    overflow: hidden;
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  .smart-trend-plot:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: -2px;
+  }
+
+  /* Out of the flow: the canvas is sized to the plot, so the plot must not be sized by the
+     canvas. In flow, its pixel height fed back into the plot's, and a chart whose own height
+     was not fixed grew on every resize (a waveform graph reached 7,800px). */
+  .smart-trend-canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .smart-trend-readout {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .smart-trend-readout-time {
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  .smart-trend-readout-pen {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* A band's expected value and interval, after the pen it belongs to. */
+  .smart-trend-readout-band {
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  /* A marker under the cursor: named in its severity's text colour, not washed in it. */
+  .smart-trend-readout-marker {
+    font-weight: 600;
+  }
+
+  .smart-trend-marker-advisory {
+    color: var(--smart-industrial-alarm-advisory-text, #8a6d00);
+  }
+
+  .smart-trend-marker-warning {
+    color: var(--smart-industrial-alarm-warning-text, #a85f00);
+  }
+
+  .smart-trend-marker-critical {
+    color: var(--smart-industrial-alarm-critical-text, #b22027);
+  }
+
+  /* Right to left: the text around the plot mirrors - header, pens panel, readout. The plot
+     does not: its axes run as the data does, and the canvas text keeps its direction. */
+  &[right-to-left] {
+    .smart-trend-header,
+    .smart-trend-pens,
+    .smart-trend-readout {
+      direction: rtl;
+    }
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-trend.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}

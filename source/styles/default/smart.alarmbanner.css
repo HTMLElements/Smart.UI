@@ -1,0 +1,167 @@
+/* smart-alarm-banner */
+smart-alarm-banner {
+  --smart-alarm-banner-blink-duration: 1.4s;
+  --smart-alarm-banner-row-gap: 16px;
+  display: block;
+  border: var(--smart-border-width) solid var(--smart-industrial-panel-border, var(--smart-border));
+  background: var(--smart-industrial-panel-background, var(--smart-surface));
+  color: var(--smart-text-color);
+  font-family: var(--smart-font-family);
+  font-size: var(--smart-font-size);
+}
+smart-alarm-banner .smart-container {
+  display: flex;
+  flex-direction: column;
+}
+smart-alarm-banner .smart-alarm-row {
+  display: flex;
+  align-items: center;
+  gap: var(--smart-alarm-banner-row-gap);
+  padding: 12px 16px;
+  cursor: pointer;
+}
+smart-alarm-banner .smart-alarm-row + .smart-alarm-row {
+  border-top: var(--smart-border-width) solid var(--smart-border);
+}
+smart-alarm-banner .smart-alarm-row:hover {
+  background: var(--smart-ui-state-hover);
+}
+smart-alarm-banner .smart-alarm-empty {
+  cursor: default;
+}
+smart-alarm-banner .smart-alarm-empty:hover {
+  background: transparent;
+}
+smart-alarm-banner .smart-alarm-empty .smart-alarm-severity {
+  background: transparent;
+  border: var(--smart-border-width) solid var(--smart-border);
+  color: var(--smart-text-tertiary-color);
+}
+smart-alarm-banner .smart-alarm-severity {
+  flex: none;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+smart-alarm-banner .smart-alarm-tag {
+  flex: none;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  color: var(--smart-text-secondary-color);
+}
+smart-alarm-banner .smart-alarm-message {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+smart-alarm-banner .smart-alarm-time {
+  flex: none;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  color: var(--smart-text-tertiary-color);
+}
+smart-alarm-banner .smart-alarm-ack {
+  flex: none;
+  background: transparent;
+  border: var(--smart-border-width) solid var(--smart-border);
+  border-radius: var(--smart-border-radius);
+  color: var(--smart-text-secondary-color);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 4px 14px;
+  text-transform: uppercase;
+}
+smart-alarm-banner .smart-alarm-ack:hover {
+  background: var(--smart-ui-state-hover);
+  border-color: var(--smart-ui-state-border-hover);
+  color: var(--smart-ui-state-color-hover);
+}
+smart-alarm-banner {
+  /* Severity colours fall back to the standard semantic tokens, so the banner
+     is usable outside the industrial themes. */
+}
+smart-alarm-banner .smart-alarm-row[severity=critical] .smart-alarm-severity {
+  background: var(--smart-industrial-alarm-critical, var(--smart-error));
+  color: var(--smart-industrial-alarm-critical-color, var(--smart-error-color));
+}
+smart-alarm-banner .smart-alarm-row[severity=warning] .smart-alarm-severity {
+  background: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  color: var(--smart-industrial-alarm-warning-color, var(--smart-warning-color));
+}
+smart-alarm-banner .smart-alarm-row[severity=advisory] .smart-alarm-severity {
+  background: var(--smart-industrial-alarm-advisory, #e5c728);
+  color: var(--smart-industrial-alarm-advisory-color, #1e1e1e);
+}
+smart-alarm-banner {
+  /* The whole banner takes a tint from its worst alarm, so an abnormal state
+     is legible from across a control room, not just at the badge. */
+}
+smart-alarm-banner[severity=critical] {
+  border-color: var(--smart-industrial-alarm-critical, var(--smart-error));
+  background: var(--smart-industrial-abnormal-background, var(--smart-surface));
+}
+smart-alarm-banner[severity=warning] {
+  border-color: var(--smart-industrial-alarm-warning, var(--smart-warning));
+}
+smart-alarm-banner[severity=advisory] {
+  border-color: var(--smart-industrial-alarm-advisory, #e5c728);
+}
+smart-alarm-banner {
+  /* An unacknowledged critical alarm blinks until an operator responds - ISA-18.2. */
+}
+smart-alarm-banner .smart-alarm-row.smart-blink .smart-alarm-severity {
+  animation: smart-alarm-banner-blink var(--smart-alarm-banner-blink-duration) step-end infinite;
+}
+smart-alarm-banner {
+  /* Returned to normal, not yet acknowledged: still on the banner until someone looks,
+     said in words beside the severity, and not blinking. */
+}
+smart-alarm-banner .smart-alarm-state {
+  flex: none;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--smart-text-secondary-color);
+  white-space: nowrap;
+}
+smart-alarm-banner .smart-alarm-row[state=rtn-unacknowledged] .smart-alarm-message {
+  font-style: italic;
+}
+smart-alarm-banner {
+  /* Right to left: the row reads from the right, and the arrow keys follow it. */
+}
+smart-alarm-banner[right-to-left] {
+  direction: rtl;
+}
+smart-alarm-banner[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@keyframes smart-alarm-banner-blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  smart-alarm-banner .smart-alarm-row.smart-blink .smart-alarm-severity {
+    animation: none;
+  }
+}
+/* .smart-element sets background and color on every element with a higher
+   specificity than a bare tag selector, so restate them with the class. */
+smart-alarm-banner.smart-element {
+  background: var(--smart-industrial-panel-background, var(--smart-surface));
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-alarm-banner takes by default. */
+smart-alarm-banner:not(:defined) {
+  min-height: 48px;
+}

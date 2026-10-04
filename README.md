@@ -1,4 +1,4 @@
-# 🌟 Smart.UI Component Library  
+# Smart.UI Component Library  
 
 [![npm version](https://img.shields.io/npm/v/smart-webcomponents.svg?color=brightgreen)](https://www.npmjs.com/package/smart-webcomponents)  
 [![npm downloads](https://img.shields.io/npm/dm/smart-webcomponents.svg)](https://www.npmjs.com/package/smart-webcomponents)  

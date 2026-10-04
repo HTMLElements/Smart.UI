@@ -1,0 +1,436 @@
+/* smart-downtime-log */
+smart-downtime-log {
+  /* Colour for one thing: the stops still waiting for a reason, which is what the operator is
+     asked to act on. A stop still going gets the warning edge. */
+  --smart-downtime-log-waiting: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  --smart-downtime-log-waiting-text: var(--smart-industrial-alarm-warning-text, var(--smart-text-color));
+  --smart-downtime-log-mono: var(--smart-industrial-readout-font, ui-monospace, "Cascadia Mono", "Consolas", "DejaVu Sans Mono", monospace);
+  display: block;
+  width: 100%;
+
+  .smart-downtime-log-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .smart-downtime-log-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    font-size: 12px;
+  }
+
+  .smart-downtime-log-title {
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  .smart-downtime-log-summary {
+    flex: 1 1 auto;
+    font-variant-numeric: tabular-nums;
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  .smart-downtime-log-waiting {
+    padding: 1px 8px;
+    border: 1px solid var(--smart-downtime-log-waiting);
+    border-radius: 2px;
+    font-weight: 600;
+    color: var(--smart-text-color);
+  }
+
+  .smart-downtime-log-waiting[hidden] {
+    display: none;
+  }
+
+  .smart-downtime-log-error {
+    padding: 8px 12px;
+    border-left: 3px solid var(--smart-industrial-alarm-critical-text, var(--smart-error));
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+  }
+
+  .smart-downtime-log-error[hidden] {
+    display: none;
+  }
+
+  .smart-downtime-log-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+  }
+
+  .smart-downtime-log-views {
+    display: flex;
+    gap: 6px;
+  }
+
+  .smart-downtime-log-view {
+    min-height: 28px;
+    padding: 0 12px;
+    border: 1px solid var(--smart-border, #ccd6e0);
+    border-radius: 14px;
+    background: var(--smart-background, #fff);
+    color: var(--smart-text-color);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .smart-downtime-log-view[aria-pressed="true"] {
+    border-color: var(--smart-primary);
+    background: var(--smart-primary);
+    color: var(--smart-primary-color, #fff);
+  }
+
+  .smart-downtime-log-view-count {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.85;
+  }
+
+  .smart-downtime-log-tools-end {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+  }
+
+  .smart-downtime-log-export,
+  .smart-downtime-log-more {
+    min-height: 28px;
+    padding: 0 10px;
+    border: 1px solid var(--smart-border, #ccd6e0);
+    border-radius: var(--smart-border-radius, 3px);
+    background: var(--smart-background, #fff);
+    color: var(--smart-text-color);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .smart-downtime-log-export:hover,
+  .smart-downtime-log-more:hover {
+    background: var(--smart-ui-state-hover, var(--smart-surface, #f4f6f8));
+  }
+
+  /* the column headers order the stops */
+  .smart-downtime-log-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .smart-downtime-log-sort:hover,
+  .smart-downtime-log-sort.on {
+    color: var(--smart-text-color);
+  }
+
+  .smart-downtime-log-arrow {
+    min-width: 10px;
+    font-size: 9px;
+  }
+
+  .smart-downtime-log-more-row > td {
+    padding: 10px !important;
+  }
+
+  .smart-downtime-log-sort:focus-visible,
+  .smart-downtime-log-export:focus-visible,
+  .smart-downtime-log-more:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 1px;
+  }
+
+  .smart-downtime-log-short {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  .smart-downtime-log-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid var(--smart-border, #ccd6e0);
+    border-radius: var(--smart-border-radius, 3px);
+    background: var(--smart-background, #fff);
+  }
+
+  .smart-downtime-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .smart-downtime-log-table th[scope="col"] {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--smart-border, #ccd6e0);
+    background: var(--smart-surface, #f4f6f8);
+    font-size: 12px;
+    font-weight: 500;
+    text-align: left;
+    color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  }
+
+  .smart-downtime-log-table td,
+  .smart-downtime-log-table th[scope="row"] {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--smart-border-light, var(--smart-border, #ccd6e0));
+    text-align: left;
+    vertical-align: baseline;
+  }
+
+  .smart-downtime-log-row.waiting > th {
+    box-shadow: inset 3px 0 0 var(--smart-downtime-log-waiting);
+  }
+
+  .smart-downtime-log-machine {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .smart-downtime-log-from {
+    font-family: var(--smart-downtime-log-mono);
+  }
+
+  .smart-downtime-log-from,
+  .smart-downtime-log-length {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .smart-downtime-log-row.ongoing .smart-downtime-log-length {
+    font-weight: 600;
+  }
+
+  .smart-downtime-log-short-mark {
+    margin-left: 4px;
+    font-family: var(--smart-font-family, inherit);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  }
+
+  .smart-downtime-log-reason-cell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+  }
+
+  .smart-downtime-log-reason {
+    font-weight: 600;
+  }
+
+  .smart-downtime-log-comment {
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  .smart-downtime-log-by,
+  .smart-downtime-log-none {
+    font-size: 11px;
+    color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  }
+
+  .smart-downtime-log-give {
+    min-height: 30px;
+    padding: 0 14px;
+    border: 1px solid var(--smart-primary);
+    border-radius: var(--smart-border-radius, 3px);
+    background: transparent;
+    color: var(--smart-primary);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .smart-downtime-log-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--smart-primary);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .smart-downtime-log-link:hover,
+  .smart-downtime-log-link:focus-visible {
+    text-decoration: underline;
+  }
+
+  /* ── The picker ── */
+  .smart-downtime-log-picker-row > td {
+    padding: 4px 10px 12px;
+    background: var(--smart-surface, #f4f6f8);
+  }
+
+  .smart-downtime-log-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .smart-downtime-log-legend {
+    padding: 6px 0;
+    font-weight: 600;
+  }
+
+  .smart-downtime-log-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .smart-downtime-log-group-name {
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  }
+
+  .smart-downtime-log-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* big enough for a gloved finger: a reason is picked standing at the machine */
+  .smart-downtime-log-tile {
+    position: relative;
+    display: inline-flex;
+
+    input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--smart-border, #ccd6e0);
+      border-radius: var(--smart-border-radius, 3px);
+      background: var(--smart-background, #fff);
+      font-size: 13px;
+    }
+
+    input:checked + span {
+      border-color: var(--smart-primary);
+      box-shadow: inset 0 0 0 1px var(--smart-primary);
+      font-weight: 600;
+    }
+
+    input:focus-visible + span {
+      outline: 2px solid var(--smart-primary);
+      outline-offset: 1px;
+    }
+  }
+
+  .smart-downtime-log-comment-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-width: 520px;
+    font-size: 11px;
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  .smart-downtime-log-comment-input {
+    min-height: 32px;
+    padding: 2px 8px;
+    border: 1px solid var(--smart-border, #ccd6e0);
+    border-radius: var(--smart-border-radius, 3px);
+    background: var(--smart-background, #fff);
+    color: var(--smart-text-color);
+    font: inherit;
+    font-size: 13px;
+  }
+
+  .smart-downtime-log-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .smart-downtime-log-cancel,
+  .smart-downtime-log-save {
+    min-height: 34px;
+    padding: 0 16px;
+    border-radius: var(--smart-border-radius, 3px);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .smart-downtime-log-cancel {
+    border: 1px solid var(--smart-border, #ccd6e0);
+    background: var(--smart-background, #fff);
+    color: var(--smart-text-color);
+  }
+
+  .smart-downtime-log-save {
+    border: 1px solid var(--smart-primary);
+    background: var(--smart-primary);
+    color: var(--smart-primary-color, #fff);
+    font-weight: 600;
+  }
+
+  .smart-downtime-log-save[disabled] {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .smart-downtime-log-empty {
+    padding: 14px 12px;
+    color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  }
+
+  .smart-downtime-log-view:focus-visible,
+  .smart-downtime-log-give:focus-visible,
+  .smart-downtime-log-link:focus-visible,
+  .smart-downtime-log-cancel:focus-visible,
+  .smart-downtime-log-save:focus-visible,
+  .smart-downtime-log-comment-input:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 1px;
+  }
+
+  &[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+smart-downtime-log.smart-element {
+  background: transparent;
+}

@@ -1,0 +1,250 @@
+/* smart-stack-light */
+smart-stack-light {
+  --smart-stack-segment-width: 28px;
+  --smart-stack-segment-height: 22px;
+  --smart-stack-gap: 2px;
+  --smart-stack-flash-rate: 800ms;
+  /* The five tower colours. A lit segment is the colour; an unlit one is the colour at
+     a fraction, so the tower's layout reads even when everything is off. */
+  --smart-stack-red: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-stack-amber: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  --smart-stack-green: var(--smart-industrial-ok, var(--smart-success));
+  --smart-stack-blue: var(--smart-industrial-manual, var(--smart-primary));
+  --smart-stack-white: #e8edf2;
+  --smart-stack-off-opacity: 0.22;
+  --smart-stack-body: var(--smart-industrial-panel-header-background, var(--smart-surface));
+  display: inline-block;
+  font-family: var(--smart-font-family);
+  font-size: 12px;
+}
+smart-stack-light .smart-container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+smart-stack-light .smart-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--smart-stack-gap);
+  padding: 4px;
+  border-radius: 6px;
+  background: var(--smart-stack-body);
+  border: 1px solid var(--smart-industrial-panel-border, var(--smart-border));
+}
+smart-stack-light .smart-stack-segment {
+  display: block;
+  width: var(--smart-stack-segment-width);
+  height: var(--smart-stack-segment-height);
+  border-radius: 3px;
+  background: var(--smart-stack-color);
+  opacity: var(--smart-stack-off-opacity);
+  /* a border keeps the white segment, and an unlit one on a light panel, on the page */
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+  cursor: default;
+  transition: opacity 120ms linear;
+}
+smart-stack-light .smart-stack-red {
+  --smart-stack-color: var(--smart-stack-red);
+}
+smart-stack-light .smart-stack-amber {
+  --smart-stack-color: var(--smart-stack-amber);
+}
+smart-stack-light .smart-stack-green {
+  --smart-stack-color: var(--smart-stack-green);
+}
+smart-stack-light .smart-stack-blue {
+  --smart-stack-color: var(--smart-stack-blue);
+}
+smart-stack-light .smart-stack-white {
+  --smart-stack-color: var(--smart-stack-white);
+}
+smart-stack-light .smart-stack-segment.smart-stack-on,
+smart-stack-light .smart-stack-segment.smart-stack-flash,
+smart-stack-light .smart-stack-segment.smart-stack-fast {
+  opacity: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 0 8px var(--smart-stack-color);
+}
+smart-stack-light .smart-stack-segment.smart-stack-flash {
+  animation: smart-stack-flash var(--smart-stack-flash-rate) steps(1, end) infinite;
+}
+smart-stack-light .smart-stack-segment.smart-stack-fast {
+  animation: smart-stack-flash calc(var(--smart-stack-flash-rate) / 2) steps(1, end) infinite;
+}
+smart-stack-light {
+  /* Segments are buttons only when something listens for a press on one. An unlit segment is
+     drawn faded, and a ring on it would fade too, so the tower carries the ring and the
+     segment an outline of its own. */
+}
+smart-stack-light .smart-stack-segment[role=button] {
+  cursor: pointer;
+}
+smart-stack-light .smart-stack-segment:focus-visible {
+  outline: 2px solid var(--smart-industrial-focus, var(--smart-primary));
+  outline-offset: 2px;
+}
+smart-stack-light .smart-stack:has(.smart-stack-segment:focus-visible) {
+  outline: 2px solid var(--smart-industrial-focus, var(--smart-primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--smart-industrial-focus-halo, transparent);
+}
+smart-stack-light {
+  /* A state the tower cannot show - its segments are not on this tower, or the word is not in
+     the map - is said under the tower rather than shown as a dark one. */
+}
+smart-stack-light .smart-stack-note {
+  max-width: 14em;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+}
+smart-stack-light .smart-stack-note[hidden] {
+  display: none;
+}
+smart-stack-light .smart-stack-unshown .smart-stack {
+  border-style: dashed;
+  border-color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+}
+smart-stack-light {
+  /* The horn: a sounder glyph, waves drawn while it sounds, crossed once muted. The
+     button is the operator's request to silence it. */
+}
+smart-stack-light .smart-stack-horn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--smart-stack-segment-width);
+  height: var(--smart-stack-segment-height);
+  padding: 0;
+  border: 1px solid var(--smart-industrial-panel-border, var(--smart-border));
+  border-radius: 3px;
+  background: var(--smart-stack-body);
+  color: var(--smart-text-color);
+  cursor: pointer;
+}
+smart-stack-light .smart-stack-horn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+smart-stack-light .smart-stack-horn svg path:first-child {
+  stroke: none;
+}
+smart-stack-light .smart-stack-horn svg .smart-stack-horn-wave {
+  fill: none;
+}
+smart-stack-light .smart-stack-horn-on {
+  color: var(--smart-industrial-alarm-critical-color, #ffffff);
+  background: var(--smart-stack-red);
+  border-color: transparent;
+  animation: smart-stack-flash var(--smart-stack-flash-rate) steps(1, end) infinite;
+}
+smart-stack-light .smart-stack-horn-muted {
+  color: var(--smart-text-secondary-color);
+}
+smart-stack-light .smart-stack-horn-muted .smart-stack-horn-wave {
+  display: none;
+}
+smart-stack-light .smart-stack-horn:focus-visible {
+  outline: 2px solid var(--smart-industrial-focus, var(--smart-primary));
+  outline-offset: 2px;
+}
+smart-stack-light {
+  /* The legend beside the tower */
+}
+smart-stack-light .smart-stack-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-self: stretch;
+}
+smart-stack-light .smart-stack-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  color: var(--smart-text-secondary-color);
+}
+smart-stack-light .smart-stack-legend-item.smart-stack-on, smart-stack-light .smart-stack-legend-item.smart-stack-flash, smart-stack-light .smart-stack-legend-item.smart-stack-fast {
+  color: var(--smart-text-color);
+  font-weight: 600;
+}
+smart-stack-light .smart-stack-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+  background: var(--smart-stack-color);
+}
+smart-stack-light .smart-stack-legend-state {
+  margin-left: auto;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+smart-stack-light {
+  /* Horizontal: segments in a row, red on the left, as a tower laid on its side reads. */
+}
+smart-stack-light .smart-stack-horizontal {
+  flex-direction: row;
+}
+smart-stack-light .smart-stack-horizontal .smart-stack {
+  flex-direction: row;
+}
+smart-stack-light .smart-stack-horizontal .smart-stack-legend {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+smart-stack-light .smart-stack-with-legend {
+  align-items: flex-start;
+  flex-direction: row;
+}
+smart-stack-light .smart-stack-with-legend .smart-stack-legend {
+  margin-left: 4px;
+}
+smart-stack-light .smart-stack-with-legend.smart-stack-horizontal {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+@keyframes smart-stack-flash {
+  50% {
+    opacity: var(--smart-stack-off-opacity, 0.22);
+  }
+}
+/* A user who asked for less motion still has to see the difference between on and
+   flashing: a flashing segment is drawn lit with a broken ring instead. */
+@media (prefers-reduced-motion: reduce) {
+  smart-stack-light .smart-stack-segment.smart-stack-flash,
+  smart-stack-light .smart-stack-segment.smart-stack-fast,
+  smart-stack-light .smart-stack-horn-on {
+    animation: none;
+    outline: 2px dashed var(--smart-text-color);
+    outline-offset: 1px;
+  }
+}
+/* .smart-element carries the framework's own background and color at higher specificity
+   than a bare tag selector, so anything that sets those has to be restated here. */
+smart-stack-light.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-stack-light takes by default. */
+smart-stack-light:not(:defined) {
+  min-width: 46px;
+  min-height: 38px;
+}

@@ -1,14 +1,12 @@
 
-/* Smart UI v27.0.1 (2026-08-12) 
-Copyright (c) 2011-2026 jQWidgets. 
-License: https://htmlelements.com/license/ */ //
+/*! Smart UI v27.1.0 (2026-10-02) | (c) 2011-2026 jQWidgets Ltd. All rights reserved.
+ * Commercial software, not open source: licensed under the Smart UI EULA (EULA.pdf in the package;
+ * https://www.htmlelements.com/license/). Text and data mining reserved under Art. 4(3)
+ * Directive (EU) 2019/790: not to be used to train, fine-tune or index for AI models. @license */ //
 
  (function(){ if (typeof document === 'undefined') { return; } 
 
 
-/* Smart UI v26.0.0 (2026-May) 
-Copyright (c) 2011-2026 jQWidgets. 
-License: https://htmlelements.com/license/ */
 
 
 /******/ (() => { // webpackBootstrap
@@ -95,9 +93,6 @@ var __webpack_exports__ = {};
 /* harmony import */ var _smart_grid_pager_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9325);
 /* harmony import */ var _smart_grid_pager_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_smart_grid_pager_js__WEBPACK_IMPORTED_MODULE_1__);
 
-/* Smart UI v27.0.1 (2026-08-12) 
-Copyright (c) 2011-2026 jQWidgets. 
-License: https://htmlelements.com/license/ */ //
 
 
 

@@ -1,0 +1,143 @@
+/* smart-multi-state-indicator */
+smart-multi-state-indicator {
+  --smart-multi-state-indicator-default-size: 14px;
+  --smart-multi-state-indicator-bar-width: 34px;
+  --smart-multi-state-indicator-blink-duration: 1.2s;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  padding: 0px;
+}
+
+smart-multi-state-indicator .smart-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+smart-multi-state-indicator .smart-lamp {
+  flex: none;
+  width: var(--smart-multi-state-indicator-default-size);
+  height: var(--smart-multi-state-indicator-default-size);
+  border-radius: 50%;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  background: var(--smart-industrial-unknown, var(--smart-base-600));
+}
+
+smart-multi-state-indicator[shape="square"] .smart-lamp {
+  border-radius: 0px;
+}
+
+smart-multi-state-indicator[shape="bar"] .smart-lamp {
+  width: var(--smart-multi-state-indicator-bar-width);
+  border-radius: 0px;
+}
+
+smart-multi-state-indicator .smart-label {
+  color: var(--smart-text-color);
+  font-family: var(--smart-font-family);
+  font-size: var(--smart-font-size);
+  white-space: nowrap;
+}
+
+smart-multi-state-indicator .smart-label:empty {
+  display: none;
+}
+
+/* Severity colours fall back to the standard semantic tokens, so the element
+   is usable outside the industrial themes. */
+smart-multi-state-indicator .smart-lamp[severity="ok"] {
+  background: var(--smart-industrial-ok, var(--smart-success));
+}
+
+smart-multi-state-indicator .smart-lamp[severity="advisory"] {
+  background: var(--smart-industrial-alarm-advisory, #e5c728);
+}
+
+smart-multi-state-indicator .smart-lamp[severity="warning"] {
+  background: var(--smart-industrial-alarm-warning, var(--smart-warning));
+}
+
+smart-multi-state-indicator .smart-lamp[severity="critical"] {
+  background: var(--smart-industrial-alarm-critical, var(--smart-error));
+}
+
+smart-multi-state-indicator .smart-lamp[severity="manual"] {
+  background: var(--smart-industrial-manual, var(--smart-info));
+}
+
+smart-multi-state-indicator .smart-lamp[severity="maintenance"] {
+  background: var(--smart-industrial-maintenance, #7a5aa8);
+}
+
+/* An off lamp is an empty ring, and the ring has to be seen: the border colour came to
+   1.02:1 on the light theme and 1.66:1 on the dark, so "off" looked like no lamp at all.
+   The secondary text colour clears 3:1 on both. */
+smart-multi-state-indicator .smart-lamp[severity="off"] {
+  background: transparent;
+  border: 2px solid var(--smart-industrial-unknown-text, var(--smart-text-secondary-color, #5f6b77));
+}
+
+/* No state matched the value - missing data, not a state. Hatched over the unknown grey,
+   so it is never read as a declared grey state such as stopped. */
+smart-multi-state-indicator[unmatched] .smart-lamp[severity] {
+  background: repeating-linear-gradient(135deg, var(--smart-industrial-unknown, var(--smart-base-600)) 0 2px, transparent 2px 4px);
+  border: 1px dashed var(--smart-industrial-unknown-text, var(--smart-text-secondary-color, #5f6b77));
+}
+
+/* Quality: the lamp keeps its state but does not look live. Uncertain is dimmed, stale
+   faded, bad hatched; the word is in the label and the accessible name. */
+smart-multi-state-indicator[quality="uncertain"] .smart-lamp {
+  opacity: 0.6;
+}
+
+smart-multi-state-indicator[quality="stale"] .smart-lamp {
+  opacity: 0.4;
+}
+
+smart-multi-state-indicator[quality="bad"] .smart-lamp[severity] {
+  background-image: repeating-linear-gradient(45deg, transparent 0 2px, rgba(0, 0, 0, 0.45) 2px 4px);
+  outline: 1px solid var(--smart-industrial-alarm-critical-text, var(--smart-error));
+  outline-offset: 1px;
+}
+
+smart-multi-state-indicator .smart-lamp[severity="unknown"] {
+  background: var(--smart-industrial-unknown, var(--smart-base-600));
+}
+
+/* An unacknowledged or otherwise attention-seeking state blinks, per ISA-18.2. */
+smart-multi-state-indicator .smart-lamp.smart-blink {
+  animation: smart-multi-state-indicator-blink var(--smart-multi-state-indicator-blink-duration) step-end infinite;
+}
+
+@keyframes smart-multi-state-indicator-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  smart-multi-state-indicator .smart-lamp.smart-blink {
+    animation: none;
+  }
+}
+
+smart-multi-state-indicator[disabled] {
+  opacity: 0.5;
+}
+
+/* .smart-element carries the framework's own background at higher specificity than a bare
+   tag selector. The element sits on a diagram or inline in text, so it paints nothing of
+   its own. */
+smart-multi-state-indicator.smart-element {
+  background: transparent;
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-multi-state-indicator takes by default. */
+smart-multi-state-indicator:not(:defined) {
+  min-width: 37px;
+  min-height: 16px;
+}

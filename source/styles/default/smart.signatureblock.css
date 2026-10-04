@@ -1,0 +1,130 @@
+/* smart-signature-block */
+smart-signature-block {
+  --smart-sigblock-border: var(--smart-industrial-panel-border, var(--smart-border));
+  --smart-sigblock-background: var(--smart-industrial-panel-background, var(--smart-surface));
+  --smart-sigblock-ok-text: var(--smart-industrial-ok-text, var(--smart-success));
+  --smart-sigblock-error-text: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+  --smart-sigblock-warning-text: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+  --smart-sigblock-readout-font: var(--smart-industrial-readout-font, ui-monospace, "Cascadia Mono", "Consolas", "DejaVu Sans Mono", monospace);
+  display: inline-block;
+}
+smart-signature-block .smart-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  align-items: baseline;
+  padding: 8px 12px;
+  border: 1px solid var(--smart-sigblock-border);
+  border-left-width: 4px;
+  border-radius: 4px;
+  background: var(--smart-sigblock-background);
+  font-size: 13px;
+}
+smart-signature-block .smart-sigblock-meaning {
+  grid-column: 1;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-signature-block .smart-sigblock-name {
+  grid-column: 2;
+  font-size: 15px;
+  font-weight: 700;
+}
+smart-signature-block .smart-sigblock-userid,
+smart-signature-block .smart-sigblock-at,
+smart-signature-block .smart-sigblock-reason,
+smart-signature-block .smart-sigblock-hash,
+smart-signature-block .smart-sigblock-status {
+  grid-column: 2;
+}
+smart-signature-block .smart-sigblock-userid,
+smart-signature-block .smart-sigblock-hash {
+  font-family: var(--smart-sigblock-readout-font);
+  font-size: 11px;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-signature-block .smart-sigblock-at {
+  font-variant-numeric: tabular-nums;
+}
+smart-signature-block .smart-sigblock-reason {
+  font-style: italic;
+}
+smart-signature-block .smart-sigblock-status {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+smart-signature-block[verified=true] .smart-container {
+  border-left-color: var(--smart-sigblock-ok-text);
+}
+smart-signature-block[verified=true] .smart-sigblock-status {
+  color: var(--smart-sigblock-ok-text);
+}
+smart-signature-block {
+  /* Altered: the block says so in words and the rule turns red; the signature text
+     itself is not struck out - it is still what was signed. */
+}
+smart-signature-block[verified=false] .smart-container {
+  border-left-color: var(--smart-sigblock-error-text);
+}
+smart-signature-block[verified=false] .smart-sigblock-status {
+  color: var(--smart-sigblock-error-text);
+}
+smart-signature-block {
+  /* Cannot be checked: the signature carries no record hash. Not the "altered" verdict -
+     nothing is known to have changed - but not a pass either. */
+}
+smart-signature-block[verified=unknown] .smart-container {
+  border-left-color: var(--smart-sigblock-warning-text);
+}
+smart-signature-block[verified=unknown] .smart-sigblock-status {
+  color: var(--smart-sigblock-warning-text);
+}
+smart-signature-block {
+  /* A missing or unreadable date and time is part of the manifestation missing (11.50),
+     so it is said in words, in the error colour. */
+}
+smart-signature-block .smart-sigblock-at.smart-sigblock-invalid {
+  font-weight: 600;
+  color: var(--smart-sigblock-error-text);
+}
+smart-signature-block[unsigned] .smart-container {
+  border-style: dashed;
+}
+smart-signature-block[unsigned] .smart-sigblock-meaning {
+  grid-column: 1/-1;
+}
+smart-signature-block {
+  /* Compact: one line. */
+}
+smart-signature-block[compact] .smart-container {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 8px;
+  padding: 4px 10px;
+}
+smart-signature-block[compact] .smart-sigblock-name {
+  font-size: 13px;
+}
+smart-signature-block[disabled] {
+  opacity: 0.5;
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-signature-block.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-signature-block takes by default. */
+smart-signature-block:not(:defined) {
+  min-width: 300px;
+  min-height: 80px;
+}

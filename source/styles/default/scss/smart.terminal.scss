@@ -1,0 +1,119 @@
+/* smart-terminal */
+smart-terminal {
+  --smart-terminal-height: 260px;
+  /* The theme's panel tone, so the text colour the theme pairs with it is right; a dark
+     terminal on a light theme would need its own text colour too. */
+  --smart-terminal-background: var(--smart-industrial-panel-header-background, var(--smart-surface, var(--smart-background)));
+  --smart-terminal-color: var(--smart-text-color);
+  --smart-terminal-font: Consolas, "Courier New", monospace;
+  display: block;
+  width: 100%;
+  /* In a parent that sizes to its content - an inline-block, a flex item without a width -
+     100% of nothing collapsed the terminal to 18 px. A session needs a line's worth of room. */
+  min-width: 15em;
+  height: var(--smart-terminal-height);
+
+  .smart-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--smart-terminal-background);
+    border: 1px solid var(--smart-border);
+    border-radius: var(--smart-border-radius, 2px);
+    overflow: hidden;
+  }
+
+  .smart-terminal-output {
+    flex: 1 1 auto;
+    /* min-height:0 is what lets a flex child actually shrink and scroll rather than
+       growing to fit its content and pushing the input row off. */
+    min-height: 0;
+    overflow-y: auto;
+    padding: 6px 8px;
+    font-family: var(--smart-terminal-font);
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--smart-terminal-color);
+  }
+
+  .smart-terminal-output:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: -2px;
+  }
+
+  .smart-terminal-line {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .smart-terminal-time {
+    opacity: 0.7;
+    margin-right: 8px;
+    user-select: none;
+  }
+
+  /* Level colouring follows the same ISA-101 rule as the rest of the set: a line takes
+     colour only when it is something the operator should notice. */
+  .smart-terminal-line.level-info .smart-terminal-text { color: inherit; }
+  .smart-terminal-line.level-command .smart-terminal-text { color: var(--smart-primary); }
+  .smart-terminal-line.level-response .smart-terminal-text { opacity: 0.85; }
+  .smart-terminal-line.level-success .smart-terminal-text { color: var(--smart-industrial-ok-text, var(--smart-success)); }
+  .smart-terminal-line.level-warn .smart-terminal-text { color: var(--smart-industrial-alarm-warning-text, var(--smart-warning)); }
+  .smart-terminal-line.level-error .smart-terminal-text { color: var(--smart-industrial-alarm-critical-text, var(--smart-error)); }
+
+  .smart-terminal-input-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-top: 1px solid var(--smart-border);
+    font-family: var(--smart-terminal-font);
+    font-size: 12px;
+  }
+
+  .smart-terminal-prompt {
+    color: var(--smart-primary);
+    white-space: pre;
+    user-select: none;
+  }
+
+  .smart-terminal-input {
+    flex: 1 1 auto;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--smart-terminal-color);
+  }
+
+  &.smart-terminal-paused .smart-terminal-output {
+    opacity: 0.7;
+  }
+
+  /* The eight basic SGR foreground colours - what a bench instrument or serial device
+     actually emits. Full ANSI is a terminal emulator's job. The hues are fixed; each is
+     pulled towards the theme's text colour so that it reads on the terminal's background
+     whichever tone the theme gives it - the light hues that suit a dark terminal are
+     2:1 on a light one. Black and white are the dim and bright forms of the text colour. */
+  .smart-ansi-black   { color: color-mix(in srgb, var(--smart-terminal-color) 65%, var(--smart-terminal-background)); }
+  .smart-ansi-red     { color: color-mix(in srgb, #d9534f 70%, var(--smart-terminal-color)); }
+  .smart-ansi-green   { color: color-mix(in srgb, #5fb56f 60%, var(--smart-terminal-color)); }
+  .smart-ansi-yellow  { color: color-mix(in srgb, #e8a33d 55%, var(--smart-terminal-color)); }
+  .smart-ansi-blue    { color: color-mix(in srgb, #4a90d9 70%, var(--smart-terminal-color)); }
+  .smart-ansi-magenta { color: color-mix(in srgb, #c2557a 75%, var(--smart-terminal-color)); }
+  .smart-ansi-cyan    { color: color-mix(in srgb, #3fb5b5 60%, var(--smart-terminal-color)); }
+  .smart-ansi-white   { color: var(--smart-terminal-color); }
+  .smart-ansi-bold    { font-weight: 700; }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element sets background and color at higher specificity than a bare tag selector. */
+smart-terminal.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}

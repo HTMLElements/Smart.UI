@@ -87,6 +87,11 @@ export interface GaugeProperties {
    */
   labelsVisibility?: LabelsVisibility | string;
   /**
+   * Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings.
+   * Default value: good
+   */
+  quality?: GaugeQuality | string;
+  /**
    * Provides a way to retrieve or assign the unlockKey property, which is a unique code required to activate or gain access to the product's full features. Use this property to securely manage the product's access control.
    * Default value: ""
    */
@@ -303,6 +308,8 @@ export declare type GaugeAnalogDisplayType = 'needle' | 'fill' | 'line';
 export declare type GaugeDigitalDisplayPosition = 'bottom' | 'center' | 'right' | 'top';
 /**Specifies whether the labels within the element are displayed or hidden. When set to true, the labels inside the element are visible; when set to false, the labels are not shown. This property allows you to control the display of label text within the element. */
 export declare type LabelsVisibility = 'all' | 'endPoints' | 'none';
+/**Sets or retrieves the quality of the reading: good, uncertain, bad or stale. Reflected to an attribute so the stylesheet can show it - the value is dimmed for uncertain, hatched or struck through for bad and faded for stale, with the word shown beside it so it is legible without colour - and spoken to assistive technology as a description. A reading whose quality is not good must never look, or read out, as though it were. Carried onto the element by JQX.Industrial.Connect bindings. */
+export declare type GaugeQuality = 'good' | 'uncertain' | 'bad' | 'stale';
 /**Specifies the event or condition that triggers the update of the element’s value, such as on user input, when focus is lost, or after a specific action occurs. This setting controls how and when changes to the element's value are recognized and processed in the application. */
 export declare type DragMechanicalAction = 'switchUntilReleased' | 'switchWhenReleased' | 'switchWhileDragging';
 /**Specifies whether the element is configured to handle numerical values or date values, enabling appropriate functionality and validation for each data type. */

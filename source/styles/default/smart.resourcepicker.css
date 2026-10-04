@@ -1,0 +1,232 @@
+/* smart-resource-picker */
+smart-resource-picker {
+  --smart-resource-height: 34px;
+  --smart-resource-background: var(--smart-background);
+  --smart-resource-border: var(--smart-border);
+  --smart-resource-list-background: var(--smart-industrial-panel-background, var(--smart-surface));
+  display: inline-block;
+  width: 320px;
+  max-width: 100%;
+  position: relative;
+  font-family: inherit;
+}
+smart-resource-picker .smart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+smart-resource-picker .smart-resource-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-resource-picker .smart-resource-field {
+  display: flex;
+  align-items: stretch;
+  height: var(--smart-resource-height);
+  border: 1px solid var(--smart-resource-border);
+  border-radius: var(--smart-border-radius, 2px);
+  background: var(--smart-resource-background);
+}
+smart-resource-picker .smart-resource-field:focus-within {
+  border-color: var(--smart-primary);
+  box-shadow: 0 0 0 1px var(--smart-primary);
+}
+smart-resource-picker {
+  /* The interface of the resource in force, as a small tag before the name. */
+}
+smart-resource-picker .smart-resource-kind {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  margin: 4px 0 4px 4px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--smart-primary-color, #fff);
+  background: var(--smart-primary);
+}
+smart-resource-picker .smart-resource-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 8px;
+  border: none;
+  background: transparent;
+  color: var(--smart-text-color);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  outline: none;
+}
+smart-resource-picker .smart-resource-input::placeholder {
+  font-family: inherit;
+  color: var(--smart-text-tertiary-color, inherit);
+}
+smart-resource-picker .smart-resource-toggle,
+smart-resource-picker .smart-resource-refresh {
+  flex: none;
+  border: none;
+  border-left: 1px solid var(--smart-resource-border);
+  background: transparent;
+  color: var(--smart-text-secondary-color);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+smart-resource-picker .smart-resource-toggle {
+  width: 26px;
+}
+smart-resource-picker .smart-resource-toggle::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+smart-resource-picker .smart-resource-refresh {
+  padding: 0 10px;
+  white-space: nowrap;
+}
+smart-resource-picker .smart-resource-refresh:hover,
+smart-resource-picker .smart-resource-toggle:hover {
+  background: var(--smart-ui-state-hover);
+  color: var(--smart-ui-state-color-hover);
+}
+smart-resource-picker .smart-resource-refresh:focus-visible {
+  outline: 2px solid var(--smart-primary);
+  outline-offset: -2px;
+}
+smart-resource-picker .smart-resource-refresh[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+smart-resource-picker .smart-resource-refresh[aria-busy=true]::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -1px;
+  animation: smart-resource-spin 0.8s linear infinite;
+}
+@keyframes smart-resource-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+smart-resource-picker {
+  /* The list drops over what is below the field. */
+}
+smart-resource-picker .smart-resource-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 20;
+  max-height: 280px;
+  margin: 2px 0 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--smart-resource-border);
+  border-radius: var(--smart-border-radius, 2px);
+  background: var(--smart-resource-list-background);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+smart-resource-picker .smart-resource-group {
+  padding: 6px 10px 2px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--smart-text-tertiary-color, inherit);
+}
+smart-resource-picker .smart-resource-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "name alias state" "description description description";
+  column-gap: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+smart-resource-picker .smart-resource-item-name {
+  grid-area: name;
+  font-family: Consolas, "Courier New", monospace;
+}
+smart-resource-picker .smart-resource-item-alias {
+  grid-area: alias;
+  font-weight: 600;
+  color: var(--smart-text-color);
+}
+smart-resource-picker .smart-resource-item-description {
+  grid-area: description;
+  font-size: 11px;
+  color: var(--smart-text-secondary-color);
+}
+smart-resource-picker .smart-resource-item-state {
+  grid-area: state;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+}
+smart-resource-picker .smart-resource-item-unavailable .smart-resource-item-name {
+  color: var(--smart-text-secondary-color);
+}
+smart-resource-picker .smart-resource-item[aria-selected=true] {
+  font-weight: 600;
+}
+smart-resource-picker .smart-resource-item-active,
+smart-resource-picker .smart-resource-item:hover {
+  background: var(--smart-ui-state-hover);
+  color: var(--smart-ui-state-color-hover);
+}
+smart-resource-picker .smart-resource-item-custom .smart-resource-item-name {
+  font-family: inherit;
+  font-style: italic;
+}
+smart-resource-picker .smart-resource-item-invalid {
+  color: var(--smart-text-tertiary-color);
+  cursor: default;
+}
+smart-resource-picker .smart-resource-empty {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--smart-text-secondary-color);
+}
+smart-resource-picker .smart-resource-hint {
+  font-size: 11px;
+  color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+}
+smart-resource-picker {
+  /* Right to left: the label, field, buttons and list mirror; a resource name keeps its own
+     left-to-right order, which bidi gives an all-Latin string anyway. */
+}
+smart-resource-picker[right-to-left] {
+  direction: rtl;
+}
+smart-resource-picker[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-resource-picker.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-resource-picker takes by default. */
+smart-resource-picker:not(:defined) {
+  min-height: 54px;
+}

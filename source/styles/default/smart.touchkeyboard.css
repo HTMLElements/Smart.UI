@@ -1,0 +1,207 @@
+@charset "UTF-8";
+/* smart-touch-keyboard */
+smart-touch-keyboard {
+  --smart-touch-keyboard-key-height: 48px;
+  --smart-touch-keyboard-gap: 6px;
+  --smart-touch-keyboard-mono: var(--smart-industrial-readout-font, ui-monospace, "Cascadia Mono", "Consolas", "DejaVu Sans Mono", monospace);
+  display: block;
+  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+smart-touch-keyboard .smart-touch-keyboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid var(--smart-border, #ccd6e0);
+  border-radius: var(--smart-border-radius, 3px);
+  background: var(--smart-surface, #f4f6f8);
+}
+smart-touch-keyboard {
+  /* which field, and what it holds: on a small panel the keyboard can cover the field */
+}
+smart-touch-keyboard .smart-touch-keyboard-preview {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 1px solid var(--smart-border, #ccd6e0);
+  border-radius: var(--smart-border-radius, 3px);
+  background: var(--smart-background, #fff);
+  overflow: hidden;
+}
+smart-touch-keyboard .smart-touch-keyboard-preview[hidden] {
+  display: none;
+}
+smart-touch-keyboard .smart-touch-keyboard-field {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--smart-text-secondary-color, var(--smart-text-color));
+}
+smart-touch-keyboard {
+  /* the end of the text is what was just typed: a long value overflows at its start */
+}
+smart-touch-keyboard .smart-touch-keyboard-shown {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--smart-touch-keyboard-mono);
+  font-size: 15px;
+  white-space: pre;
+}
+smart-touch-keyboard .smart-touch-keyboard-shown.overflowing {
+  justify-content: flex-end;
+}
+smart-touch-keyboard .smart-touch-keyboard-shown[hidden] {
+  display: none;
+}
+smart-touch-keyboard {
+  /* a number touched afresh: the first key types over it, and it looks selected */
+}
+smart-touch-keyboard .smart-touch-keyboard-shown.replaced {
+  flex: 0 1 auto;
+  padding: 0 3px;
+  border-radius: 2px;
+  background: var(--smart-primary, #0f6cbd);
+  color: var(--smart-primary-color, #fff);
+}
+smart-touch-keyboard {
+  /* a number outside the field's range, refused */
+}
+smart-touch-keyboard .smart-touch-keyboard-field.refused {
+  font-weight: 600;
+  color: var(--smart-error, #c62828);
+}
+smart-touch-keyboard {
+  /* typed and outside the range: held on this line, not written into the field */
+}
+smart-touch-keyboard .smart-touch-keyboard-shown.outside {
+  color: var(--smart-industrial-alarm-critical-text, var(--smart-error, #c62828));
+  text-decoration: underline wavy;
+  text-underline-offset: 3px;
+}
+smart-touch-keyboard .smart-touch-keyboard-keys {
+  display: flex;
+  flex-direction: column;
+  gap: var(--smart-touch-keyboard-gap);
+}
+smart-touch-keyboard .smart-touch-keyboard-row {
+  display: flex;
+  gap: var(--smart-touch-keyboard-gap);
+}
+smart-touch-keyboard {
+  /* 44 px at least, for a gloved finger */
+}
+smart-touch-keyboard .smart-touch-keyboard-key {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: max(44px, var(--smart-touch-keyboard-key-height));
+  padding: 0 4px;
+  border: 1px solid var(--smart-border, #ccd6e0);
+  border-radius: var(--smart-border-radius, 3px);
+  background: var(--smart-background, #fff);
+  color: var(--smart-text-color);
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 0 var(--smart-border, #ccd6e0);
+}
+smart-touch-keyboard .smart-touch-keyboard-key.special {
+  background: var(--smart-ui-state-hover, var(--smart-surface, #eef1f4));
+  font-size: 15px;
+}
+smart-touch-keyboard .smart-touch-keyboard-key.primary {
+  border-color: var(--smart-primary);
+  background: var(--smart-primary);
+  color: var(--smart-primary-color, #fff);
+}
+smart-touch-keyboard .smart-touch-keyboard-key[aria-pressed=true] {
+  border-color: var(--smart-primary);
+  box-shadow: inset 0 0 0 2px var(--smart-primary);
+  font-weight: 700;
+}
+smart-touch-keyboard .smart-touch-keyboard-key:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+smart-touch-keyboard .smart-touch-keyboard-key:focus-visible {
+  outline: 2px solid var(--smart-primary);
+  outline-offset: 1px;
+}
+smart-touch-keyboard .smart-touch-keyboard-icon {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+smart-touch-keyboard .smart-touch-keyboard-space-bar {
+  display: inline-block;
+  width: 40%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--smart-text-tertiary-color, var(--smart-border, #ccd6e0));
+  vertical-align: middle;
+}
+smart-touch-keyboard[disabled] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+smart-touch-keyboard.smart-element {
+  background: transparent;
+}
+
+/* ── Out of the way until a field is touched ── */
+smart-touch-keyboard.smart-touch-keyboard-floating {
+  position: fixed;
+  z-index: 10000;
+}
+smart-touch-keyboard.smart-touch-keyboard-floating .smart-touch-keyboard-container {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.32);
+}
+
+smart-touch-keyboard.smart-touch-keyboard-floating:not(.smart-touch-keyboard-open) {
+  display: none;
+}
+
+smart-touch-keyboard.smart-touch-keyboard-popup {
+  width: min(720px, 100vw - 16px);
+}
+
+/* across the bottom of the screen, the preview showing what is typed where the field may be covered */
+smart-touch-keyboard.smart-touch-keyboard-docked {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+}
+smart-touch-keyboard.smart-touch-keyboard-docked .smart-touch-keyboard-container {
+  max-width: 980px;
+  margin: 0 auto;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* the keypad: four keys wide, and big */
+smart-touch-keyboard .smart-touch-keyboard-container.keypad .smart-touch-keyboard-key {
+  min-height: max(52px, var(--smart-touch-keyboard-key-height));
+  font-size: 22px;
+}
+smart-touch-keyboard .smart-touch-keyboard-container.keypad .smart-touch-keyboard-key.special {
+  font-size: 16px;
+}
+
+/* docked, a keypad stays a keypad: centred, not stretched across the screen */
+smart-touch-keyboard.smart-touch-keyboard-docked .smart-touch-keyboard-container.keypad {
+  max-width: 440px;
+}
+
+smart-touch-keyboard.smart-touch-keyboard-popup:has(.keypad) {
+  width: min(380px, 100vw - 16px);
+}

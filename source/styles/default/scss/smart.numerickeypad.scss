@@ -1,0 +1,208 @@
+/* smart-numeric-keypad */
+smart-numeric-keypad {
+  --smart-numeric-keypad-key-size: 48px;
+  --smart-numeric-keypad-gap: 6px;
+  --smart-numeric-keypad-key-background: var(--smart-industrial-panel-background, var(--smart-surface));
+  --smart-numeric-keypad-key-border: var(--smart-industrial-panel-border, var(--smart-border));
+  --smart-numeric-keypad-accept: var(--smart-primary);
+  --smart-numeric-keypad-accept-text: var(--smart-primary-color, #fff);
+  --smart-numeric-keypad-refuse: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+  display: inline-block;
+  width: auto;
+
+  /* A glove: 60 px keys and a wider gap so neighbours are not pressed together. */
+  &[density="touch"] {
+    --smart-numeric-keypad-key-size: 60px;
+    --smart-numeric-keypad-gap: 8px;
+  }
+
+  .smart-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--smart-numeric-keypad-gap);
+    width: calc(var(--smart-numeric-keypad-key-size) * 4 + var(--smart-numeric-keypad-gap) * 3);
+    padding: 10px;
+    box-sizing: content-box;
+    background: var(--smart-industrial-panel-header-background, var(--smart-surface));
+    border: 1px solid var(--smart-numeric-keypad-key-border);
+    border-radius: 4px;
+    outline: none;
+  }
+
+  .smart-container:focus-visible {
+    outline: 2px solid var(--smart-industrial-focus, var(--smart-primary));
+    outline-offset: 2px;
+  }
+
+  .smart-keypad-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .smart-keypad-label {
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The value being replaced stays in view, tabular, so the size of the step is seen. */
+  .smart-keypad-current {
+    flex: none;
+    color: var(--smart-text-secondary-color, inherit);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .smart-keypad-display {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 8px;
+    min-height: 44px;
+    padding: 4px 10px;
+    background: var(--smart-background);
+    border: 1px solid var(--smart-numeric-keypad-key-border);
+    border-radius: 3px;
+    box-sizing: border-box;
+  }
+
+  .smart-keypad-entry {
+    font-size: 24px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums slashed-zero;
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The opening value, not yet touched: the first key replaces it, and it says so. */
+  .smart-keypad-entry-fresh {
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  .smart-keypad-unit {
+    font-size: 13px;
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  .smart-keypad-limits {
+    font-size: 11px;
+    color: var(--smart-text-tertiary-color, inherit);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /* The refusal stays until the next key, beside the entry it refused. */
+  .smart-keypad-message {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--smart-numeric-keypad-refuse);
+  }
+
+  .smart-keypad-keys {
+    display: flex;
+    flex-direction: column;
+    gap: var(--smart-numeric-keypad-gap);
+  }
+
+  .smart-keypad-steps,
+  .smart-keypad-actions {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: var(--smart-numeric-keypad-gap);
+  }
+
+  .smart-keypad-actions {
+    /* The four actions in two rows of two: a word key a quarter of the width wide clipped
+       the German, French and Spanish words for Cancel and Clear. Enter stays bottom right. */
+    grid-auto-flow: row;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .smart-keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, var(--smart-numeric-keypad-key-size));
+    gap: var(--smart-numeric-keypad-gap);
+  }
+
+  .smart-keypad-key {
+    min-width: var(--smart-numeric-keypad-key-size);
+    min-height: var(--smart-numeric-keypad-key-size);
+    padding: 0 6px;
+    font: inherit;
+    font-size: 18px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--smart-text-color);
+    background: var(--smart-numeric-keypad-key-background);
+    border: 1px solid var(--smart-numeric-keypad-key-border);
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  /* Pressed feedback by depth, not by hover: a panel has no hover. */
+  .smart-keypad-key:active:not([disabled]) {
+    transform: translateY(1px);
+    filter: brightness(0.92);
+  }
+
+  .smart-keypad-key[disabled] {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  .smart-keypad-key-function,
+  .smart-keypad-key-step {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .smart-keypad-key-clear,
+  .smart-keypad-key-cancel {
+    font-size: 13px;
+  }
+
+  .smart-keypad-key-accept {
+    font-size: 14px;
+    color: var(--smart-numeric-keypad-accept-text);
+    background: var(--smart-numeric-keypad-accept);
+    border-color: var(--smart-numeric-keypad-accept);
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-numeric-keypad.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+@media (forced-colors: active) {
+  smart-numeric-keypad .smart-keypad-key,
+  smart-numeric-keypad .smart-keypad-display {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-numeric-keypad takes by default. */
+smart-numeric-keypad:not(:defined) {
+  min-width: 232px;
+  min-height: 420px;
+}

@@ -1,0 +1,182 @@
+/* smart-momentary-button */
+smart-momentary-button {
+  --smart-momentary-size: 44px;
+  --smart-momentary-background: var(--smart-industrial-panel-background, var(--smart-surface));
+  --smart-momentary-border: var(--smart-industrial-panel-border, var(--smart-border));
+  --smart-momentary-accent: var(--smart-primary);
+  --smart-momentary-start: var(--smart-industrial-ok, var(--smart-success));
+  --smart-momentary-stop: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-momentary-lamp: var(--smart-industrial-ok, var(--smart-success));
+  --smart-momentary-warning-text: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+  display: inline-block;
+
+  /* Touch: a bigger target and more room around it. */
+  &[density="touch"] {
+    --smart-momentary-size: 60px;
+  }
+
+  .smart-container {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .smart-momentary {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: calc(var(--smart-momentary-size) * 2);
+    min-height: var(--smart-momentary-size);
+    padding: 0 16px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--smart-text-color);
+    background: var(--smart-momentary-background);
+    border: 2px solid var(--smart-momentary-border);
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  .smart-momentary:focus-visible {
+    outline: 2px solid var(--smart-industrial-focus, var(--smart-primary));
+    outline-offset: 2px;
+  }
+
+  /* The kinds of a push button panel: green ring for a start, red for a stop, and the
+     mushroom head for an emergency stop - the colour on the ring, never the whole face,
+     so the word stays readable. */
+  &[kind="start"] .smart-momentary {
+    border-color: var(--smart-momentary-start);
+  }
+
+  &[kind="stop"] .smart-momentary {
+    border-color: var(--smart-momentary-stop);
+  }
+
+  &[kind="emergency"] .smart-momentary {
+    min-width: var(--smart-momentary-size);
+    border-color: var(--smart-momentary-stop);
+    border-width: 3px;
+    border-radius: 50%;
+    padding: 0 12px;
+    color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+    text-transform: uppercase;
+  }
+
+  /* Pressed: depth, not colour. */
+  &[pressed] .smart-momentary {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+    filter: brightness(0.94);
+  }
+
+  &[armed] .smart-momentary {
+    border-style: dashed;
+    animation: smart-momentary-armed 1s step-end infinite;
+  }
+
+  @keyframes smart-momentary-armed {
+    50% { border-color: var(--smart-momentary-accent); }
+  }
+
+  /* Interlocked: readable, but visibly not a live button. */
+  &[interlocked] .smart-momentary {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-image: repeating-linear-gradient(135deg, transparent 0 8px, rgba(128, 128, 128, 0.12) 8px 16px);
+  }
+
+  .smart-momentary[disabled] {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  /* The lamp: what the plant says the device is doing, lit when it says something. */
+  .smart-momentary-lamp {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--smart-momentary-lamp);
+    box-shadow: 0 0 0 1px var(--smart-momentary-background), 0 0 0 2px var(--smart-momentary-border);
+    flex: none;
+  }
+
+  .smart-momentary-lamp[data-state="fault"],
+  .smart-momentary-lamp[data-state="tripped"] {
+    background: var(--smart-momentary-stop);
+  }
+
+  .smart-momentary-lamp[data-state="stopped"],
+  .smart-momentary-lamp[data-state="closed"],
+  .smart-momentary-lamp[data-state="off"] {
+    background: var(--smart-text-tertiary-color, var(--smart-border));
+  }
+
+  /* The hold ring fills clockwise while the button is held. */
+  .smart-momentary-ring {
+    width: 22px;
+    height: 22px;
+    flex: none;
+    transform: rotate(-90deg);
+  }
+
+  .smart-momentary-ring-track {
+    fill: none;
+    stroke: var(--smart-momentary-border);
+    stroke-width: 3;
+  }
+
+  .smart-momentary-ring-progress {
+    fill: none;
+    stroke: var(--smart-momentary-accent);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 97.4;
+    stroke-dashoffset: 97.4;
+  }
+
+  &[kind="start"] .smart-momentary-ring-progress {
+    stroke: var(--smart-momentary-start);
+  }
+
+  .smart-momentary-hint {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--smart-momentary-warning-text);
+    text-align: center;
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-momentary-button.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  smart-momentary-button[armed] .smart-momentary {
+    animation: none;
+    border-color: var(--smart-momentary-accent);
+  }
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-momentary-button takes by default. */
+smart-momentary-button:not(:defined) {
+  min-width: 80px;
+  min-height: 44px;
+}

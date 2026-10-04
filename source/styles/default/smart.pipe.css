@@ -1,0 +1,99 @@
+/* smart-pipe */
+smart-pipe {
+  --smart-pipe-color: var(--smart-text-tertiary-color);
+  --smart-pipe-flow-color: var(--smart-primary);
+  --smart-pipe-flow-duration: 1s;
+  display: block;
+}
+smart-pipe .smart-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+smart-pipe .smart-pipe-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+smart-pipe .smart-pipe-path {
+  stroke: var(--smart-pipe-color);
+  opacity: 0.55;
+}
+smart-pipe {
+  /* A flowing line is drawn as a marching dash - the clearest way to show
+     direction without animating a marker along the path. */
+}
+smart-pipe.smart-pipe-flowing .smart-pipe-path {
+  stroke: var(--smart-pipe-flow-color);
+  opacity: 1;
+  stroke-dasharray: 10 6;
+  animation: smart-pipe-flow var(--smart-pipe-flow-duration) linear infinite;
+}
+smart-pipe.smart-pipe-flowing.smart-pipe-reverse .smart-pipe-path {
+  animation-direction: reverse;
+}
+smart-pipe {
+  /* The direction marks: chevrons along each leg of the run, pointing the way the flow goes.
+     Hidden while the dash moves; shown when it cannot (reduced motion, below). */
+}
+smart-pipe .smart-pipe-marks-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+smart-pipe {
+  /* Each leg is an inline SVG filled with a pattern of chevrons in the flow colour, sized from
+     the line's thickness; a leg the flow runs back along is the same leg flipped. */
+}
+smart-pipe .smart-pipe-marks {
+  display: none;
+  position: absolute;
+  overflow: hidden;
+  color: var(--smart-pipe-flow-color);
+}
+smart-pipe .smart-pipe-marks-right,
+smart-pipe .smart-pipe-marks-left {
+  height: var(--smart-pipe-mark-size, 10px);
+  transform: translateY(-50%);
+}
+smart-pipe .smart-pipe-marks-left {
+  transform: translateY(-50%) scaleX(-1);
+}
+smart-pipe .smart-pipe-marks-down,
+smart-pipe .smart-pipe-marks-up {
+  width: var(--smart-pipe-mark-size, 10px);
+  transform: translateX(-50%);
+}
+smart-pipe .smart-pipe-marks-up {
+  transform: translateX(-50%) scaleY(-1);
+}
+
+@keyframes smart-pipe-flow {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+/* Without motion a still dash says nothing about direction - forward and reverse would look
+   the same. The line goes solid and the chevrons carry the direction instead. */
+@media (prefers-reduced-motion: reduce) {
+  smart-pipe.smart-pipe-flowing .smart-pipe-path {
+    animation: none;
+    stroke-dasharray: none;
+  }
+  smart-pipe.smart-pipe-flowing .smart-pipe-marks {
+    display: block;
+  }
+}
+/* .smart-element carries the framework's own background at higher specificity than a bare
+   tag selector. The element sits on a diagram or inline in text, so it paints nothing of
+   its own. */
+smart-pipe.smart-element {
+  background: transparent;
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-pipe takes by default. */
+smart-pipe:not(:defined) {
+  min-height: 24px;
+}

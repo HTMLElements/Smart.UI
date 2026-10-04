@@ -641,4 +641,57 @@ smart-slider {
 }
 
 
+
+/* ── Quality ────────────────────────────────────────────────────────────────
+   A reading whose quality is not good must not look like one that is. The value is
+   dimmed for uncertain, hatched for bad and faded for stale, and a word says which - the
+   word first, the treatment second, so it is legible without colour. Scoped to the
+   attribute, so an instrument that never sets quality is untouched. */
+smart-slider[quality]:not([quality="good"]) {
+  position: relative;
+}
+
+smart-slider[quality]:not([quality="good"])::after {
+  content: attr(quality);
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 2;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+  background: var(--smart-background);
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+smart-slider[quality="bad"]::after {
+  color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+}
+
+smart-slider[quality="uncertain"] .smart-value,
+smart-slider[quality="uncertain"] .smart-thumb {
+  opacity: 0.6;
+}
+
+smart-slider[quality="stale"] .smart-value,
+smart-slider[quality="stale"] .smart-thumb {
+  opacity: 0.4;
+}
+
+smart-slider[quality="bad"] .smart-value {
+  opacity: 0.55;
+  background-image: repeating-linear-gradient(45deg, transparent 0 5px, rgba(0, 0, 0, 0.35) 5px 10px);
+}
+
+smart-slider[quality="bad"] .smart-thumb-label {
+  text-decoration: line-through;
+}
+
+
 @import 'rtl/_slider';

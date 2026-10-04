@@ -1,0 +1,73 @@
+/* smart-seven-segment */
+smart-seven-segment {
+  --smart-seven-segment-color: var(--smart-industrial-readout-color, var(--smart-success));
+  --smart-seven-segment-off-opacity: 0.12;
+  --smart-seven-segment-background: var(--smart-industrial-readout-background, var(--smart-base-900));
+  --smart-seven-segment-height: 54px;
+  --smart-seven-segment-gap: 3px;
+  /* The unit is small text, which needs 4.5:1 where the digits - large shapes - need 3:1.
+     The base theme's green on its readout background is 4.2:1, so the unit is printed a
+     quarter of the way to white, as the legend on a meter's bezel is lighter than its LEDs. */
+  --smart-seven-segment-unit-color: color-mix(in srgb, var(--smart-seven-segment-color) 75%, #fff);
+  display: inline-block;
+  padding: 8px 12px;
+  background: var(--smart-seven-segment-background);
+  border: var(--smart-border-width) solid var(--smart-border);
+  border-radius: var(--smart-border-radius);
+}
+smart-seven-segment .smart-container {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+smart-seven-segment {
+  /* Given less width than its digits need - a readout in a narrow tile - the digits shrink
+     rather than running past the edge: each glyph keeps its proportions (the SVG meets its
+     box), so a smaller reading is still a whole one. With room, nothing changes. */
+}
+smart-seven-segment .smart-display {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--smart-seven-segment-gap);
+  min-width: 0;
+}
+smart-seven-segment .smart-digit {
+  height: var(--smart-seven-segment-height);
+  width: calc(var(--smart-seven-segment-height) * 0.66);
+  flex: 0 1 auto;
+  min-width: 0;
+  display: block;
+}
+smart-seven-segment .smart-segment {
+  fill: var(--smart-seven-segment-color);
+}
+smart-seven-segment .smart-segment-off {
+  opacity: var(--smart-seven-segment-off-opacity);
+}
+smart-seven-segment .smart-unit {
+  color: var(--smart-seven-segment-unit-color);
+  font-family: var(--smart-font-family);
+  font-size: calc(var(--smart-seven-segment-height) * 0.26);
+  white-space: nowrap;
+}
+smart-seven-segment .smart-unit:empty {
+  display: none;
+}
+smart-seven-segment[disabled] {
+  opacity: 0.5;
+}
+
+/* .smart-element sets background and color on every element with a higher
+   specificity than a bare tag selector, so restate them with the class. */
+smart-seven-segment.smart-element {
+  background: var(--smart-seven-segment-background);
+  color: var(--smart-seven-segment-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-seven-segment takes by default. */
+smart-seven-segment:not(:defined) {
+  min-width: 119px;
+  min-height: 50px;
+}

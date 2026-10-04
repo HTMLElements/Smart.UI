@@ -1,0 +1,193 @@
+/* smart-panel-meter */
+smart-panel-meter {
+  --smart-panel-meter-width: 200px;
+  --smart-panel-meter-plate: var(--smart-surface);
+  --smart-panel-meter-bezel: var(--smart-industrial-panel-border, var(--smart-border));
+  --smart-panel-meter-ink: var(--smart-text-color);
+  --smart-panel-meter-tick: var(--smart-text-secondary-color, var(--smart-text-color));
+  /* The needle. Black on a pale plate is what a moving-coil instrument is, and it is the
+     only mark on the face that has to be read at a glance from two metres. */
+  --smart-panel-meter-needle: var(--smart-text-color);
+  --smart-panel-meter-setpoint: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-panel-meter-mirror: var(--smart-industrial-manual, var(--smart-primary));
+  display: inline-block;
+  font-family: var(--smart-font-family);
+  font-size: 11px;
+  color: var(--smart-panel-meter-ink);
+}
+smart-panel-meter .smart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+smart-panel-meter {
+  /* The case: the box the movement is screwed into. */
+}
+smart-panel-meter .smart-panel-meter-case {
+  width: var(--smart-panel-meter-width);
+  padding: 4px;
+  border: 1px solid var(--smart-panel-meter-bezel);
+  border-radius: 3px;
+  background: var(--smart-panel-meter-plate);
+  box-sizing: border-box;
+}
+smart-panel-meter .smart-panel-meter-face {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+smart-panel-meter .smart-panel-meter-arc {
+  fill: none;
+  stroke: var(--smart-panel-meter-tick);
+  stroke-width: 1.2;
+}
+smart-panel-meter {
+  /* The alarm bands, painted on the plate under the scale arc. */
+}
+smart-panel-meter .smart-panel-meter-band {
+  fill: none;
+  stroke-width: 6;
+  stroke: var(--smart-industrial-unknown, var(--smart-border));
+  opacity: 0.45;
+}
+smart-panel-meter .smart-panel-meter-band.critical {
+  stroke: var(--smart-industrial-alarm-critical, var(--smart-error));
+}
+smart-panel-meter .smart-panel-meter-band.warning {
+  stroke: var(--smart-industrial-alarm-warning, var(--smart-warning));
+}
+smart-panel-meter .smart-panel-meter-band.ok {
+  stroke: var(--smart-industrial-ok, var(--smart-success));
+}
+smart-panel-meter {
+  /* The anti-parallax mirror: the strip the needle is lined up with its own reflection in.
+     Drawn as a thin bright band, which is what it looks like on the plate. */
+}
+smart-panel-meter .smart-panel-meter-mirror {
+  fill: none;
+  stroke: var(--smart-panel-meter-mirror);
+  stroke-width: 5;
+  opacity: 0.3;
+}
+smart-panel-meter .smart-panel-meter-tick {
+  stroke: var(--smart-panel-meter-tick);
+  stroke-width: 0.9;
+}
+smart-panel-meter .smart-panel-meter-tick-major {
+  stroke-width: 1.6;
+  stroke: var(--smart-panel-meter-ink);
+}
+smart-panel-meter .smart-panel-meter-label {
+  fill: var(--smart-panel-meter-ink);
+  font-size: 11px;
+  font-family: var(--smart-font-family);
+}
+smart-panel-meter .smart-panel-meter-unit {
+  fill: var(--smart-panel-meter-tick);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--smart-font-family);
+}
+smart-panel-meter .smart-panel-meter-caption {
+  fill: var(--smart-panel-meter-tick);
+  font-size: 10px;
+  font-family: var(--smart-font-family);
+}
+smart-panel-meter {
+  /* The needle and its hub. */
+}
+smart-panel-meter .smart-panel-meter-pointer {
+  fill: var(--smart-panel-meter-needle);
+}
+smart-panel-meter .smart-panel-meter-pointer.critical {
+  fill: var(--smart-industrial-alarm-critical, var(--smart-error));
+}
+smart-panel-meter .smart-panel-meter-pointer.warning {
+  fill: var(--smart-industrial-alarm-warning, var(--smart-warning));
+}
+smart-panel-meter .smart-panel-meter-pointer.ok {
+  fill: var(--smart-industrial-ok, var(--smart-success));
+}
+smart-panel-meter .smart-panel-meter-hub {
+  fill: var(--smart-panel-meter-plate);
+  stroke: var(--smart-panel-meter-needle);
+  stroke-width: 2;
+}
+smart-panel-meter .smart-panel-meter-setpoint {
+  fill: var(--smart-panel-meter-setpoint);
+}
+smart-panel-meter {
+  /* A centre-zero movement's rest line, longer and heavier than a major mark. */
+}
+smart-panel-meter .smart-panel-meter-zero {
+  stroke: var(--smart-panel-meter-ink);
+  stroke-width: 2;
+}
+smart-panel-meter {
+  /* The over-range flag: a word, not only a colour. */
+}
+smart-panel-meter .smart-panel-meter-flag {
+  fill: var(--smart-industrial-alarm-critical, var(--smart-error));
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-family: var(--smart-font-family);
+}
+smart-panel-meter .smart-panel-meter-case.smart-panel-meter-over,
+smart-panel-meter .smart-panel-meter-case.smart-panel-meter-under {
+  border-color: var(--smart-industrial-alarm-critical, var(--smart-error));
+}
+smart-panel-meter {
+  /* No reading: the needle is gone and the flag says so. Not an alarm colour - the meter
+     has not been told the process is abnormal, it has been told nothing - but a dashed
+     case, so a dead feed is not mistaken for a meter that is simply switched off. */
+}
+smart-panel-meter .smart-panel-meter-case.smart-panel-meter-no-reading {
+  border-style: dashed;
+}
+smart-panel-meter .smart-panel-meter-case.smart-panel-meter-no-reading .smart-panel-meter-flag {
+  fill: var(--smart-panel-meter-ink);
+}
+smart-panel-meter {
+  /* The reading's quality, as a word on the plate opposite the range flag: legible without
+     colour, and at full contrast - the dimming is the needle's, never the text's. */
+}
+smart-panel-meter .smart-panel-meter-quality {
+  fill: var(--smart-industrial-alarm-warning-text, var(--smart-panel-meter-ink));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-family: var(--smart-font-family);
+}
+smart-panel-meter[quality=bad] .smart-panel-meter-quality {
+  fill: var(--smart-industrial-alarm-critical-text, var(--smart-panel-meter-ink));
+}
+smart-panel-meter .smart-panel-meter-readout {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+smart-panel-meter[quality=bad] .smart-panel-meter-pointer {
+  /* The reading is not to be believed. A hatch cannot be drawn on a needle this thin, so
+     the whole face is struck through instead - see the case rule below. */
+  fill: var(--smart-industrial-unknown, var(--smart-border));
+}
+smart-panel-meter[quality=bad] .smart-panel-meter-case {
+  background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.08) 0 4px, transparent 4px 8px);
+}
+smart-panel-meter {
+  /* Dimmed is the needle - the reading - and not the plate: fading the whole face took the
+     scale numbers and the unit to under 3:1, so the instrument became hard to read exactly
+     when it most needs reading carefully. The word above says why it is dimmed. */
+}
+smart-panel-meter[quality=stale] .smart-panel-meter-pointer, smart-panel-meter[quality=uncertain] .smart-panel-meter-pointer {
+  opacity: 0.5;
+}
+smart-panel-meter[disabled] {
+  opacity: 0.6;
+}
+smart-panel-meter:focus-visible {
+  outline: 2px solid var(--smart-primary);
+  outline-offset: 2px;
+}

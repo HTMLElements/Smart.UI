@@ -1,0 +1,134 @@
+/* smart-comparison-chart */
+smart-comparison-chart {
+  --smart-comparison-chart-height: 280px;
+  --smart-comparison-chart-grid-color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  --smart-comparison-chart-mono: var(--smart-industrial-readout-font, ui-monospace, "Cascadia Mono", "Consolas", "DejaVu Sans Mono", monospace);
+  /* The bar, limit, running-share and donut colours are read by the element from these;
+     unset, it falls back to the industrial palette, so the chart follows the theme. Only the
+     bars past a limit are coloured - colour on an operator screen is kept for what is wrong. */
+  display: block;
+  width: 100%;
+  height: var(--smart-comparison-chart-height);
+}
+smart-comparison-chart .smart-comparison-chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+smart-comparison-chart .smart-comparison-chart-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+smart-comparison-chart .smart-comparison-chart-title {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-text-secondary-color, var(--smart-text-color));
+}
+smart-comparison-chart .smart-comparison-chart-total {
+  font-variant-numeric: tabular-nums;
+  color: var(--smart-text-secondary-color, var(--smart-text-color));
+}
+smart-comparison-chart .smart-comparison-chart-plot {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+smart-comparison-chart .smart-comparison-chart-svg {
+  display: block;
+  overflow: visible;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+smart-comparison-chart {
+  /* the tertiary text colour, faint: the border token is close to a light panel's own colour
+     and the grid vanished on it */
+}
+smart-comparison-chart .smart-comparison-chart-grid {
+  stroke: var(--smart-comparison-chart-grid-color);
+  stroke-opacity: 0.35;
+  stroke-width: 1;
+}
+smart-comparison-chart .smart-comparison-chart-tick {
+  font-size: 11px;
+  fill: var(--smart-text-tertiary-color, var(--smart-text-color));
+}
+smart-comparison-chart .smart-comparison-chart-name {
+  fill: var(--smart-text-color);
+}
+smart-comparison-chart .smart-comparison-chart-value {
+  fill: var(--smart-text-color);
+  font-weight: 600;
+}
+smart-comparison-chart {
+  /* the text of a bar past the limit keeps the text colour: the bar says it, and a
+     warning colour as text is below the contrast floor on a light panel */
+}
+smart-comparison-chart .smart-comparison-chart-value.unknown {
+  font-weight: 400;
+  fill: var(--smart-text-tertiary-color, var(--smart-text-color));
+}
+smart-comparison-chart .smart-comparison-chart-running {
+  font-size: 11px;
+  font-weight: 400;
+  fill: var(--smart-text-tertiary-color, var(--smart-text-color));
+}
+smart-comparison-chart .smart-comparison-chart-limit {
+  stroke-width: 1.5;
+  stroke-dasharray: 5 3;
+}
+smart-comparison-chart .smart-comparison-chart-limit-label {
+  font-size: 11px;
+  fill: var(--smart-text-secondary-color, var(--smart-text-color));
+}
+smart-comparison-chart .smart-comparison-chart-cumulative {
+  stroke-width: 1.5;
+}
+smart-comparison-chart .smart-comparison-chart-slice {
+  stroke: var(--smart-background, #fff);
+  stroke-width: 1.5;
+}
+smart-comparison-chart .smart-comparison-chart-hole {
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--smart-text-color);
+}
+smart-comparison-chart .smart-comparison-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 12px;
+  color: var(--smart-text-tertiary-color, var(--smart-text-color));
+}
+smart-comparison-chart {
+  /* the figures, for a screen reader and a copy: off the screen, not out of the page */
+}
+smart-comparison-chart .smart-comparison-chart-table {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+smart-comparison-chart[disabled] {
+  opacity: 0.6;
+}
+
+/* .smart-element carries the framework's own background and color at higher specificity
+   than a bare tag selector, so anything that sets those has to be restated here. */
+smart-comparison-chart.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}

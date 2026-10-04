@@ -1,0 +1,102 @@
+/* smart-bar-graph */
+smart-bar-graph {
+  --smart-bar-graph-width: 26px;
+  --smart-bar-graph-height: 160px;
+  --smart-bar-segment-off: var(--smart-industrial-unknown, var(--smart-border));
+  /* A level in its normal range is not news: ISA-101 keeps saturated colour for the
+     abnormal, so a lit segment is the faceplate's process blue, and green, amber and red
+     come only from a band the screen marks ok, warning or critical. */
+  --smart-bar-segment-on: var(--smart-industrial-accent-text, var(--smart-primary));
+  --smart-bar-segment-gap: 2px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+
+  .smart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 100%;
+  }
+
+  .smart-bar-graph-bar {
+    display: flex;
+    gap: var(--smart-bar-segment-gap);
+  }
+
+  .smart-bar-graph-bar.vertical {
+    /* column-reverse so the first segment is at the bottom: a level meter fills upward,
+       and building it in DOM order keeps the markup reading low-to-high. */
+    flex-direction: column-reverse;
+    width: var(--smart-bar-graph-width);
+    height: var(--smart-bar-graph-height);
+  }
+
+  /* its length, unless the space it is in is shorter: the segments share what there is
+     rather than the bar running past the edge of a narrow tile */
+  .smart-bar-graph-bar.horizontal {
+    flex-direction: row;
+    width: var(--smart-bar-graph-height);
+    max-width: 100%;
+    height: var(--smart-bar-graph-width);
+  }
+
+  .smart-bar-segment {
+    flex: 1 1 0;
+    background: var(--smart-bar-segment-off);
+    border-radius: 1px;
+    /* Unlit segments stay visible rather than disappearing, so the scale's full extent is
+       readable at a glance - that is what separates a meter from a progress bar. */
+    opacity: 0.35;
+  }
+
+  .smart-bar-segment.on {
+    background: var(--smart-bar-segment-on);
+    opacity: 1;
+  }
+
+  /* A lit segment inside an alarm band takes that band's colour, so severity is carried
+     by the segment itself rather than by a separate marker. */
+  .smart-bar-segment.on.critical { background: var(--smart-industrial-alarm-critical, var(--smart-error)); }
+  .smart-bar-segment.on.warning  { background: var(--smart-industrial-alarm-warning, var(--smart-warning)); }
+  .smart-bar-segment.on.ok       { background: var(--smart-industrial-ok, var(--smart-success)); }
+
+  /* The peak marker is drawn whether or not its segment is lit - the whole point is that
+     it survives the signal falling away beneath it. */
+  .smart-bar-segment.peak {
+    background: var(--smart-text-color);
+    opacity: 1;
+  }
+
+  .smart-bar-graph-readout {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--smart-text-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element sets background and color at higher specificity than a bare tag selector. */
+smart-bar-graph.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-bar-graph takes by default. */
+smart-bar-graph:not(:defined) {
+  min-width: 26px;
+  min-height: 46px;
+}

@@ -1,0 +1,459 @@
+/* smart-thermometer */
+smart-thermometer {
+  --smart-thermometer-length: 180px;
+  --smart-thermometer-stem-width: 14px;
+  --smart-thermometer-bulb-size: 30px;
+  /* The liquid. Mercury red by default, because that is the instrument everybody pictures;
+     a plant that draws its thermometers in the process colour sets the variable. */
+  --smart-thermometer-liquid: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-thermometer-tube: var(--smart-surface);
+  --smart-thermometer-tube-border: var(--smart-industrial-panel-border, var(--smart-border));
+  --smart-thermometer-tick: var(--smart-text-secondary-color, var(--smart-border));
+  --smart-thermometer-setpoint: var(--smart-industrial-manual, var(--smart-primary));
+  display: inline-block;
+  font-family: var(--smart-font-family);
+  font-size: 11px;
+  color: var(--smart-text-color);
+
+  .smart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .smart-thermometer-body {
+    display: flex;
+    position: relative;
+  }
+
+  /* The tube: the stem and, below it, the bulb. The bulb hangs outside the measured
+     length, so a mark at the minimum sits at the foot of the stem and not somewhere in
+     the reservoir - the scale and the column have to agree about where zero is. */
+  .smart-thermometer-tube {
+    position: relative;
+    flex: none;
+  }
+
+  .smart-thermometer-stem {
+    position: absolute;
+    overflow: hidden;
+    background: var(--smart-thermometer-tube);
+    border: 1px solid var(--smart-thermometer-tube-border);
+  }
+
+  .smart-thermometer-bulb {
+    position: absolute;
+    width: var(--smart-thermometer-bulb-size);
+    height: var(--smart-thermometer-bulb-size);
+    border-radius: 50%;
+    background: var(--smart-thermometer-liquid);
+    border: 1px solid var(--smart-thermometer-tube-border);
+    box-sizing: border-box;
+  }
+
+  .smart-thermometer-column {
+    position: absolute;
+    background: var(--smart-thermometer-liquid);
+  }
+
+  /* The alarm bands, the length of the stem behind the column. */
+  .smart-thermometer-ranges {
+    position: absolute;
+    inset: 0;
+  }
+
+  .smart-thermometer-range {
+    position: absolute;
+    opacity: 0.3;
+    background: var(--smart-industrial-unknown, var(--smart-border));
+  }
+
+  .smart-thermometer-range.critical {
+    background: var(--smart-industrial-alarm-critical, var(--smart-error));
+  }
+
+  .smart-thermometer-range.warning {
+    background: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  }
+
+  .smart-thermometer-range.ok {
+    background: var(--smart-industrial-ok, var(--smart-success));
+  }
+
+  /* A column coloured by the band it has reached, and the bulb with it: the liquid is
+     one body, and a red stem over a red-only-sometimes bulb reads as two instruments. */
+  .smart-thermometer-column.critical,
+  .smart-thermometer-bulb.critical {
+    background: var(--smart-industrial-alarm-critical, var(--smart-error));
+  }
+
+  .smart-thermometer-column.warning,
+  .smart-thermometer-bulb.warning {
+    background: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  }
+
+  .smart-thermometer-column.ok,
+  .smart-thermometer-bulb.ok {
+    background: var(--smart-industrial-ok, var(--smart-success));
+  }
+
+  .smart-thermometer-markers {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .smart-thermometer-setpoint,
+  .smart-thermometer-extreme {
+    position: absolute;
+  }
+
+  .smart-thermometer-setpoint {
+    background: var(--smart-thermometer-setpoint);
+  }
+
+  /* The max-min pair. Open marks, so they are never mistaken for the reading itself. */
+  .smart-thermometer-extreme {
+    background: transparent;
+    border: 1px solid var(--smart-text-color);
+  }
+
+  .smart-thermometer-scale {
+    position: relative;
+    flex: none;
+    /* Set from the longest label; the variable is the floor, for a scale with no labels
+       at all, and the ceiling nothing - a host that wants a fixed gutter sets both. */
+    min-width: var(--smart-thermometer-scale-size, 0);
+  }
+
+  .smart-thermometer-mark {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    white-space: nowrap;
+    line-height: 1;
+  }
+
+  .smart-thermometer-tick {
+    display: block;
+    background: var(--smart-thermometer-tick);
+  }
+
+  .smart-thermometer-label {
+    color: var(--smart-text-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .smart-thermometer-scale-unit {
+    position: absolute;
+    font-weight: 600;
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  .smart-thermometer-readout {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  /* The words on the instrument: off the scale (and which end), no reading, and the
+     reading's quality. Words, so the state is legible without colour, and at full contrast -
+     the dimming for uncertain and stale is the liquid's, never the text's. A badge on the
+     bulb, which always holds liquid and so carries no reading, rather than a line of its
+     own: a line that came and went with the state would move every instrument below or
+     beside it each time a reading crossed the end of the scale. */
+  .smart-thermometer-flag {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 3px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.35;
+    white-space: nowrap;
+    color: var(--smart-text-color);
+    background: var(--smart-surface, var(--smart-background));
+    border: 1px solid var(--smart-thermometer-tube-border);
+    border-radius: 2px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+  }
+
+  .smart-thermometer-range-flag {
+    color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+  }
+
+  .smart-thermometer-quality-flag {
+    color: var(--smart-industrial-alarm-warning-text, var(--smart-text-color));
+  }
+
+  &[quality="bad"] .smart-thermometer-quality-flag {
+    color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+  }
+
+  .smart-thermometer-range-flag:empty,
+  .smart-thermometer-quality-flag:empty {
+    display: none;
+  }
+
+  /* No reading: an empty stem, a greyed bulb and a dashed tube. Not an alarm colour - the
+     instrument has been told nothing, not that something is wrong - and no column, because
+     a column at the foot of the scale is a reading of the minimum. */
+  .smart-thermometer-no-reading {
+    .smart-thermometer-column {
+      display: none;
+    }
+
+    .smart-thermometer-bulb {
+      background: var(--smart-industrial-unknown, var(--smart-border));
+    }
+
+    .smart-thermometer-stem {
+      border-style: dashed;
+    }
+
+    .smart-thermometer-range-flag {
+      color: var(--smart-text-color);
+    }
+  }
+
+  /* ── Vertical ─────────────────────────────────────────────────────────── */
+
+  .smart-thermometer-vertical {
+    /* Room above the stem for the unit, which is printed over the top of the scale. */
+    padding-top: 1.7em;
+
+    .smart-thermometer-body {
+      flex-direction: row;
+      align-items: stretch;
+      /* The length is the basis, not a ceiling: in a host with a height of its own - a cell
+         on a panel - the stem takes it, and on a page it stays as long as it was drawn. */
+      flex: 1 1 var(--smart-thermometer-length);
+      min-height: 24px;
+      gap: 4px;
+      /* Room under the stem for the bulb, which hangs below the measured length. It is
+         the body's margin and not the container's padding, so the digital reading below
+         lands under the bulb instead of behind it. */
+      margin-bottom: calc(var(--smart-thermometer-bulb-size) - 6px);
+    }
+
+    .smart-thermometer-tube {
+      width: var(--smart-thermometer-bulb-size);
+    }
+
+    .smart-thermometer-stem {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: var(--smart-thermometer-stem-width);
+      margin-left: calc(var(--smart-thermometer-stem-width) / -2);
+      border-radius: calc(var(--smart-thermometer-stem-width) / 2) calc(var(--smart-thermometer-stem-width) / 2) 0 0;
+    }
+
+    .smart-thermometer-bulb {
+      top: 100%;
+      left: 50%;
+      margin: -6px 0 0 calc(var(--smart-thermometer-bulb-size) / -2);
+    }
+
+    /* Centred on the bulb. */
+    .smart-thermometer-flag {
+      top: calc(100% - 6px + var(--smart-thermometer-bulb-size) / 2);
+      left: 50%;
+    }
+
+    .smart-thermometer-column {
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .smart-thermometer-range {
+      left: 0;
+      right: 0;
+    }
+
+    .smart-thermometer-setpoint,
+    .smart-thermometer-extreme {
+      left: -5px;
+      right: -5px;
+      height: 2px;
+      margin-bottom: -1px;
+    }
+
+    .smart-thermometer-tick {
+      width: 4px;
+      height: 1px;
+    }
+
+    .smart-thermometer-tick.smart-thermometer-tick-major {
+      width: 7px;
+    }
+
+    /* The near scale is on the reading side: its ticks touch the tube, so the mark is
+       laid out backwards - label first, tick against the glass. */
+    .smart-thermometer-scale-near .smart-thermometer-mark {
+      right: 0;
+      flex-direction: row-reverse;
+      margin-bottom: -0.5em;
+    }
+
+    .smart-thermometer-scale-far .smart-thermometer-mark {
+      left: 0;
+      margin-bottom: -0.5em;
+    }
+
+    .smart-thermometer-scale-unit {
+      bottom: 100%;
+      margin-bottom: 0.6em;
+    }
+
+    .smart-thermometer-scale-near .smart-thermometer-scale-unit {
+      right: 0;
+    }
+
+    .smart-thermometer-scale-far .smart-thermometer-scale-unit {
+      left: 0;
+    }
+  }
+
+  /* ── Horizontal ───────────────────────────────────────────────────────── */
+
+  .smart-thermometer-horizontal {
+    /* The bulb hangs off the left end and the unit is printed past the right, so both are
+       the container's padding: the stem itself is then free to be the width it is given. */
+    padding-left: calc(var(--smart-thermometer-bulb-size) - 6px);
+    padding-right: 2.4em;
+
+    .smart-thermometer-body {
+      flex-direction: column;
+      align-items: stretch;
+      width: var(--smart-thermometer-length);
+      max-width: 100%;
+      gap: 4px;
+    }
+
+    .smart-thermometer-tube {
+      height: var(--smart-thermometer-bulb-size);
+    }
+
+    .smart-thermometer-stem {
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: var(--smart-thermometer-stem-width);
+      margin-top: calc(var(--smart-thermometer-stem-width) / -2);
+      border-radius: 0 calc(var(--smart-thermometer-stem-width) / 2) calc(var(--smart-thermometer-stem-width) / 2) 0;
+    }
+
+    .smart-thermometer-bulb {
+      left: auto;
+      right: 100%;
+      top: 50%;
+      margin: calc(var(--smart-thermometer-bulb-size) / -2) -6px 0 0;
+    }
+
+    /* Centred on the bulb. */
+    .smart-thermometer-flag {
+      top: 50%;
+      left: calc(6px - var(--smart-thermometer-bulb-size) / 2);
+    }
+
+    .smart-thermometer-column {
+      top: 0;
+      bottom: 0;
+      left: 0;
+    }
+
+    .smart-thermometer-range {
+      top: 0;
+      bottom: 0;
+    }
+
+    .smart-thermometer-setpoint,
+    .smart-thermometer-extreme {
+      top: -5px;
+      bottom: -5px;
+      width: 2px;
+      margin-left: -1px;
+    }
+
+    .smart-thermometer-scale {
+      min-width: 0;
+      min-height: var(--smart-thermometer-scale-size, 0);
+    }
+
+    .smart-thermometer-mark {
+      flex-direction: column;
+      transform: translateX(-50%);
+    }
+
+    .smart-thermometer-tick {
+      width: 1px;
+      height: 4px;
+    }
+
+    .smart-thermometer-tick.smart-thermometer-tick-major {
+      height: 7px;
+    }
+
+    /* As on the vertical scale: the tick touches the glass and the label sits outside it.
+       This also puts every tick on one baseline - a mark with no label would otherwise leave
+       its tick at the tube while a labelled one pushed its tick out by the label's height,
+       which is what made the minor ticks read as commas between the numbers. */
+    .smart-thermometer-scale-near .smart-thermometer-mark {
+      bottom: 0;
+      flex-direction: column-reverse;
+    }
+
+    .smart-thermometer-scale-far .smart-thermometer-mark {
+      top: 0;
+      flex-direction: column;
+    }
+
+    /* The last label is centred on the end of the scale, so half of it hangs past it: the
+       unit clears that half rather than landing on top of it. */
+    .smart-thermometer-scale-unit {
+      left: 100%;
+      margin-left: calc(var(--smart-thermometer-end-label, 0ch) / 2 + 7px);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+
+  .smart-thermometer-no-bulb {
+    padding-left: 0;
+
+    .smart-thermometer-body {
+      margin-bottom: 0;
+    }
+  }
+
+  &[quality="bad"] .smart-thermometer-column,
+  &[quality="bad"] .smart-thermometer-bulb {
+    /* The reading is not to be believed: hatched, as everywhere else in the suite. */
+    background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.35) 0 3px, transparent 3px 6px);
+  }
+
+  &[quality="stale"] .smart-thermometer-column,
+  &[quality="stale"] .smart-thermometer-bulb,
+  &[quality="uncertain"] .smart-thermometer-column,
+  &[quality="uncertain"] .smart-thermometer-bulb {
+    opacity: 0.55;
+  }
+
+  &[disabled] {
+    opacity: 0.6;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 2px;
+  }
+}

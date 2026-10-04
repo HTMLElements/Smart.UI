@@ -1,0 +1,607 @@
+@charset "UTF-8";
+/* smart-site-map */
+smart-site-map {
+  /* A site that is fine is neutral grey; colour and weight only for one that needs someone. */
+  --smart-site-map-normal: var(--smart-text-tertiary-color, #6b7785);
+  --smart-site-map-warning: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  --smart-site-map-alarm: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-site-map-alarm-color: var(--smart-industrial-alarm-critical-color, #fff);
+  --smart-site-map-warning-color: var(--smart-industrial-alarm-warning-color, #000);
+  --smart-site-map-land: var(--smart-surface, #f4f6f8);
+  /* Map tiles muted, so the sites and not the streets are what the eye finds (ISA-101). */
+  --smart-site-map-tile-filter: grayscale(0.85) contrast(0.92) brightness(1.03);
+  display: block;
+  width: 100%;
+}
+smart-site-map .smart-site-map-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+smart-site-map .smart-site-map-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 12px;
+}
+smart-site-map .smart-site-map-title {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-text-secondary-color, var(--smart-text-color));
+}
+smart-site-map .smart-site-map-summary {
+  flex: 1 1 auto;
+  color: var(--smart-text-color);
+}
+smart-site-map .smart-site-map-views {
+  display: flex;
+  gap: 0;
+}
+smart-site-map .smart-site-map-view {
+  min-height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--smart-border, #ccd6e0);
+  background: var(--smart-background, #fff);
+  color: var(--smart-text-color);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+smart-site-map {
+  /* logical sides throughout the text around the map, so right to left mirrors it */
+}
+smart-site-map .smart-site-map-view:first-child {
+  border-radius: 0;
+  border-start-start-radius: var(--smart-border-radius, 3px);
+  border-end-start-radius: var(--smart-border-radius, 3px);
+}
+smart-site-map .smart-site-map-view:last-child {
+  margin-inline-start: -1px;
+  border-radius: 0;
+  border-start-end-radius: var(--smart-border-radius, 3px);
+  border-end-end-radius: var(--smart-border-radius, 3px);
+}
+smart-site-map .smart-site-map-view[aria-pressed=true] {
+  position: relative;
+  border-color: var(--smart-primary);
+  background: var(--smart-primary);
+  color: var(--smart-primary-color, #fff);
+}
+smart-site-map {
+  /* ── The map ── */
+}
+smart-site-map .smart-site-map-map {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--smart-border, #ccd6e0);
+  border-radius: var(--smart-border-radius, 3px);
+  background: var(--smart-site-map-land);
+  user-select: none;
+  -webkit-user-select: none;
+}
+smart-site-map {
+  /* a drag pans the map, so the browser must not scroll or zoom the page under it */
+}
+smart-site-map .smart-site-map-map.zoomable {
+  touch-action: none;
+  cursor: grab;
+}
+smart-site-map .smart-site-map-map.zoomable.dragging {
+  cursor: grabbing;
+}
+smart-site-map .smart-site-map-tiles {
+  position: absolute;
+  inset: 0;
+  filter: var(--smart-site-map-tile-filter);
+}
+smart-site-map .smart-site-map-tiles[hidden],
+smart-site-map .smart-site-map-picture[hidden],
+smart-site-map .smart-site-map-controls[hidden],
+smart-site-map .smart-site-map-attribution[hidden],
+smart-site-map .smart-site-map-popup[hidden],
+smart-site-map .smart-site-map-hint-overlay[hidden],
+smart-site-map .smart-site-map-detail[hidden] {
+  display: none;
+}
+smart-site-map .smart-site-map-tile {
+  position: absolute;
+  width: 256px;
+  height: 256px;
+  max-width: none;
+  pointer-events: none;
+}
+smart-site-map .smart-site-map-tile.failed {
+  visibility: hidden;
+}
+smart-site-map .smart-site-map-map[hidden],
+smart-site-map .smart-site-map-list[hidden] {
+  display: none;
+}
+smart-site-map .smart-site-map-picture {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  color: var(--smart-text-tertiary-color, #6b7785);
+}
+smart-site-map .smart-site-map-picture > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+smart-site-map {
+  /* the grid a map without a picture is drawn on */
+}
+smart-site-map .smart-site-map-picture:not(.image):empty {
+  background-image: linear-gradient(var(--smart-border-light, var(--smart-border, #ccd6e0)) 1px, transparent 1px), linear-gradient(90deg, var(--smart-border-light, var(--smart-border, #ccd6e0)) 1px, transparent 1px);
+  background-size: 10% 10%;
+  background-position: -1px -1px;
+  background-repeat: repeat;
+}
+smart-site-map .smart-site-map-markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+smart-site-map .smart-site-map-markers .smart-site-map-site {
+  pointer-events: auto;
+}
+smart-site-map .smart-site-map-site[hidden] {
+  display: none;
+}
+smart-site-map {
+  /* ── Zoom, credit, hint ── */
+}
+smart-site-map .smart-site-map-controls {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--smart-border, #ccd6e0);
+  border-radius: var(--smart-border-radius, 3px);
+  background: var(--smart-background, #fff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+smart-site-map .smart-site-map-control {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--smart-border, #ccd6e0);
+  background: transparent;
+  color: var(--smart-text-color);
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+smart-site-map .smart-site-map-control:last-child {
+  border-bottom: 0;
+  font-size: 15px;
+}
+smart-site-map .smart-site-map-control:hover {
+  background: var(--smart-ui-state-hover, var(--smart-surface, #f4f6f8));
+}
+smart-site-map .smart-site-map-control:focus-visible,
+smart-site-map .smart-site-map-close:focus-visible,
+smart-site-map .smart-site-map-link:focus-visible {
+  outline: 2px solid var(--smart-primary);
+  outline-offset: -2px;
+}
+smart-site-map .smart-site-map-attribution {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  padding: 1px 6px;
+  background: color-mix(in srgb, var(--smart-background, #fff) 82%, transparent);
+  font-size: 11px;
+  color: var(--smart-text-secondary-color, var(--smart-text-color));
+}
+smart-site-map .smart-site-map-hint-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
+}
+smart-site-map {
+  /* ── The card beside its marker ── */
+}
+smart-site-map .smart-site-map-popup {
+  position: absolute;
+  z-index: 2;
+  width: 280px;
+  max-width: calc(100% - 12px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  cursor: auto;
+}
+smart-site-map .smart-site-map-popup .smart-site-map-card {
+  flex-direction: column;
+  align-items: stretch;
+  background: var(--smart-background, #fff);
+}
+smart-site-map .smart-site-map-popup.outside {
+  visibility: hidden;
+}
+smart-site-map .smart-site-map-popup::after {
+  content: "";
+  position: absolute;
+  left: var(--smart-site-map-pointer-x, 50%);
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  border-right: 1px solid var(--smart-border, #ccd6e0);
+  border-bottom: 1px solid var(--smart-border, #ccd6e0);
+  background: var(--smart-background, #fff);
+  transform: translateX(-50%) rotate(45deg);
+}
+smart-site-map .smart-site-map-popup.below::after {
+  top: -7px;
+  bottom: auto;
+  transform: translateX(-50%) rotate(225deg);
+}
+smart-site-map .smart-site-map-site {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* the dot sits on the point; the name runs to its right */
+  transform: translate(-12px, -50%);
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--smart-text-color);
+  font: inherit;
+  cursor: pointer;
+}
+smart-site-map .smart-site-map-site.left {
+  flex-direction: row-reverse;
+  transform: translate(calc(-100% + 12px), -50%);
+}
+smart-site-map .smart-site-map-dot {
+  position: relative;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  margin: 5px;
+  border: 2px solid var(--smart-background, #fff);
+  border-radius: 50%;
+  background: var(--smart-site-map-normal);
+  box-shadow: 0 0 0 1px var(--smart-site-map-normal);
+}
+smart-site-map .smart-site-map-site.warning .smart-site-map-dot {
+  width: 18px;
+  height: 18px;
+  margin: 3px;
+  background: var(--smart-site-map-warning);
+  box-shadow: 0 0 0 1px var(--smart-site-map-warning-color);
+}
+smart-site-map .smart-site-map-site.alarm .smart-site-map-dot {
+  width: 22px;
+  height: 22px;
+  margin: 1px;
+  background: var(--smart-site-map-alarm);
+  box-shadow: 0 0 0 1px var(--smart-site-map-alarm), 0 0 0 5px color-mix(in srgb, var(--smart-site-map-alarm) 25%, transparent);
+}
+smart-site-map .smart-site-map-site.offline .smart-site-map-dot {
+  border: 2px dashed var(--smart-site-map-normal);
+  background: var(--smart-background, #fff);
+  box-shadow: none;
+}
+smart-site-map .smart-site-map-site.maintenance .smart-site-map-dot {
+  background: repeating-linear-gradient(45deg, var(--smart-site-map-normal) 0 2px, var(--smart-background, #fff) 2px 4px);
+}
+smart-site-map {
+  /* A state the map cannot read: hollow, dotted, with a question mark, a size up from normal
+     so it is found. No alarm colour - nobody knows it is an alarm - but never the quiet grey
+     of a site that is fine. */
+}
+smart-site-map .smart-site-map-site.unknown .smart-site-map-dot {
+  width: 18px;
+  height: 18px;
+  margin: 3px;
+  border: 2px dotted var(--smart-text-color, #131c25);
+  background: var(--smart-background, #fff);
+  box-shadow: none;
+}
+smart-site-map .smart-site-map-site.unknown .smart-site-map-dot::after {
+  content: "?";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--smart-text-color, #131c25);
+}
+smart-site-map .smart-site-map-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--smart-site-map-alarm-color);
+}
+smart-site-map .smart-site-map-site.warning .smart-site-map-badge {
+  font-size: 10px;
+  color: var(--smart-site-map-warning-color);
+}
+smart-site-map .smart-site-map-name {
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--smart-background, #fff) 88%, transparent);
+  font-size: 12px;
+  white-space: nowrap;
+}
+smart-site-map .smart-site-map-site.alarm .smart-site-map-name,
+smart-site-map .smart-site-map-site.warning .smart-site-map-name,
+smart-site-map .smart-site-map-site.unknown .smart-site-map-name {
+  font-weight: 600;
+}
+smart-site-map .smart-site-map-site.selected .smart-site-map-name {
+  outline: 2px solid var(--smart-primary);
+}
+smart-site-map .smart-site-map-site.selected .smart-site-map-dot {
+  outline: 2px solid var(--smart-primary);
+  outline-offset: 3px;
+}
+smart-site-map .smart-site-map-site:focus-visible {
+  outline: none;
+}
+smart-site-map .smart-site-map-site:focus-visible .smart-site-map-dot {
+  outline: 3px solid var(--smart-primary);
+  outline-offset: 3px;
+}
+smart-site-map {
+  /* ── The list ── */
+}
+smart-site-map .smart-site-map-list {
+  overflow: auto;
+  border: 1px solid var(--smart-border, #ccd6e0);
+  border-radius: var(--smart-border-radius, 3px);
+  background: var(--smart-background, #fff);
+}
+smart-site-map .smart-site-map-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+smart-site-map .smart-site-map-table th[scope=col] {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--smart-border, #ccd6e0);
+  background: var(--smart-surface, #f4f6f8);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: start;
+  color: var(--smart-text-tertiary-color, var(--smart-text-color));
+}
+smart-site-map .smart-site-map-table td,
+smart-site-map .smart-site-map-table th[scope=row] {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--smart-border-light, var(--smart-border, #ccd6e0));
+  text-align: start;
+}
+smart-site-map .smart-site-map-table tr.alarm > th {
+  box-shadow: inset var(--smart-site-map-edge, 3px) 0 0 var(--smart-site-map-alarm);
+}
+smart-site-map .smart-site-map-table tr.warning > th {
+  box-shadow: inset var(--smart-site-map-edge, 3px) 0 0 var(--smart-site-map-warning);
+}
+smart-site-map .smart-site-map-table tr.unknown > th {
+  box-shadow: inset var(--smart-site-map-edge, 3px) 0 0 var(--smart-text-color, #131c25);
+}
+smart-site-map .smart-site-map-table tr.selected {
+  background: var(--smart-ui-state-hover, var(--smart-surface, #f4f6f8));
+}
+smart-site-map .smart-site-map-row-open {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--smart-text-color);
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+smart-site-map .smart-site-map-row-open:hover,
+smart-site-map .smart-site-map-row-open:focus-visible {
+  text-decoration: underline;
+}
+smart-site-map .smart-site-map-number {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+smart-site-map .smart-site-map-reading {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: break-word;
+}
+smart-site-map .smart-site-map-state {
+  padding: 0 6px;
+  border: 1px solid var(--smart-border, #ccd6e0);
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+smart-site-map .smart-site-map-state.alarm {
+  border-color: var(--smart-site-map-alarm);
+  background: var(--smart-site-map-alarm);
+  color: var(--smart-site-map-alarm-color);
+}
+smart-site-map .smart-site-map-state.warning {
+  border-color: var(--smart-site-map-warning);
+  background: var(--smart-site-map-warning);
+  color: var(--smart-site-map-warning-color);
+}
+smart-site-map .smart-site-map-state.offline {
+  border-style: dashed;
+}
+smart-site-map .smart-site-map-state.unknown {
+  border: 1px dotted var(--smart-text-color, #131c25);
+}
+smart-site-map {
+  /* ── The selected site ── */
+}
+smart-site-map .smart-site-map-detail {
+  min-height: 44px;
+}
+smart-site-map .smart-site-map-hint {
+  margin: 0;
+  padding: 12px 0;
+  font-size: 12px;
+  color: var(--smart-text-secondary-color, var(--smart-text-color));
+}
+smart-site-map .smart-site-map-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--smart-border, #ccd6e0);
+  border-radius: var(--smart-border-radius, 3px);
+  background: var(--smart-surface, #f4f6f8);
+}
+smart-site-map .smart-site-map-card.alarm {
+  box-shadow: inset var(--smart-site-map-edge, 3px) 0 0 var(--smart-site-map-alarm);
+}
+smart-site-map .smart-site-map-card.warning {
+  box-shadow: inset var(--smart-site-map-edge, 3px) 0 0 var(--smart-site-map-warning);
+}
+smart-site-map .smart-site-map-card.unknown {
+  box-shadow: inset var(--smart-site-map-edge, 3px) 0 0 var(--smart-text-color, #131c25);
+}
+smart-site-map .smart-site-map-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+smart-site-map .smart-site-map-popup .smart-site-map-card-head {
+  width: 100%;
+}
+smart-site-map .smart-site-map-card-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+smart-site-map .smart-site-map-card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  font-size: 13px;
+}
+smart-site-map .smart-site-map-card-alarms {
+  font-weight: 600;
+}
+smart-site-map .smart-site-map-card-reading {
+  font-variant-numeric: tabular-nums;
+}
+smart-site-map .smart-site-map-card-text {
+  color: var(--smart-text-secondary-color, var(--smart-text-color));
+}
+smart-site-map .smart-site-map-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+}
+smart-site-map .smart-site-map-link {
+  color: var(--smart-primary);
+  font-size: 13px;
+}
+smart-site-map .smart-site-map-close {
+  width: 28px;
+  height: 28px;
+  margin-inline-start: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--smart-border-radius, 3px);
+  background: transparent;
+  color: var(--smart-text-secondary-color, var(--smart-text-color));
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+smart-site-map .smart-site-map-close:hover {
+  background: var(--smart-ui-state-hover, var(--smart-surface, #f4f6f8));
+  color: var(--smart-text-color);
+}
+smart-site-map .smart-site-map-open {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--smart-primary);
+  border-radius: var(--smart-border-radius, 3px);
+  background: var(--smart-primary);
+  color: var(--smart-primary-color, #fff);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+smart-site-map .smart-site-map-empty {
+  margin: 0;
+  padding: 12px;
+  color: var(--smart-text-secondary-color, var(--smart-text-color));
+}
+smart-site-map .smart-site-map-view:focus-visible,
+smart-site-map .smart-site-map-row-open:focus-visible,
+smart-site-map .smart-site-map-open:focus-visible {
+  outline: 2px solid var(--smart-primary);
+  outline-offset: 1px;
+}
+smart-site-map[disabled] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+smart-site-map {
+  /* Right to left: the heading, the table and the cards mirror; the map does not - geography
+     and a plant's picture have no reading direction, so the markers stay where they are placed.
+     A card opened on the map is text, and mirrors with the rest. */
+}
+smart-site-map[right-to-left] {
+  direction: rtl;
+}
+smart-site-map[right-to-left], smart-site-map:dir(rtl) {
+  --smart-site-map-edge: -3px;
+}
+smart-site-map .smart-site-map-map {
+  direction: ltr;
+}
+smart-site-map[right-to-left] .smart-site-map-popup,
+smart-site-map .smart-site-map-popup:dir(rtl) {
+  direction: rtl;
+}
+
+[theme=industrial-dark] smart-site-map,
+smart-site-map[theme=industrial-dark] {
+  --smart-site-map-tile-filter: grayscale(1) invert(0.9) brightness(0.9) contrast(0.85);
+}
+
+smart-site-map.smart-element {
+  background: transparent;
+}

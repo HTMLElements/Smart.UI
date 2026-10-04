@@ -1,0 +1,158 @@
+/* smart-strip-chart */
+smart-strip-chart {
+  --smart-strip-chart-height: 260px;
+  --smart-strip-plot-background: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+  --smart-strip-grid-color: var(--smart-border);
+  --smart-strip-cursor-color: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-strip-scale-color: var(--smart-text-secondary-color, var(--smart-surface-color));
+  display: block;
+  width: 100%;
+  height: var(--smart-strip-chart-height);
+}
+smart-strip-chart .smart-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+}
+smart-strip-chart {
+  /* The plot takes whatever the chrome leaves. min-height: 0 is what stops a flex item
+     from refusing to shrink below its content height and pushing the legend off. */
+}
+smart-strip-chart .smart-strip-plot {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--smart-strip-plot-background);
+  border: 1px solid var(--smart-border);
+  border-radius: var(--smart-border-radius, 2px);
+  overflow: hidden;
+}
+smart-strip-chart .smart-strip-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+smart-strip-chart .smart-strip-paused {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  padding: 1px 6px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  pointer-events: none;
+}
+smart-strip-chart .smart-strip-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+smart-strip-chart {
+  /* The pen's colour is on the swatch; the words are in the text colour, which a pen colour
+     picked for a line on the plot cannot be relied on to match at 12px. */
+}
+smart-strip-chart .smart-strip-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+smart-strip-chart .smart-strip-value b {
+  font-weight: 600;
+}
+smart-strip-chart {
+  /* "no reading", said in place of the "--" a screen reader cannot read. Off-screen
+     rather than display:none, which would take it out of the accessibility tree too. */
+}
+smart-strip-chart .smart-strip-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+smart-strip-chart {
+  /* OVER / UNDER beside a reading off its pen's scale. The reading is kept; this says
+     where it is. Text colours from the alarm text tokens, which hold 4.5:1 on a panel. */
+}
+smart-strip-chart .smart-strip-flag {
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+  border: 1px solid currentColor;
+  border-radius: 2px;
+}
+smart-strip-chart .smart-strip-flag[hidden] {
+  display: none;
+}
+smart-strip-chart .smart-strip-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+smart-strip-chart .smart-strip-pen {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--smart-text-color);
+  background: transparent;
+  border: 1px solid var(--smart-border);
+  border-radius: 2px;
+  cursor: pointer;
+}
+smart-strip-chart .smart-strip-pen:focus-visible {
+  outline: 2px solid var(--smart-primary);
+  outline-offset: 1px;
+}
+smart-strip-chart {
+  /* A hidden pen stays legible - an operator has to be able to read the label of the pen
+     they just turned off in order to turn it back on. */
+}
+smart-strip-chart .smart-strip-pen-off {
+  opacity: 0.55;
+}
+smart-strip-chart .smart-strip-pen-off .smart-strip-swatch {
+  background: transparent !important;
+  border-color: var(--smart-text-tertiary-color);
+}
+smart-strip-chart .smart-strip-swatch {
+  width: 10px;
+  height: 10px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  flex: none;
+}
+smart-strip-chart {
+  /* Right to left: the text around the plot mirrors - digital display, legend. The plot
+     does not: its axes run as the data does, and the canvas text keeps its direction. */
+}
+smart-strip-chart[right-to-left] .smart-strip-readout,
+smart-strip-chart[right-to-left] .smart-strip-legend {
+  direction: rtl;
+}
+smart-strip-chart[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-strip-chart.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}

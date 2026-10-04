@@ -1,0 +1,381 @@
+/* ==========================================================================
+   Smart UI Industrial Theme - Dark (control room)
+   ==========================================================================
+   Purpose:        Operator screens in low-light control rooms, 24/7 wall
+                   displays, test benches.
+   Usage:          Load after smart.default.css, then set theme="industrial-dark"
+                   on body or on individual elements.
+   Design rules:   ISA-101 governs *colour coding* - saturated colour is
+                   reserved for abnormal states - but the neutrals still have to
+                   be legible and to separate. Surfaces step up from the canvas
+                   so a panel reads as a panel, and text carries real contrast
+                   instead of sitting flat against its background.
+   ========================================================================== */
+
+body[theme="industrial-dark"],
+.smart-element[theme="industrial-dark"],
+.smart-ui-component[theme="industrial-dark"] {
+    /* ── Brand / Semantic Colors ──────────────────────────────────────── */
+    --smart-primary-rgb: 88, 160, 235;
+    --smart-primary: rgb(var(--smart-primary-rgb));
+    --smart-primary-color: #0b1016;
+    --smart-secondary-rgb: 141, 156, 170;
+    --smart-secondary: rgb(var(--smart-secondary-rgb));
+    --smart-secondary-color: #0b1016;
+    --smart-error-rgb: 233, 98, 102;
+    --smart-error: rgb(var(--smart-error-rgb));
+    --smart-error-color: #0b1016;
+    --smart-success-rgb: 106, 190, 116;
+    --smart-success: rgb(var(--smart-success-rgb));
+    --smart-success-color: #0b1016;
+    --smart-info-rgb: 88, 160, 235;
+    --smart-info: rgb(var(--smart-info-rgb));
+    --smart-info-color: #0b1016;
+    --smart-warning-rgb: 232, 165, 66;
+    --smart-warning: rgb(var(--smart-warning-rgb));
+    --smart-warning-color: #0b1016;
+
+    /* ── Neutral ramp: four distinct surface steps ────────────────────── */
+    --smart-base: #2b3540;
+    --smart-base-50: #0b1016;
+    --smart-base-100: #10161d;
+    --smart-base-200: #171f27;
+    --smart-base-300: #1e2731;
+    --smart-base-400: #26313d;
+    --smart-base-500: #313e4b;
+    --smart-base-600: #46566a;
+    --smart-base-700: #93a3b2;
+    --smart-base-800: #c2ced9;
+    --smart-base-900: #eaf0f6;
+
+    /* ── Surfaces ─────────────────────────────────────────────────────── */
+    --smart-background: #1e2731;
+    --smart-background-color: #eaf0f6;
+    --smart-surface: #1e2731;
+    --smart-surface-color: #eaf0f6;
+    --smart-body-background-color: #10161d;
+    --smart-base-background-color: var(--smart-base-200);
+    --smart-disabled: #26313d;
+    --smart-disabled-color: #66788a;
+
+    /* ── Borders ──────────────────────────────────────────────────────── */
+    --smart-border: #313e4b;
+    --smart-border-rgb: 49, 62, 75;
+    --smart-outline: #46566a;
+    --smart-border-normal: #313e4b;
+    --smart-border-hover: #46566a;
+    --smart-border-focus: var(--smart-primary);
+    --smart-border-disabled: #26313d;
+    --smart-border-radius: 3px;
+    --smart-border-top-left-radius: var(--smart-border-radius);
+    --smart-border-top-right-radius: var(--smart-border-radius);
+    --smart-border-bottom-left-radius: var(--smart-border-radius);
+    --smart-border-bottom-right-radius: var(--smart-border-radius);
+
+    /* ── Typography ───────────────────────────────────────────────────── */
+    --smart-text-title-color: #f3f7fb;
+    --smart-text-color: #eaf0f6;
+    --smart-text-secondary-color: #c2ced9;
+    --smart-text-tertiary-color: #93a3b2;
+    --smart-text-disabled-color: #66788a;
+    --smart-text-contrast-color: #0b1016;
+
+    /* ── Interaction States ───────────────────────────────────────────── */
+    --smart-ui-state-hover: #26313d;
+    --smart-ui-state-color-hover: #f3f7fb;
+    --smart-ui-state-border-hover: #46566a;
+    --smart-ui-state-active: var(--smart-primary);
+    --smart-ui-state-color-active: var(--smart-primary-color);
+    --smart-ui-state-border-active: var(--smart-primary);
+    --smart-ui-state-focus: rgba(var(--smart-primary-rgb), .18);
+    --smart-ui-state-color-focus: #f3f7fb;
+    --smart-ui-state-border-focus: var(--smart-primary);
+    --smart-ui-state-selected: rgba(var(--smart-primary-rgb), .22);
+    --smart-ui-state-color-selected: #f3f7fb;
+    --smart-ui-state-border-selected: rgba(var(--smart-primary-rgb), .45);
+
+    /* ── Instrument scales (smartGauge, smartTank, smartSlider) ─────────────── */
+    --smart-tick-color: #56687c;
+    --smart-tick-label-color: #c2ced9;
+
+    /* ── Alternating rows ─────────────────────────────────────────────── */
+    --smart-alternation-index0-background: transparent;
+    --smart-alternation-index0-color: var(--smart-text-color);
+    --smart-alternation-index0-border: var(--smart-border);
+    --smart-alternation-index1-background: #232d38;
+    --smart-alternation-index1-color: var(--smart-text-color);
+    --smart-alternation-index1-border: var(--smart-border);
+
+    /* ── Grid frozen cells ────────────────────────────────────────────── */
+    --smart-grid-cell-background-freeze: #1e2731;
+    --smart-grid-cell-color-freeze: #eaf0f6;
+
+    /* ── Scrollbars ───────────────────────────────────────────────────── */
+    --smart-scroll-bar-background: #10161d;
+    /* resolved at :root from the light default, so it has to be said here too: the track of a
+       tree's scroll bar stayed white on the dark theme */
+    --smart-scroll-bar-track-background: #10161d;
+    --smart-scroll-bar-border: #1e2731;
+    --smart-scroll-bar-thumb-background: #3a4757;
+    --smart-scroll-bar-thumb-border: #3a4757;
+    --smart-scroll-bar-thumb-background-hover: #56687c;
+    --smart-scroll-bar-thumb-border-hover: #56687c;
+    --smart-scroll-bar-thumb-background-active: #6f8296;
+    --smart-scroll-bar-thumb-border-active: #6f8296;
+    --smart-scroll-bar-button-background: #10161d;
+    --smart-scroll-bar-button-border: #1e2731;
+    --smart-scroll-bar-button-color: #93a3b2;
+    --smart-scroll-bar-button-color-hover: var(--smart-primary);
+    --smart-scroll-bar-button-color-active: var(--smart-primary);
+
+    /* ══ Industrial tokens ════════════════════════════════════════════════
+       Alarm and equipment-state colours. These are the only saturated colours
+       in the theme - an operator seeing colour must mean something is wrong.
+       ==================================================================== */
+    --smart-industrial-alarm-critical: #e8474d;
+    --smart-industrial-alarm-critical-color: #16080a;
+    --smart-industrial-alarm-warning: #f0a02a;
+    --smart-industrial-alarm-warning-color: #170f03;
+    --smart-industrial-alarm-advisory: #f2d13c;
+    --smart-industrial-alarm-advisory-color: #171303;
+    --smart-industrial-ok: #52c26a;
+    --smart-industrial-ok-color: #06150a;
+    --smart-industrial-abnormal-background: #2e1a1f;
+    --smart-industrial-unknown: #5f7183;
+    --smart-industrial-unknown-color: #ffffff;
+    --smart-industrial-accent-color: #0b1016;
+
+    /* Severity as text. The fills above are chosen for a chip; these are the same
+       meanings chosen to be read on a dark panel. See smart.industrial.css. */
+    --smart-industrial-accent-text: #6fb2ec;
+    --smart-industrial-alarm-critical-text: #ff8a8a;
+    --smart-industrial-alarm-warning-text: #f7bf6b;
+    --smart-industrial-alarm-advisory-text: #f2d97a;
+    --smart-industrial-ok-text: #83dd93;
+    --smart-industrial-unknown-text: #9dabb9;
+
+    /* Focus. Two tones rather than one, because an operator screen puts controls
+       on both the raised panel and the darker canvas, and a single-colour ring
+       that clears 3:1 on one of those will not clear it on the other. The halo
+       carries the contrast wherever the core does not. */
+    --smart-industrial-focus: #a8d5ff;
+    --smart-industrial-focus-halo: rgba(0, 0, 0, .85);
+
+    /* Equipment / process states */
+    --smart-industrial-running: #52c26a;
+    --smart-industrial-stopped: #66788a;
+    --smart-industrial-manual: #58a0eb;
+    --smart-industrial-maintenance: #a684e0;
+
+    /* Process-diagram equipment: running drawn solid neutral, as ISA-101 asks. See
+       smart.industrial.css; the smart-mimic-classic class brings the green back. */
+    --smart-mimic-running-fill: #c2ced9;
+    --smart-mimic-running-stroke: #eaf0f6;
+    --smart-mimic-running-detail: #10161d;
+
+    /* Panel chrome used by the Industrial screen templates. The surface steps
+       up from the canvas and the header steps up again, so a panel reads as a
+       panel without needing a heavy border. */
+    --smart-industrial-canvas: #10161d;
+    --smart-industrial-panel-background: #1e2731;
+    --smart-industrial-panel-header-background: #26313d;
+    --smart-industrial-panel-border: #313e4b;
+    --smart-industrial-panel-shadow: 0 1px 3px rgba(0, 0, 0, .45);
+    --smart-industrial-accent-line: rgba(255, 255, 255, .04);
+    --smart-industrial-readout-background: #0a0f14;
+    --smart-industrial-readout-color: #6fe08a;
+}
+
+/* ── Instruments sit on the panel, not in a box of their own ──────────────
+   Every element inherits `background: var(--smart-background)` from .smart-element.
+   For a gauge or tank dropped into a panel that paints a second, differently
+   shaded rectangle inside the tile - the single most visible flaw on a dense
+   screen. Instruments stay transparent and let the panel show through. */
+smart-gauge[theme="industrial-dark"],
+smart-tank[theme="industrial-dark"],
+smart-slider[theme="industrial-dark"],
+body[theme="industrial-dark"] smart-gauge.smart-element,
+body[theme="industrial-dark"] smart-tank.smart-element,
+body[theme="industrial-dark"] smart-slider.smart-element {
+    background: transparent;
+}
+
+/* ── The canvas ───────────────────────────────────────────────────────────
+   A page that puts the theme on its body gets the ISA-101 canvas and the theme's text
+   colour with it, so the prose around the components reads in this theme as well; a
+   page that paints its own background overrides this with any rule of its own. */
+body[theme="industrial-dark"] {
+    background-color: var(--smart-industrial-canvas);
+    color: var(--smart-text-color);
+}
+
+body[theme="industrial-dark"] a:not([class]) {
+    color: var(--smart-industrial-accent-text, var(--smart-primary));
+}
+
+/* ── Gauge range bands ────────────────────────────────────────────────────
+   Thin arc at the edge of the scale rather than the wide default band, and
+   the normal range stays neutral: an operator glancing at a wall of
+   instruments should only see colour where something needs attention. */
+smart-gauge[theme="industrial-dark"] .smart-range,
+body[theme="industrial-dark"] .smart-gauge .smart-range {
+    width: 12px;
+    fill: var(--smart-base-500);
+}
+
+smart-gauge[theme="industrial-dark"] .smart-range.industrial-normal,
+body[theme="industrial-dark"] .smart-gauge .smart-range.industrial-normal,
+smart-gauge[theme="industrial-dark"] .smart-range.industrial-ok,
+body[theme="industrial-dark"] .smart-gauge .smart-range.industrial-ok {
+    fill: var(--smart-base-500);
+}
+
+smart-gauge[theme="industrial-dark"] .smart-range.industrial-advisory,
+body[theme="industrial-dark"] .smart-gauge .smart-range.industrial-advisory {
+    fill: var(--smart-industrial-alarm-advisory);
+}
+
+smart-gauge[theme="industrial-dark"] .smart-range.industrial-warning,
+body[theme="industrial-dark"] .smart-gauge .smart-range.industrial-warning {
+    fill: var(--smart-industrial-alarm-warning);
+}
+
+smart-gauge[theme="industrial-dark"] .smart-range.industrial-critical,
+body[theme="industrial-dark"] .smart-gauge .smart-range.industrial-critical {
+    fill: var(--smart-industrial-alarm-critical);
+}
+
+/* The gauge track is the unfilled part of the arc - it should read as a groove
+   in the panel, not as another surface. */
+smart-gauge[theme="industrial-dark"] .smart-track,
+body[theme="industrial-dark"] .smart-gauge .smart-track {
+    fill: var(--smart-base-400);
+    stroke: var(--smart-base-500);
+}
+
+/* Slimmer needle than the stock 20px - instrument tiles on an operator screen
+   are small, and a narrow pointer reads more precisely against the bands.
+   (Only `width` applies to a centred needle; its length is derived from the
+   scale geometry. `height` would set the length of an edge needle.) */
+smart-gauge[theme="industrial-dark"] .smart-needle,
+body[theme="industrial-dark"] .smart-gauge .smart-needle {
+    width: 16px;
+}
+
+/* The stock gauge hard-codes `color: black` on the digital display and the numeric input
+   inside it inherits that, while the unit cell takes the surface colour - so on this
+   theme "6.47 bar" came out as a near-invisible black number beside a white unit. The
+   readout is the one thing on a gauge an operator reads; it gets the text colour. */
+smart-gauge[theme="industrial-dark"] .smart-digital-display,
+body[theme="industrial-dark"] .smart-gauge .smart-digital-display {
+    /* half the dial at most: 150px on a small gauge covered its 0 and 100 labels */
+    width: clamp(80px, 52%, 150px);
+    color: var(--smart-text-color);
+    --smart-numeric-text-box-default-unit-display-width: 52px;
+}
+
+/* ── Tank range bands ─────────────────────────────────────────────────────
+   Same discipline as the gauge: the normal band stays neutral and only
+   abnormal zones carry colour. */
+smart-tank[theme="industrial-dark"] .smart-range,
+body[theme="industrial-dark"] .smart-tank .smart-range {
+    background: var(--smart-base-500);
+}
+
+smart-tank[theme="industrial-dark"] .smart-range.industrial-normal,
+body[theme="industrial-dark"] .smart-tank .smart-range.industrial-normal,
+smart-tank[theme="industrial-dark"] .smart-range.industrial-ok,
+body[theme="industrial-dark"] .smart-tank .smart-range.industrial-ok {
+    background: var(--smart-base-500);
+}
+
+smart-tank[theme="industrial-dark"] .smart-range.industrial-advisory,
+body[theme="industrial-dark"] .smart-tank .smart-range.industrial-advisory {
+    background: var(--smart-industrial-alarm-advisory);
+}
+
+smart-tank[theme="industrial-dark"] .smart-range.industrial-warning,
+body[theme="industrial-dark"] .smart-tank .smart-range.industrial-warning {
+    background: var(--smart-industrial-alarm-warning);
+}
+
+smart-tank[theme="industrial-dark"] .smart-range.industrial-critical,
+body[theme="industrial-dark"] .smart-tank .smart-range.industrial-critical {
+    background: var(--smart-industrial-alarm-critical);
+}
+
+/* The tank track is a groove too, so the fill and the bands read against it. */
+smart-tank[theme="industrial-dark"] .smart-track,
+body[theme="industrial-dark"] .smart-tank .smart-track {
+    background-color: var(--smart-base-200);
+    border-color: var(--smart-base-500);
+}
+
+/* ── Digital display unit ─────────────────────────────────────────────────
+   The unit addon sets a background and never a colour, so it inherits - which on
+   a dark panel is black on near-black, 1.39:1, and the unit simply disappears.
+   The value beside it is legible, which makes the reading look unitless rather
+   than broken: worse, on an instrument. */
+smart-gauge[theme="industrial-dark"] .smart-numeric-text-box-unit-display,
+smart-tank[theme="industrial-dark"] .smart-numeric-text-box-unit-display,
+smart-slider[theme="industrial-dark"] .smart-numeric-text-box-unit-display,
+body[theme="industrial-dark"] .smart-numeric-text-box-unit-display {
+    color: var(--smart-text-secondary-color);
+}
+
+/* ── Focus you can see ────────────────────────────────────────────────────
+   WCAG 2.2 asks that the focus indicator exist and clear 3:1 against what it
+   sits on. Measured against the stock stylesheets, three of the controls these
+   screens are built from show nothing at all when tabbed to: smart-button has no
+   :focus rule, smart-slider scales a halo that is painted behind opaque content,
+   and smart-gauge sets outline:none and compensates with a rule on .smart-needle.
+
+   The ring goes on the host so it does not depend on any of that, and it is
+   scoped to the industrial themes: what the default theme shows every existing
+   customer is a wider decision than this product line gets to make. */
+body[theme="industrial-dark"] smart-button.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-toggle-button.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-repeat-button.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-power-button.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-slider.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-gauge.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-tank.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-knob.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-bar-graph.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-bit-field.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-strip-chart.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-grid.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-tree.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-table.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-alarm-grid.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-sequence-editor.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-annunciator.smart-element:focus-visible,
+body[theme="industrial-dark"] smart-alarm-banner.smart-element:focus-visible,
+body[theme="industrial-dark"] .smart-mimic-viewport:focus-visible,
+body[theme="industrial-dark"] .smart-mimic-item:focus-visible,
+body[theme="industrial-dark"] .smart-terminal-input:focus-visible {
+    outline: 2px solid var(--smart-industrial-focus);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--smart-industrial-focus-halo);
+}
+
+/* A symbol on the canvas is drawn edge to edge, so an outward ring would be
+   clipped by the neighbour it sits against. */
+body[theme="industrial-dark"] .smart-mimic-item:focus-visible {
+    outline-offset: 1px;
+    box-shadow: 0 0 0 3px var(--smart-industrial-focus-halo);
+}
+
+/* A table, a grid and a tree each put their scroll container in the tab order
+   as well as their host - that is how the body is reached without a pointer.
+   The container fills the host, so the ring is drawn inside it: an outward one
+   would be clipped by the very element it is meant to mark. */
+body[theme="industrial-dark"] smart-grid > .smart-container:focus-visible,
+body[theme="industrial-dark"] smart-tree > .smart-container:focus-visible,
+body[theme="industrial-dark"] smart-table > .smart-container:focus-visible,
+body[theme="industrial-dark"] smart-alarm-grid > .smart-container:focus-visible,
+body[theme="industrial-dark"] smart-sequence-editor > .smart-container:focus-visible {
+    outline: 2px solid var(--smart-industrial-focus);
+    outline-offset: -2px;
+    box-shadow: inset 0 0 0 4px var(--smart-industrial-focus-halo);
+}

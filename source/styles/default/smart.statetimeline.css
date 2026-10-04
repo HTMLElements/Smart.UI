@@ -1,0 +1,334 @@
+/* smart-state-timeline */
+smart-state-timeline {
+  --smart-timeline-row-height: 26px;
+  --smart-timeline-label-width: 160px;
+  --smart-timeline-gap: 3px;
+  /* The state colours: the ISA-101 severity fills, with a neutral for the states that are
+     neither good nor bad and a dim tone for off. A custom colour comes through
+     --smart-timeline-color on the segment. ok - the normal state - is a muted grey-green, not a
+     saturated green: on a high-performance screen colour is for what is wrong. */
+  --smart-timeline-ok: #698d81;
+  --smart-timeline-warning: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  --smart-timeline-critical: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-timeline-accent: var(--smart-industrial-manual, var(--smart-primary));
+  --smart-timeline-neutral: var(--smart-industrial-unknown, #8b98a6);
+  --smart-timeline-off: rgba(128, 128, 128, 0.25);
+  /* The floor's ten states, one look each, so none is told from another by its label alone:
+     running a muted grey-green; idle a light grey, hatched so it is not read as a gap in the
+     record; ready hollow - in service, not producing; stopped a heavy slate (dark on a light
+     screen, light on a dark one); starved amber and blocked yellow with dark stripes; fault red;
+     changeover blue and maintenance purple with light stripes; off a dashed outline. The pairs a
+     colour-blind eye would merge differ in pattern or weight as well. Each is a variable with
+     a text colour beside it, for a page to restyle. The fallbacks are the light theme's; where
+     color-mix() is supported they follow whichever theme is on the page. */
+  --smart-timeline-running: #698d81;
+  --smart-timeline-running-color: #10161d;
+  --smart-timeline-idle: #aeb7c1;
+  --smart-timeline-idle-color: var(--smart-text-color, #131c25);
+  --smart-timeline-ready: var(--smart-industrial-panel-background, var(--smart-background, #ffffff));
+  --smart-timeline-ready-line: #5b6672;
+  --smart-timeline-ready-color: var(--smart-text-color, #131c25);
+  --smart-timeline-stopped: #434e59;
+  --smart-timeline-stopped-color: var(--smart-industrial-panel-background, var(--smart-background, #ffffff));
+  --smart-timeline-starved: var(--smart-industrial-alarm-warning, #d57d14);
+  --smart-timeline-starved-color: var(--smart-industrial-alarm-warning-color, #201400);
+  --smart-timeline-blocked: var(--smart-industrial-alarm-advisory, #e8c033);
+  --smart-timeline-blocked-color: var(--smart-industrial-alarm-advisory-color, #26210a);
+  --smart-timeline-fault: var(--smart-industrial-alarm-critical, var(--smart-error, #c62828));
+  --smart-timeline-fault-color: var(--smart-industrial-alarm-critical-color, #ffffff);
+  --smart-timeline-changeover: var(--smart-industrial-manual, #1f5c94);
+  --smart-timeline-changeover-color: var(--smart-industrial-accent-color, #ffffff);
+  --smart-timeline-maintenance: var(--smart-industrial-maintenance, #6a4bab);
+  --smart-timeline-maintenance-color: var(--smart-industrial-accent-color, #ffffff);
+  --smart-timeline-off-line: var(--smart-text-tertiary-color, #4a5663);
+  /* the canvas, a groove in both themes: the readout background it was is a display's black, and drew
+     black bands across a light screen */
+  --smart-timeline-track: var(--smart-industrial-canvas, rgba(128, 128, 128, 0.12));
+  display: block;
+  font-family: var(--smart-font-family);
+  font-size: 12px;
+}
+smart-state-timeline .smart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+smart-state-timeline .smart-timeline-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--smart-timeline-gap);
+  border: var(--smart-border-width) solid var(--smart-industrial-panel-border, var(--smart-border));
+  border-radius: var(--smart-border-radius);
+  background: var(--smart-industrial-panel-background, var(--smart-surface));
+  padding: 6px 8px 8px;
+  overflow: hidden;
+}
+smart-state-timeline .smart-timeline-row {
+  display: grid;
+  grid-template-columns: var(--smart-timeline-label-width) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-height: var(--smart-timeline-row-height);
+}
+smart-state-timeline .smart-timeline-header {
+  min-height: 22px;
+  color: var(--smart-text-tertiary-color);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+smart-state-timeline .smart-timeline-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding-right: 4px;
+  line-height: 1.25;
+}
+smart-state-timeline .smart-timeline-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--smart-text-color);
+}
+smart-state-timeline .smart-timeline-row-summary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10.5px;
+  color: var(--smart-text-secondary-color);
+  font-variant-numeric: tabular-nums;
+}
+smart-state-timeline .smart-timeline-with-summary .smart-timeline-row[data-row] {
+  min-height: calc(var(--smart-timeline-row-height) + 14px);
+}
+smart-state-timeline {
+  /* The track: the window, with each segment placed by its share of it. The track is the
+     record's background, so a gap in the record is visibly a gap. */
+}
+smart-state-timeline .smart-timeline-track {
+  position: relative;
+  height: var(--smart-timeline-row-height);
+  border-radius: 3px;
+  background: var(--smart-timeline-track);
+  overflow: hidden;
+}
+smart-state-timeline .smart-timeline-axis {
+  height: 18px;
+  background: transparent;
+  overflow: visible;
+}
+smart-state-timeline .smart-timeline-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--smart-border);
+}
+smart-state-timeline .smart-timeline-tick span {
+  position: absolute;
+  left: 3px;
+  top: 1px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+smart-state-timeline {
+  /* the last label, where it would run past the end: read from the left of its tick */
+}
+smart-state-timeline .smart-timeline-tick.smart-timeline-tick-end span {
+  left: auto;
+  right: 3px;
+}
+smart-state-timeline .smart-timeline-segment {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  border-right: 1px solid rgba(0, 0, 0, 0.25);
+  /* the colour only: a tone's pattern is a background-image over it */
+  background-color: var(--smart-timeline-color);
+  /* the text on a fill is the theme's pairing for it: white on the light theme's deep fills,
+     dark on the dark theme's bright ones */
+  color: var(--smart-industrial-unknown-color, #ffffff);
+  overflow: hidden;
+  cursor: pointer;
+  outline: none;
+}
+smart-state-timeline .smart-timeline-ok {
+  --smart-timeline-color: var(--smart-timeline-ok);
+  color: var(--smart-timeline-running-color);
+}
+smart-state-timeline .smart-timeline-warning {
+  --smart-timeline-color: var(--smart-timeline-warning);
+  color: var(--smart-industrial-alarm-warning-color, #201400);
+}
+smart-state-timeline .smart-timeline-critical {
+  --smart-timeline-color: var(--smart-timeline-critical);
+  color: var(--smart-industrial-alarm-critical-color, #ffffff);
+}
+smart-state-timeline .smart-timeline-accent {
+  --smart-timeline-color: var(--smart-timeline-accent);
+  color: var(--smart-industrial-accent-color, #ffffff);
+}
+smart-state-timeline .smart-timeline-neutral {
+  --smart-timeline-color: var(--smart-timeline-neutral);
+}
+smart-state-timeline .smart-timeline-off {
+  --smart-timeline-color: var(--smart-timeline-off);
+  color: var(--smart-text-color);
+}
+smart-state-timeline {
+  /* The floor states' own tones, over the severity class each also carries. */
+}
+smart-state-timeline .smart-timeline-tone-running {
+  --smart-timeline-color: var(--smart-timeline-running);
+  color: var(--smart-timeline-running-color);
+}
+smart-state-timeline .smart-timeline-tone-idle {
+  --smart-timeline-color: var(--smart-timeline-idle);
+  color: var(--smart-timeline-idle-color);
+  background-image: repeating-linear-gradient(45deg, transparent 0 4px, rgba(255, 255, 255, 0.35) 4px 6px);
+}
+smart-state-timeline .smart-timeline-tone-ready {
+  --smart-timeline-color: var(--smart-timeline-ready);
+  color: var(--smart-timeline-ready-color);
+  box-shadow: inset 0 0 0 2px var(--smart-timeline-ready-line);
+}
+smart-state-timeline .smart-timeline-tone-stopped {
+  --smart-timeline-color: var(--smart-timeline-stopped);
+  color: var(--smart-timeline-stopped-color);
+}
+smart-state-timeline .smart-timeline-tone-starved {
+  --smart-timeline-color: var(--smart-timeline-starved);
+  color: var(--smart-timeline-starved-color);
+}
+smart-state-timeline .smart-timeline-tone-blocked {
+  --smart-timeline-color: var(--smart-timeline-blocked);
+  color: var(--smart-timeline-blocked-color);
+  background-image: repeating-linear-gradient(-45deg, transparent 0 5px, rgba(0, 0, 0, 0.2) 5px 8px);
+}
+smart-state-timeline .smart-timeline-tone-fault {
+  --smart-timeline-color: var(--smart-timeline-fault);
+  color: var(--smart-timeline-fault-color);
+}
+smart-state-timeline .smart-timeline-tone-changeover {
+  --smart-timeline-color: var(--smart-timeline-changeover);
+  color: var(--smart-timeline-changeover-color);
+}
+smart-state-timeline .smart-timeline-tone-maintenance {
+  --smart-timeline-color: var(--smart-timeline-maintenance);
+  color: var(--smart-timeline-maintenance-color);
+  background-image: repeating-linear-gradient(45deg, transparent 0 5px, rgba(255, 255, 255, 0.22) 5px 8px);
+}
+smart-state-timeline .smart-timeline-tone-off {
+  --smart-timeline-color: var(--smart-timeline-off);
+  color: var(--smart-text-color);
+  outline: 1px dashed var(--smart-timeline-off-line);
+  outline-offset: -1px;
+}
+smart-state-timeline {
+  /* Several segments too short to draw one by one, drawn as one cell in the colour of the
+     state that took most of it; fine hairlines say there is more than one state inside. */
+}
+smart-state-timeline .smart-timeline-segment.smart-timeline-mixed {
+  border-right: none;
+  background-image: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+}
+smart-state-timeline {
+  /* An open segment fades out at the right: it is not finished. */
+}
+smart-state-timeline .smart-timeline-ongoing {
+  border-right: none;
+  mask-image: linear-gradient(to right, #000 calc(100% - 14px), rgba(0, 0, 0, 0.35));
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 14px), rgba(0, 0, 0, 0.35));
+}
+smart-state-timeline .smart-timeline-reason {
+  display: block;
+  padding: 0 5px;
+  line-height: var(--smart-timeline-row-height);
+  font-size: 10.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+smart-state-timeline .smart-timeline-segment:hover {
+  filter: brightness(1.08);
+}
+smart-state-timeline .smart-timeline-selected {
+  box-shadow: inset 0 0 0 2px var(--smart-text-color), inset 0 0 0 3px var(--smart-industrial-panel-background, var(--smart-surface));
+}
+smart-state-timeline .smart-timeline-segment:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--smart-industrial-focus, var(--smart-primary)), inset 0 0 0 4px var(--smart-industrial-focus-halo, #ffffff);
+}
+smart-state-timeline {
+  /* ready is hollow: selected or focused, it keeps its outline inside the ring */
+}
+smart-state-timeline .smart-timeline-tone-ready.smart-timeline-selected {
+  box-shadow: inset 0 0 0 2px var(--smart-text-color), inset 0 0 0 3px var(--smart-industrial-panel-background, var(--smart-surface)), inset 0 0 0 5px var(--smart-timeline-ready-line);
+}
+smart-state-timeline .smart-timeline-tone-ready:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--smart-industrial-focus, var(--smart-primary)), inset 0 0 0 4px var(--smart-industrial-focus-halo, #ffffff), inset 0 0 0 6px var(--smart-timeline-ready-line);
+}
+smart-state-timeline .smart-timeline-empty {
+  padding: 10px 4px;
+  color: var(--smart-text-secondary-color);
+}
+smart-state-timeline {
+  /* The legend */
+}
+smart-state-timeline .smart-timeline-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  color: var(--smart-text-secondary-color);
+}
+smart-state-timeline .smart-timeline-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+smart-state-timeline .smart-timeline-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background-color: var(--smart-timeline-color);
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+}
+smart-state-timeline {
+  /* Disabled: dimmed, no pointer, no tab stop (the cells' tabindex), no events. */
+}
+smart-state-timeline[disabled] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* The mixed tones follow the theme on the page: the running grey-green from the theme's ok and
+   unknown, idle and ready's outline from its grey and panel, stopped from its text colour - so
+   stopped is the heaviest band on a light screen and on a dark one alike. */
+@supports (color: color-mix(in srgb, red, blue)) {
+  smart-state-timeline {
+    --smart-timeline-ok: color-mix(in srgb, var(--smart-industrial-ok, var(--smart-success, #2a7a3d)) 35%, var(--smart-industrial-unknown, #8b98a6));
+    --smart-timeline-running: color-mix(in srgb, var(--smart-industrial-ok, var(--smart-success, #2a7a3d)) 35%, var(--smart-industrial-unknown, #8b98a6));
+    --smart-timeline-idle: color-mix(in srgb, var(--smart-industrial-unknown, #8b98a6) 70%, var(--smart-industrial-panel-background, var(--smart-background, #ffffff)));
+    --smart-timeline-ready-line: color-mix(in srgb, var(--smart-industrial-unknown, #8b98a6) 60%, var(--smart-text-color, #131c25));
+    --smart-timeline-stopped: color-mix(in srgb, var(--smart-text-color, #131c25) 60%, var(--smart-industrial-unknown, #8b98a6));
+  }
+}
+/* .smart-element carries the framework's own background and color at higher specificity
+   than a bare tag selector, so anything that sets those has to be restated here. */
+smart-state-timeline.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-state-timeline takes by default. */
+smart-state-timeline:not(:defined) {
+  min-height: 88px;
+}

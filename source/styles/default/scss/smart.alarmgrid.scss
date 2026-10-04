@@ -1,0 +1,155 @@
+/* smart-alarm-grid */
+smart-alarm-grid {
+  --smart-alarm-grid-height: 320px;
+  display: block;
+  width: 100%;
+  height: var(--smart-alarm-grid-height);
+
+  /* State colouring follows the same ISA-101 rule as the rest of the industrial set: a row
+     takes colour only while it is asking the operator for something. An acknowledged alarm
+     is being handled, a shelved one was a decision, and a suppressed or out-of-service one
+     is engineering intent - none of those should compete for attention with the row that
+     nobody has looked at yet. */
+  /* The -text variants, not the fills. A fill colour used as text lands near 3:1; these
+     are the same meanings chosen to be read.
+
+     The fallback is a literal rather than --smart-error or --smart-warning, because those are
+     fills too - the stock warning is #fde300, which is about 1.1:1 as text on white and
+     makes the returned-to-normal row all but invisible for anyone not using an industrial
+     theme. */
+  .smart-table-row[state="unacknowledged"],
+  tr[state="unacknowledged"] {
+    color: var(--smart-industrial-alarm-critical-text, #a51f1f);
+    font-weight: 600;
+  }
+
+  /* Unacknowledged rows take the colour of their priority, not all the same red: a
+     priority 4 drawn exactly like a priority 1 tells the operator nothing about which to
+     take first. 4 and above keep the body text colour; bold and the marker carry them. */
+  tr[state="unacknowledged"][priority="2"] {
+    color: var(--smart-industrial-alarm-warning-text, #7d4a00);
+  }
+
+  tr[state="unacknowledged"][priority="3"] {
+    color: var(--smart-industrial-alarm-advisory-text, #6b5600);
+  }
+
+  tr[state="unacknowledged"][priority="4"] {
+    color: inherit;
+  }
+
+  /* The priority marker: a shape and a colour per priority, so priority is told apart
+     without relying on colour alone - square 1, triangle 2, diamond 3, circle 4. The colour
+     is drawn only while the alarm is abnormal (unacknowledged, acknowledged and still
+     active, or returned to normal and not yet acknowledged); a shelved, suppressed,
+     out-of-service or normal row keeps the shape in grey (ISA-101). */
+  tr[priority] td[data-field="priority"]::before {
+    content: "";
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    margin-right: 0.45em;
+    vertical-align: -0.05em;
+    background: var(--smart-industrial-unknown, #8b98a6);
+    box-sizing: border-box;
+  }
+
+  tr[priority="2"] td[data-field="priority"]::before {
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+
+  tr[priority="3"] td[data-field="priority"]::before {
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  }
+
+  tr[priority="4"] td[data-field="priority"]::before {
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid var(--smart-industrial-unknown, #8b98a6);
+  }
+
+  tr[priority="1"]:is([state="unacknowledged"], [state="acknowledged"], [state="rtn-unacknowledged"]) td[data-field="priority"]::before {
+    background: var(--smart-industrial-alarm-critical, #c62828);
+  }
+
+  tr[priority="2"]:is([state="unacknowledged"], [state="acknowledged"], [state="rtn-unacknowledged"]) td[data-field="priority"]::before {
+    background: var(--smart-industrial-alarm-warning, #d57d14);
+  }
+
+  tr[priority="3"]:is([state="unacknowledged"], [state="acknowledged"], [state="rtn-unacknowledged"]) td[data-field="priority"]::before {
+    background: var(--smart-industrial-alarm-advisory, #e8c033);
+  }
+
+  tr[priority="4"]:is([state="unacknowledged"], [state="acknowledged"], [state="rtn-unacknowledged"]) td[data-field="priority"]::before {
+    border-color: var(--smart-industrial-alarm-advisory-text, #6b5600);
+  }
+
+  /* The counts strip: the whole list's states, above the rows. */
+  .smart-alarm-grid-counts {
+    position: sticky;
+    left: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    padding: 6px var(--smart-table-cell-padding, 12px);
+    border-bottom: var(--smart-border-width, 1px) solid var(--smart-border);
+    background: var(--smart-surface, var(--smart-background));
+    color: var(--smart-surface-color, var(--smart-text-color));
+    font-family: var(--smart-font-family);
+    font-size: calc(var(--smart-font-size) - 1px);
+  }
+
+  .smart-alarm-grid-count b {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .smart-alarm-grid-count[state="unacknowledged"]:not(.smart-alarm-grid-count-zero) b {
+    color: var(--smart-industrial-alarm-critical-text, #a51f1f);
+  }
+
+  .smart-alarm-grid-count[state="rtn-unacknowledged"] b {
+    color: var(--smart-industrial-alarm-warning-text, #7d4a00);
+  }
+
+  /* The state wraps onto a second line rather than truncating: "Returned to normal,
+     unacknowledged" in italics did not fit even the full 250 px, and it is the state that
+     matters most. Compact columns also give up a little padding. */
+  &[compact-columns] {
+    --smart-table-cell-padding: 8px;
+  }
+
+  tr[row-id] td[data-field="state"] {
+    white-space: normal;
+  }
+
+  /* Returned to normal but never acknowledged. It is no longer urgent - the condition has
+     gone - but it must stay visible and distinct, because it is the state that hides an
+     intermittent fault when an implementation drops it off the summary. */
+  .smart-table-row[state="rtn-unacknowledged"],
+  tr[state="rtn-unacknowledged"] {
+    color: var(--smart-industrial-alarm-warning-text, #7d4a00);
+    font-style: italic;
+  }
+
+  .smart-table-row[state="shelved"],
+  .smart-table-row[state="suppressed"],
+  .smart-table-row[state="out-of-service"],
+  tr[state="shelved"],
+  tr[state="suppressed"],
+  tr[state="out-of-service"] {
+    color: var(--smart-industrial-unknown-text, var(--smart-text-secondary-color));
+    font-style: italic;
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-alarm-grid.smart-element {
+  background: var(--smart-background);
+  color: var(--smart-text-color);
+}

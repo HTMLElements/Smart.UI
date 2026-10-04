@@ -1,0 +1,200 @@
+/* smart-waveform-graph */
+smart-waveform-graph {
+  --smart-waveform-height: 360px;
+  --smart-waveform-plot-background: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+  --smart-waveform-grid-color: var(--smart-border);
+  --smart-waveform-axis-color: var(--smart-text-tertiary-color, var(--smart-border));
+  /* Cursor and annotation colours are read by the canvas from these; unset, the element
+     falls back to the industrial palette so the marks match the theme. */
+  display: block;
+  width: 100%;
+  height: var(--smart-waveform-height);
+}
+smart-waveform-graph .smart-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+}
+smart-waveform-graph .smart-waveform-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+smart-waveform-graph .smart-waveform-header:empty {
+  display: none;
+}
+smart-waveform-graph .smart-waveform-title {
+  font-weight: 600;
+}
+smart-waveform-graph .smart-waveform-status {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-waveform-graph {
+  /* The plot takes whatever the chrome leaves. min-height: 0 is what stops a flex item
+     from refusing to shrink below its content height and pushing the legend off. */
+}
+smart-waveform-graph .smart-waveform-plot {
+  position: relative;
+  /* 80px when the chart has no height of its own to share out, so the plot never collapses */
+  flex: 1 1 80px;
+  min-height: 0;
+  background: var(--smart-waveform-plot-background);
+  border: 1px solid var(--smart-border);
+  border-radius: var(--smart-border-radius, 2px);
+  overflow: hidden;
+  cursor: crosshair;
+  touch-action: none;
+  outline: none;
+}
+smart-waveform-graph .smart-waveform-plot:focus-visible {
+  box-shadow: 0 0 0 2px var(--smart-primary);
+}
+smart-waveform-graph {
+  /* Out of the flow: the canvas is sized to the plot, so the plot must not be sized by the
+     canvas. In flow, its pixel height fed back into the plot's, and a chart whose own height
+     was not fixed grew on every resize (a waveform graph reached 7,800px). */
+}
+smart-waveform-graph .smart-waveform-canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+smart-waveform-graph .smart-waveform-legend,
+smart-waveform-graph .smart-waveform-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+smart-waveform-graph .smart-waveform-item,
+smart-waveform-graph .smart-waveform-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  font-family: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--smart-text-color);
+  background: transparent;
+  border: 1px solid var(--smart-border);
+  border-radius: 2px;
+  cursor: pointer;
+}
+smart-waveform-graph .smart-waveform-item:focus-visible,
+smart-waveform-graph .smart-waveform-tool:focus-visible {
+  outline: 2px solid var(--smart-primary);
+  outline-offset: 1px;
+}
+smart-waveform-graph .smart-waveform-tool {
+  min-width: 28px;
+  justify-content: center;
+}
+smart-waveform-graph .smart-waveform-tool[aria-pressed=true] {
+  color: var(--smart-primary-color, #fff);
+  background: var(--smart-primary);
+  border-color: var(--smart-primary);
+}
+smart-waveform-graph .smart-waveform-item-off {
+  opacity: 0.55;
+}
+smart-waveform-graph {
+  /* The swatch shows the plot's style: a line, a row of points, a step, a bar. */
+}
+smart-waveform-graph .smart-waveform-swatch {
+  position: relative;
+  width: 18px;
+  height: 10px;
+  flex: none;
+}
+smart-waveform-graph .smart-waveform-swatch::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 4px;
+  height: 2px;
+  background: var(--smart-waveform-swatch-color);
+}
+smart-waveform-graph .smart-waveform-swatch-points::before {
+  top: 3px;
+  height: 4px;
+  background: repeating-linear-gradient(to right, var(--smart-waveform-swatch-color) 0 4px, transparent 4px 7px);
+}
+smart-waveform-graph .smart-waveform-swatch-bars::before {
+  top: 0;
+  height: 10px;
+  background: repeating-linear-gradient(to right, var(--smart-waveform-swatch-color) 0 4px, transparent 4px 6px);
+}
+smart-waveform-graph .smart-waveform-swatch-step::before {
+  top: 1px;
+  height: 8px;
+  background: transparent;
+  border-top: 2px solid var(--smart-waveform-swatch-color);
+  border-right: 2px solid var(--smart-waveform-swatch-color);
+  width: 50%;
+}
+smart-waveform-graph .smart-waveform-item-off .smart-waveform-swatch::before {
+  background: transparent;
+  border: 1px solid var(--smart-text-tertiary-color);
+  height: 0;
+}
+smart-waveform-graph .smart-waveform-cursors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-waveform-graph .smart-waveform-cursor-row {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+}
+smart-waveform-graph .smart-waveform-cursor-row-active .smart-waveform-cursor-name {
+  color: var(--smart-text-color);
+  font-weight: 600;
+}
+smart-waveform-graph .smart-waveform-cursor-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--smart-waveform-swatch-color);
+  flex: none;
+}
+smart-waveform-graph .smart-waveform-cursor-delta {
+  font-weight: 600;
+  color: var(--smart-text-color);
+}
+smart-waveform-graph {
+  /* Right to left: the text around the plot mirrors - header, legend, readout. The plot
+     does not: its axes run as the data does, and the canvas text keeps its direction. */
+}
+smart-waveform-graph[right-to-left] .smart-waveform-header,
+smart-waveform-graph[right-to-left] .smart-waveform-legend,
+smart-waveform-graph[right-to-left] .smart-waveform-cursors,
+smart-waveform-graph[right-to-left] .smart-waveform-palette {
+  direction: rtl;
+}
+smart-waveform-graph[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-waveform-graph.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}

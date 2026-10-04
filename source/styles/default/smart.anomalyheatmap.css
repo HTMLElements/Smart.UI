@@ -1,0 +1,181 @@
+/* smart-anomaly-heatmap */
+smart-anomaly-heatmap {
+  --smart-heatmap-cell-size: 14px;
+  --smart-heatmap-row-height: 22px;
+  --smart-heatmap-series-width: 150px;
+  --smart-heatmap-gap: 1px;
+  /* The neutral wash below the first threshold. Its depth is the score, set per cell. */
+  --smart-heatmap-wash-color: var(--smart-secondary-rgb, 82, 96, 110);
+  display: block;
+  font-family: var(--smart-font-family);
+  font-size: 12px;
+}
+smart-anomaly-heatmap .smart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+smart-anomaly-heatmap {
+  /* The grid scrolls sideways when the axis is wider than the element; the series column
+     stays put so a row keeps its name while it scrolls. */
+}
+smart-anomaly-heatmap .smart-heatmap-grid {
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: var(--smart-border-width) solid var(--smart-industrial-panel-border, var(--smart-border));
+  border-radius: var(--smart-border-radius);
+  background: var(--smart-industrial-panel-background, var(--smart-surface));
+}
+smart-anomaly-heatmap .smart-heatmap-row {
+  display: grid;
+  /* A cell is at least its size and grows to fill the element when there is room; more
+     columns than fit scroll instead. */
+  grid-template-columns: var(--smart-heatmap-series-width) repeat(var(--smart-heatmap-columns, 1), minmax(var(--smart-heatmap-cell-size), 1fr));
+  gap: var(--smart-heatmap-gap);
+  width: max-content;
+  min-width: 100%;
+  height: var(--smart-heatmap-row-height);
+  align-items: stretch;
+}
+smart-anomaly-heatmap .smart-heatmap-header {
+  height: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--smart-industrial-panel-header-background, var(--smart-surface));
+  color: var(--smart-text-tertiary-color);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+smart-anomaly-heatmap {
+  /* Logical sides, so right-to-left mirrors the grid: the names at the right, time running
+     leftwards - the way the arrow keys then move. */
+}
+smart-anomaly-heatmap .smart-heatmap-corner,
+smart-anomaly-heatmap .smart-heatmap-series {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: var(--smart-industrial-panel-header-background, var(--smart-surface));
+  border-inline-end: var(--smart-border-width) solid var(--smart-industrial-panel-border, var(--smart-border));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+smart-anomaly-heatmap .smart-heatmap-series {
+  font-size: 11.5px;
+}
+smart-anomaly-heatmap .smart-heatmap-time {
+  position: relative;
+  overflow: visible;
+}
+smart-anomaly-heatmap .smart-heatmap-time span {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 3px;
+  white-space: nowrap;
+  border-inline-start: 1px solid var(--smart-border);
+  padding-inline-start: 3px;
+  font-variant-numeric: tabular-nums;
+}
+smart-anomaly-heatmap .smart-heatmap-empty div {
+  padding: 12px;
+  color: var(--smart-text-tertiary-color);
+}
+smart-anomaly-heatmap {
+  /* A cell: neutral wash by default, alarm colour by band. Selected is an inset ring so
+     the colour, which is the meaning, stays visible. */
+}
+smart-anomaly-heatmap .smart-heatmap-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  background: rgba(var(--smart-heatmap-wash-color), calc(0.08 + 0.55 * var(--smart-heatmap-wash, 0)));
+  color: var(--smart-text-color);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  outline: none;
+}
+smart-anomaly-heatmap .smart-heatmap-cell span {
+  overflow: hidden;
+}
+smart-anomaly-heatmap .smart-heatmap-empty-cell {
+  background: transparent;
+  cursor: default;
+}
+smart-anomaly-heatmap .smart-heatmap-cell.smart-heatmap-advisory,
+smart-anomaly-heatmap .smart-heatmap-swatch.smart-heatmap-advisory {
+  background: var(--smart-industrial-alarm-advisory, #e5c728);
+  color: var(--smart-industrial-alarm-advisory-color, #1a1a1a);
+}
+smart-anomaly-heatmap .smart-heatmap-cell.smart-heatmap-warning,
+smart-anomaly-heatmap .smart-heatmap-swatch.smart-heatmap-warning {
+  background: var(--smart-industrial-alarm-warning, #e08b1a);
+  color: var(--smart-industrial-alarm-warning-color, #ffffff);
+}
+smart-anomaly-heatmap .smart-heatmap-cell.smart-heatmap-critical,
+smart-anomaly-heatmap .smart-heatmap-swatch.smart-heatmap-critical {
+  background: var(--smart-industrial-alarm-critical, #d62828);
+  color: var(--smart-industrial-alarm-critical-color, #ffffff);
+}
+smart-anomaly-heatmap .smart-heatmap-cell:focus-visible,
+smart-anomaly-heatmap .smart-heatmap-selected {
+  box-shadow: inset 0 0 0 2px var(--smart-industrial-focus, var(--smart-primary));
+}
+smart-anomaly-heatmap .smart-heatmap-cell:hover {
+  filter: brightness(1.12);
+}
+smart-anomaly-heatmap {
+  /* The legend: the bands, in the colours the cells use. */
+}
+smart-anomaly-heatmap .smart-heatmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11.5px;
+  color: var(--smart-text-secondary-color);
+}
+smart-anomaly-heatmap .smart-heatmap-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+smart-anomaly-heatmap .smart-heatmap-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: rgba(var(--smart-heatmap-wash-color), calc(0.08 + 0.55 * var(--smart-heatmap-wash, 0)));
+}
+smart-anomaly-heatmap[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+smart-anomaly-heatmap[right-to-left] {
+  direction: rtl;
+}
+
+/* .smart-element carries the framework's own background and color at higher specificity
+   than a bare tag selector, so anything that sets those has to be restated here. */
+smart-anomaly-heatmap.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-anomaly-heatmap takes by default. */
+smart-anomaly-heatmap:not(:defined) {
+  min-height: 72px;
+}

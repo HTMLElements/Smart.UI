@@ -14,11 +14,8 @@
   @each $value in $main-colors-list {
     &.smart-alert-#{$value} {
       color: var(--smart-#{$value}-color);
-      background-color: #{'rgba(var(--smart-#{$value}-rgb),
-      .7)'};
-border-color: #{'rgba(var(--smart-#{$value}-rgb),
-      1)'};
-
+      background-color: #{'rgba(var(--smart-#{$value}-rgb), .7)'};
+      border-color: #{'rgba(var(--smart-#{$value}-rgb), 1)'};
     }
   }
 }

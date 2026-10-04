@@ -1,0 +1,288 @@
+/* smart-job-panel */
+smart-job-panel {
+  /* Colour marks the one row that needs attention: a job that failed. A job that ran is the
+     ordinary case and says "ok" in words - on a table an operator glances at all shift, a
+     column of green teaches them to stop looking. */
+  --smart-job-panel-failed-color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+  --smart-job-panel-ok-color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  --smart-job-panel-mono: var(--smart-industrial-readout-font, ui-monospace, "Cascadia Mono", "Consolas", "DejaVu Sans Mono", monospace);
+  display: block;
+  width: 100%;
+
+  .smart-job-panel-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .smart-job-panel-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  .smart-job-panel-title {
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  .smart-job-panel-count {
+    font-variant-numeric: tabular-nums;
+    color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  }
+
+  .smart-job-panel-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid var(--smart-border, #ccd6e0);
+    border-radius: var(--smart-border-radius, 3px);
+    background: var(--smart-background, #fff);
+  }
+
+  .smart-job-panel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .smart-job-panel-table th[scope="col"] {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    text-align: left;
+    font-weight: 500;
+    padding: 6px 10px;
+    background: var(--smart-surface, #f4f6f8);
+    border-bottom: 1px solid var(--smart-border, #ccd6e0);
+    color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  }
+
+  /* Baseline, so a button's words sit on the same line as the job's name beside it and a
+     wrapped schedule still starts level with the rest of its row. */
+  .smart-job-panel-table td,
+  .smart-job-panel-table th[scope="row"] {
+    padding: 7px 10px;
+    vertical-align: baseline;
+    border-bottom: 1px solid var(--smart-border-light, var(--smart-border, #ccd6e0));
+  }
+
+  .smart-job-panel-row:last-child td,
+  .smart-job-panel-row:last-child th {
+    border-bottom: 0;
+  }
+
+  .smart-job-panel-name {
+    min-width: 10ch;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  /* A switched-off job keeps its place and recedes. An absent job and a disabled one are
+     different things, and the difference matters at three in the morning. It recedes in
+     colour, not opacity: faded to 0.55 its words fell to 2.6:1, below what can be read at
+     three in the morning - the secondary text colour keeps 4.5:1, and the OFF word says it. */
+  .smart-job-panel-row.off > th,
+  .smart-job-panel-row.off > td:not(.smart-job-panel-actions),
+  .smart-job-panel-row.off .smart-job-panel-last {
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  /* but not its buttons: the station still runs a switched-off job by hand, and a faded button
+     reads as one that cannot be pressed */
+
+  .smart-job-panel-off {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  }
+
+  .smart-job-panel-bad {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--smart-job-panel-failed-color);
+  }
+
+  /* The schedule and the action wrap, so the table fits the panel it is given; the time of the
+     last run and the buttons do not, because a broken time or a button on two lines reads worse
+     than a wrapped sentence. A tag name breaks at its dots rather than off the edge. */
+  .smart-job-panel-when {
+    min-width: 12ch;
+  }
+
+  .smart-job-panel-does {
+    min-width: 14ch;
+    font-family: var(--smart-job-panel-mono);
+  }
+
+  .smart-job-panel-tag {
+    white-space: nowrap;
+  }
+
+  .smart-job-panel-last {
+    white-space: nowrap;
+    color: var(--smart-job-panel-ok-color);
+  }
+
+  .smart-job-panel-last.failed {
+    color: var(--smart-job-panel-failed-color);
+    font-weight: 600;
+  }
+
+  .smart-job-panel-why {
+    display: block;
+    max-width: 30ch;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.35;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* A table cell, not a flex box: display: flex takes a cell out of the table, and the row's
+     rule then stops short of the buttons. */
+  .smart-job-panel-actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .smart-job-panel-actions > button + button {
+    margin-left: 6px;
+  }
+
+  .smart-job-panel-run,
+  .smart-job-panel-toggle {
+    /* a target of at least 24 pixels (WCAG 2.2, 2.5.8) */
+    min-height: 26px;
+    padding: 0 10px;
+    border: 1px solid var(--smart-border, #ccd6e0);
+    border-radius: var(--smart-border-radius, 3px);
+    background: var(--smart-surface, #f4f6f8);
+    color: var(--smart-text-color);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .smart-job-panel-run {
+    border-color: var(--smart-primary);
+    color: var(--smart-primary);
+    font-weight: 600;
+  }
+
+  .smart-job-panel-run[disabled] {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .smart-job-panel-run:focus-visible,
+  .smart-job-panel-toggle:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 1px;
+  }
+
+  .smart-job-panel-empty {
+    padding: 12px;
+    color: var(--smart-text-tertiary-color, var(--smart-text-color));
+  }
+
+  /* named for the screen reader, off the screen for everybody else */
+  .smart-job-panel-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .smart-job-panel-ask {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 2;
+  }
+
+  .smart-job-panel-ask[hidden] {
+    display: none;
+  }
+
+  .smart-job-panel-ask-box {
+    max-width: 380px;
+    padding: 14px 16px;
+    border: 1px solid var(--smart-border, #ccd6e0);
+    border-radius: var(--smart-border-radius, 3px);
+    background: var(--smart-background, #fff);
+    color: var(--smart-text-color);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  }
+
+  .smart-job-panel-ask-box p {
+    margin: 6px 0 12px;
+    font-size: 12px;
+    color: var(--smart-text-secondary-color, var(--smart-text-color));
+  }
+
+  .smart-job-panel-ask-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .smart-job-panel-ask-cancel,
+  .smart-job-panel-ask-confirm {
+    min-height: 30px;
+    padding: 0 14px;
+    border-radius: var(--smart-border-radius, 3px);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .smart-job-panel-ask-cancel {
+    border: 1px solid var(--smart-border, #ccd6e0);
+    background: var(--smart-surface, #f4f6f8);
+    color: var(--smart-text-color);
+  }
+
+  .smart-job-panel-ask-confirm {
+    border: 1px solid var(--smart-primary);
+    background: var(--smart-primary);
+    color: var(--smart-primary-color, #fff);
+    font-weight: 600;
+  }
+
+  .smart-job-panel-ask-cancel:focus-visible,
+  .smart-job-panel-ask-confirm:focus-visible {
+    outline: 2px solid var(--smart-primary);
+    outline-offset: 2px;
+  }
+
+  &[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+/* .smart-element carries the framework's own background and color at higher specificity
+   than a bare tag selector, so anything that sets those has to be restated here. */
+smart-job-panel.smart-element {
+  background: transparent;
+}

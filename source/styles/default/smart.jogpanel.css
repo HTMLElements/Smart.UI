@@ -1,0 +1,325 @@
+@charset "UTF-8";
+/* smart-jog-panel */
+smart-jog-panel {
+  --smart-jog-size: 44px;
+  --smart-jog-background: var(--smart-industrial-panel-background, var(--smart-surface));
+  --smart-jog-border: var(--smart-industrial-panel-border, var(--smart-border));
+  --smart-jog-accent: var(--smart-primary);
+  --smart-jog-stop: var(--smart-industrial-alarm-critical, var(--smart-error));
+  --smart-jog-stop-text: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+  --smart-jog-warning-text: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+  --smart-jog-readout-font: var(--smart-industrial-readout-font, ui-monospace, "Cascadia Mono", "Consolas", "DejaVu Sans Mono", monospace);
+  --smart-jog-selected: var(--smart-primary);
+  --smart-jog-selected-text: var(--smart-primary-color, #fff);
+  display: inline-block;
+  min-width: 280px;
+}
+smart-jog-panel[density=touch] {
+  --smart-jog-size: 60px;
+}
+smart-jog-panel .smart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--smart-jog-border);
+  border-radius: 6px;
+  background: var(--smart-jog-background);
+}
+smart-jog-panel {
+  /* ── Header ─────────────────────────────────────────────────────────── */
+}
+smart-jog-panel .smart-jog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+}
+smart-jog-panel .smart-jog-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-jog-panel {
+  /* The stop: the one button whose whole face may be red. */
+  /* The dark theme's critical red is lightened so alarm text reads on a dark ground, which
+     leaves it too light to carry white lettering: 3.86:1 where 4.5 is needed. Stop keeps white
+     on red - that is what the control is - so the red darkens instead, to 4.62:1 under white
+     and 3.27:1 against the panel. */
+}
+smart-jog-panel[theme=industrial-dark] .smart-jog-stop, [theme=industrial-dark] smart-jog-panel .smart-jog-stop {
+  --smart-jog-stop: #d9363c;
+}
+smart-jog-panel .smart-jog-stop {
+  min-width: calc(var(--smart-jog-size) * 1.6);
+  min-height: calc(var(--smart-jog-size) * 0.8);
+  padding: 0 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--smart-jog-stop);
+  border: 2px solid var(--smart-jog-stop);
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+smart-jog-panel .smart-jog-stop:active {
+  filter: brightness(0.9);
+}
+smart-jog-panel {
+  /* ── Axes ───────────────────────────────────────────────────────────── */
+}
+smart-jog-panel .smart-jog-axes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+smart-jog-panel {
+  /* A row: the label, the readout, and the buttons as one group - which wraps under the
+     readout when the cell is too narrow for the row, rather than squeezing the digits. */
+}
+smart-jog-panel .smart-jog-axis {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+smart-jog-panel .smart-jog-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+smart-jog-panel .smart-jog-axis-label {
+  min-width: 28px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+smart-jog-panel {
+  /* The position: a readout, right-aligned so the digits line up across axes. */
+}
+smart-jog-panel .smart-jog-position {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 2px 6px;
+  /* in a narrow cell the badges wrap under the value instead of pushing the digits out
+     of the readout's left edge */
+  flex: 1 1 120px;
+  min-width: 0;
+  padding: 4px 8px;
+  font-family: var(--smart-jog-readout-font);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  /* a readout: the readout's own colour on its own background */
+  color: var(--smart-industrial-readout-color, var(--smart-text-color));
+  background: var(--smart-industrial-readout-background, rgba(128, 128, 128, 0.08));
+  border: 1px solid var(--smart-jog-border);
+  border-radius: 3px;
+}
+smart-jog-panel .smart-jog-position-value {
+  white-space: nowrap;
+}
+smart-jog-panel .smart-jog-position-unit {
+  font-family: inherit;
+  font-size: 11px;
+  /* on the readout's own background, in the readout's own colour */
+  color: var(--smart-industrial-readout-color, inherit);
+  opacity: 0.85;
+}
+smart-jog-panel .smart-jog-badge {
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+}
+smart-jog-panel .smart-jog-badge-unhomed {
+  /* inside the readout, on its dark background: the warning fill reads as text there */
+  color: var(--smart-industrial-alarm-warning, var(--smart-warning));
+}
+smart-jog-panel .smart-jog-badge-state {
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-jog-panel .smart-jog-axis-fault .smart-jog-badge-state,
+smart-jog-panel .smart-jog-axis-limit .smart-jog-badge-state {
+  color: var(--smart-jog-stop-text);
+}
+smart-jog-panel .smart-jog-axis-jogging .smart-jog-position {
+  border-color: var(--smart-jog-accent);
+}
+smart-jog-panel {
+  /* ── Jog buttons ────────────────────────────────────────────────────── */
+}
+smart-jog-panel .smart-jog-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: calc(var(--smart-jog-size) * 1.5);
+  min-height: var(--smart-jog-size);
+  padding: 0 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--smart-text-color);
+  background: var(--smart-jog-background);
+  border: 2px solid var(--smart-jog-border);
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+smart-jog-panel .smart-jog-glyph {
+  font-size: 11px;
+  color: var(--smart-jog-accent);
+}
+smart-jog-panel .smart-jog-button:focus-visible,
+smart-jog-panel .smart-jog-home:focus-visible,
+smart-jog-panel .smart-jog-stop:focus-visible,
+smart-jog-panel .smart-jog-option:focus-visible {
+  outline: 2px solid var(--smart-industrial-focus, var(--smart-primary));
+  outline-offset: 2px;
+}
+smart-jog-panel {
+  /* Held: depth and an accent border, not a filled face. */
+}
+smart-jog-panel .smart-jog-button-held {
+  transform: translateY(1px);
+  border-color: var(--smart-jog-accent);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+smart-jog-panel .smart-jog-button[aria-disabled=true],
+smart-jog-panel .smart-jog-home[aria-disabled=true] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background-image: repeating-linear-gradient(135deg, transparent 0 8px, rgba(128, 128, 128, 0.12) 8px 16px);
+}
+smart-jog-panel .smart-jog-home {
+  min-width: var(--smart-jog-size);
+  min-height: var(--smart-jog-size);
+  font: inherit;
+  font-size: 18px;
+  color: var(--smart-text-color);
+  background: var(--smart-jog-background);
+  border: 2px solid var(--smart-jog-border);
+  border-radius: 4px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+smart-jog-panel .smart-jog-button[disabled],
+smart-jog-panel .smart-jog-home[disabled],
+smart-jog-panel .smart-jog-stop[disabled],
+smart-jog-panel .smart-jog-option[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+smart-jog-panel .smart-jog-empty {
+  padding: 8px 0;
+  font-size: 12px;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-jog-panel {
+  /* ── Step and speed ─────────────────────────────────────────────────── */
+}
+smart-jog-panel .smart-jog-selectors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+}
+smart-jog-panel .smart-jog-selector {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+smart-jog-panel .smart-jog-selector-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-jog-panel .smart-jog-options {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--smart-jog-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+smart-jog-panel .smart-jog-option {
+  min-width: calc(var(--smart-jog-size) * 0.9);
+  min-height: calc(var(--smart-jog-size) * 0.75);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--smart-text-color);
+  background: var(--smart-jog-background);
+  border: none;
+  border-right: 1px solid var(--smart-jog-border);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+smart-jog-panel .smart-jog-option:focus-visible {
+  outline-offset: -3px;
+}
+smart-jog-panel .smart-jog-option-selected {
+  color: var(--smart-jog-selected-text);
+  background: var(--smart-jog-selected);
+}
+smart-jog-panel .smart-jog-options-unit {
+  padding: 0 8px;
+  font-size: 11px;
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-jog-panel .smart-jog-hint {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--smart-jog-warning-text);
+}
+smart-jog-panel[jogging] .smart-jog-hint {
+  color: var(--smart-text-secondary-color, inherit);
+}
+smart-jog-panel[interlocked] .smart-jog-axes {
+  opacity: 0.85;
+}
+smart-jog-panel[disabled] .smart-jog-axes, smart-jog-panel[disabled] .smart-jog-selectors {
+  /* Disabled dims and locks the axes and the selectors, not Stop: a stop must always be
+     possible, and an axis may still be moving. */
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-jog-panel.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-jog-panel takes by default. */
+smart-jog-panel:not(:defined) {
+  min-width: 560px;
+  min-height: 280px;
+}

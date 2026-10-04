@@ -127,3 +127,36 @@ smart-chip {
 }
 
 @import 'rtl/_chip';
+/* ── Severity ────────────────────────────────────────────────────────────────
+   A chip is used as a status badge far more often than as a token, and six screens
+   invented their own classes for it. This is that vocabulary once.
+
+   Text colours, not fills. The same colour used as a background for a chip and as its
+   text are different requirements: a fill only has to be distinguishable, while text is
+   read for a whole shift and has to clear 4.5:1. The -text tokens exist for exactly this
+   and fall back to the generic semantic colours off an industrial theme. */
+smart-chip[severity]:not([severity="none"]) {
+  border-color: currentColor;
+  background: transparent;
+}
+
+smart-chip[severity="neutral"] {
+  color: var(--smart-text-secondary-color);
+  border-color: var(--smart-border);
+}
+
+smart-chip[severity="ok"] {
+  color: var(--smart-industrial-ok-text, var(--smart-success));
+}
+
+smart-chip[severity="advisory"] {
+  color: var(--smart-industrial-alarm-advisory-text, var(--smart-warning));
+}
+
+smart-chip[severity="warning"] {
+  color: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+}
+
+smart-chip[severity="critical"] {
+  color: var(--smart-industrial-alarm-critical-text, var(--smart-error));
+}

@@ -1,0 +1,262 @@
+/* smart-selector-switch */
+smart-selector-switch {
+  --smart-selector-size: 36px;
+  --smart-selector-background: var(--smart-industrial-panel-background, var(--smart-surface));
+  --smart-selector-border: var(--smart-industrial-panel-border, var(--smart-border));
+  --smart-selector-selected: var(--smart-primary);
+  --smart-selector-selected-text: var(--smart-primary-color, #fff);
+  --smart-selector-pending: var(--smart-industrial-alarm-warning, var(--smart-warning));
+  --smart-selector-hint: var(--smart-industrial-alarm-warning-text, var(--smart-warning));
+  display: inline-block;
+
+  &[density="touch"] {
+    --smart-selector-size: 52px;
+  }
+
+  .smart-container {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .smart-selector-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  .smart-selector-positions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* A row of segments, joined, with the position in force filled. */
+  .smart-selector-segments {
+    display: inline-flex;
+    border: 1px solid var(--smart-selector-border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .smart-selector-position {
+    min-width: calc(var(--smart-selector-size) * 1.6);
+    min-height: var(--smart-selector-size);
+    padding: 0 14px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--smart-text-color);
+    background: var(--smart-selector-background);
+    border: none;
+    border-right: 1px solid var(--smart-selector-border);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  .smart-selector-position:last-child {
+    border-right: none;
+  }
+
+  .smart-selector-position:focus-visible {
+    outline: 2px solid var(--smart-industrial-focus, var(--smart-primary));
+    outline-offset: -3px;
+  }
+
+  .smart-selector-position-selected {
+    color: var(--smart-selector-selected-text);
+    background: var(--smart-selector-selected);
+  }
+
+  /* The ring sits inside the segment, so on the filled one it is drawn in the halo tone:
+     the focus colour on the selected colour was about 2:1, and a ring nobody can see is
+     no focus indicator. */
+  .smart-selector-position-selected:focus-visible {
+    outline-color: var(--smart-industrial-focus-halo, var(--smart-selector-selected-text));
+  }
+
+  /* Requested and not yet confirmed: an outline in the pending colour, not the fill -
+     the fill is the plant's to give. */
+  .smart-selector-position-pending {
+    box-shadow: inset 0 0 0 2px var(--smart-selector-pending);
+  }
+
+  .smart-selector-position-armed {
+    box-shadow: inset 0 0 0 2px var(--smart-selector-selected);
+    animation: smart-selector-armed 1s step-end infinite;
+  }
+
+  @keyframes smart-selector-armed {
+    50% { box-shadow: inset 0 0 0 2px transparent; }
+  }
+
+  /* Disabled is greyed, not faded: the position in force is still the plant's state and
+     has to be read off a disabled switch as easily as off a live one. Two layers of
+     opacity left it at 1.6:1; a grey fill with its own text colour keeps it above 3:1. */
+  .smart-selector-position[disabled] {
+    cursor: default;
+    color: var(--smart-text-secondary-color, inherit);
+  }
+
+  .smart-selector-position-selected[disabled] {
+    color: var(--smart-industrial-unknown-color, var(--smart-background));
+    background: var(--smart-industrial-unknown, var(--smart-text-secondary-color));
+  }
+
+  &[disabled] .smart-selector-segments {
+    border-style: dashed;
+  }
+
+  /* Read-only: shown and focusable, never pressed. */
+  &[readonly] .smart-selector-position {
+    cursor: default;
+  }
+
+  /* Right to left the segments run from the right, and the drawn switch is mirrored with them. */
+  &[right-to-left] {
+    direction: rtl;
+  }
+
+  .smart-selector-rtl .smart-selector-hardware {
+    transform: scaleX(-1);
+  }
+
+  .smart-selector-rtl .smart-selector-position {
+    border-right: none;
+    border-left: 1px solid var(--smart-selector-border);
+  }
+
+  .smart-selector-rtl .smart-selector-position:last-child {
+    border-left: none;
+  }
+
+  &[interlocked] .smart-selector-position {
+    cursor: not-allowed;
+    background-image: repeating-linear-gradient(135deg, transparent 0 8px, rgba(128, 128, 128, 0.12) 8px 16px);
+  }
+
+  /* The switch a panel would carry, above the buttons. */
+  .smart-selector-hardware {
+    display: block;
+    height: calc(var(--smart-selector-size) * 1.4);
+    width: auto;
+    margin: 0 auto 2px;
+  }
+
+  .smart-selector-slide {
+    height: calc(var(--smart-selector-size) * 0.8);
+  }
+
+  .smart-selector-hardware-base {
+    fill: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+    stroke: var(--smart-selector-border);
+    stroke-width: 1.5;
+  }
+
+  .smart-selector-hardware-lever,
+  .smart-selector-hardware-knob {
+    fill: var(--smart-selector-background);
+    stroke: var(--smart-selector-border);
+    stroke-width: 1.5;
+  }
+
+  .smart-selector-hardware-tip,
+  .smart-selector-hardware-lamp,
+  .smart-selector-hardware-grip {
+    fill: var(--smart-selector-selected);
+  }
+
+  .smart-selector-hardware-pivot,
+  .smart-selector-hardware-detent {
+    fill: var(--smart-selector-border);
+  }
+
+  .smart-selector-hardware-face {
+    fill: var(--smart-selector-background);
+    stroke: var(--smart-selector-border);
+    stroke-width: 1;
+  }
+
+  .smart-selector-hardware-face-down {
+    fill: var(--smart-industrial-panel-header-background, var(--smart-base-200));
+  }
+
+  /* A requested position not yet confirmed: the lever, knob or lamp takes the pending colour. */
+  .smart-selector-hardware-pending .smart-selector-hardware-tip,
+  .smart-selector-hardware-pending .smart-selector-hardware-lamp,
+  .smart-selector-hardware-pending .smart-selector-hardware-grip {
+    fill: var(--smart-selector-pending);
+  }
+
+  /* The knob. */
+  .smart-selector-knob {
+    width: calc(var(--smart-selector-size) * 4.2);
+    height: auto;
+    font-family: inherit;
+  }
+
+  .smart-selector-knob-body {
+    fill: var(--smart-selector-background);
+    stroke: var(--smart-selector-border);
+    stroke-width: 2;
+  }
+
+  .smart-selector-knob-pointer rect {
+    fill: var(--smart-selector-selected);
+  }
+
+  .smart-selector-knob-tick {
+    stroke: var(--smart-selector-border);
+    stroke-width: 2;
+  }
+
+  .smart-selector-knob-text {
+    fill: var(--smart-text-secondary-color, currentColor);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .smart-selector-knob-text-current {
+    fill: var(--smart-text-color);
+  }
+
+  .smart-selector-hint {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--smart-selector-hint);
+    text-align: center;
+  }
+
+  &[disabled] {
+    pointer-events: none;
+  }
+}
+
+/* .smart-element carries the framework's own background and color at specificity 0,1,0,
+   which beats a bare tag selector - so anything setting those has to be restated here. */
+smart-selector-switch.smart-element {
+  background: transparent;
+  color: var(--smart-text-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  smart-selector-switch .smart-selector-position-armed {
+    animation: none;
+  }
+}
+
+/* Before the element is defined it holds the space it will take, so the page does not
+   move when it upgrades. The size is the smallest a smart-selector-switch takes by default. */
+smart-selector-switch:not(:defined) {
+  min-width: 117px;
+  min-height: 56px;
+}
